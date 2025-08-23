@@ -1,5 +1,6 @@
 package com.wishlist.global.config.websocket;
 
+import com.wishlist.global.config.websocket.handler.WebSocketHandShakeHandler;
 import com.wishlist.global.config.websocket.interceptor.StompInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -17,10 +18,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private static final String ENDPOINT = "/ws";
 
     private final StompInterceptor stompInterceptor;
+    private final WebSocketHandShakeHandler webSocketHandShakeHandler;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint(ENDPOINT)
+                .setHandshakeHandler(webSocketHandShakeHandler)
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
