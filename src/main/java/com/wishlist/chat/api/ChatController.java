@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Controller
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class ChatController {
                 .sender("wishlist-admin")
                 .receiver(chatMessage.sender())
                 .content("문의 감사합니다. 곧 답변드리겠습니다 🙏")
-                .sendAt(LocalDateTime.now())
+                .sendAt(LocalDateTime.now(ZoneOffset.UTC))
                 .chatType(ChatType.SYSTEM)
                 .build();
 
@@ -50,7 +51,7 @@ public class ChatController {
                 .sender("wishlist-admin")
                 .receiver(chatMessage.receiver())
                 .content(chatMessage.content())
-                .sendAt(chatMessage.sendAt())
+                .sendAt(LocalDateTime.now(ZoneOffset.UTC))
                 .chatType(ChatType.ADMIN)
                 .build();
 
