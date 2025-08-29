@@ -26,20 +26,22 @@ public class ChatController {
         // 어드민 화면에 전달
         messagingTemplate.convertAndSend("/topic/admin.chat", chatMessage);
 
-        // TODO: 한 번 전송으로 변경
-        ChatMessage autoReply = ChatMessage.builder()
-                .sender("wishlist-admin")
-                .receiver(chatMessage.sender())
-                .content("문의 감사합니다. 곧 답변드리겠습니다 🙏")
-                .sendAt(LocalDateTime.now(ZoneOffset.UTC))
-                .chatType(ChatType.SYSTEM)
-                .build();
+        if (chatMessage.type().equals(ChatType.USER)) {
+            // TODO: 한 번 전송으로 변경
+            ChatMessage autoReply = ChatMessage.builder()
+                    .sender("wishlist-admin")
+                    .receiver(chatMessage.sender())
+                    .content("문의 감사합니다. 곧 답변드리겠습니다 🙏")
+                    .sendAt(LocalDateTime.now(ZoneOffset.UTC))
+                    .type(ChatType.SYSTEM)
+                    .build();
 
-        messagingTemplate.convertAndSendToUser(
-                autoReply.receiver(),
-                "/queue/chat.messages",
-                autoReply
-        );
+            messagingTemplate.convertAndSendToUser(
+                    autoReply.receiver(),
+                    "/queue/chat.messages",
+                    autoReply
+            );
+        }
     }
 
     // 어드민 → 사용자
@@ -52,7 +54,7 @@ public class ChatController {
                 .receiver(chatMessage.receiver())
                 .content(chatMessage.content())
                 .sendAt(LocalDateTime.now(ZoneOffset.UTC))
-                .chatType(ChatType.ADMIN)
+                .type(ChatType.ADMIN)
                 .build();
 
         messagingTemplate.convertAndSendToUser(
