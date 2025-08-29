@@ -12,6 +12,6 @@ public record ChatMessage (
         String receiver,
         String content,
         LocalDateTime sendAt,
-        ChatType chatType
+        ChatType type
 ) {
 }
