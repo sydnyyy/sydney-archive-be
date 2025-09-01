@@ -1,6 +1,6 @@
 package com.wishlist.chat.api;
 
-import com.wishlist.chat.dto.ChatMessage;
+import com.wishlist.chat.dto.ChatMessageDto;
 import com.wishlist.chat.enums.ChatType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,17 +20,17 @@ public class ChatController {
 
     // 사용자 → 서버
     @MessageMapping("/chat.send")
-    public void handleUserMessage(ChatMessage chatMessage) {
-        log.info("📩 User[{}] → Admin[{}]: {}", chatMessage.sender(), chatMessage.receiver(), chatMessage.content());
+    public void handleUserMessage(ChatMessageDto chatMessageDto) {
+        log.info("📩 User[{}] → Admin[{}]: {}", chatMessageDto.sender(), chatMessageDto.receiver(), chatMessageDto.content());
 
         // 어드민 화면에 전달
-        messagingTemplate.convertAndSend("/topic/admin.chat", chatMessage);
+        messagingTemplate.convertAndSend("/topic/admin.chat", chatMessageDto);
 
-        if (chatMessage.type().equals(ChatType.USER)) {
+        if (chatMessageDto.type().equals(ChatType.USER)) {
             // TODO: 한 번 전송으로 변경
-            ChatMessage autoReply = ChatMessage.builder()
+            ChatMessageDto autoReply = ChatMessageDto.builder()
                     .sender("wishlist-admin")
-                    .receiver(chatMessage.sender())
+                    .receiver(chatMessageDto.sender())
                     .content("문의 감사합니다. 곧 답변드리겠습니다 🙏")
                     .sendAt(LocalDateTime.now(ZoneOffset.UTC))
                     .type(ChatType.SYSTEM)
@@ -46,13 +46,13 @@ public class ChatController {
 
     // 어드민 → 사용자
     @MessageMapping("/chat.sendToUser")
-    public void handleAdminMessage(ChatMessage chatMessage) {
-        log.info("👩‍💻 Admin[{}] → User[{}]: {}", chatMessage.sender(), chatMessage.receiver(), chatMessage.content());
+    public void handleAdminMessage(ChatMessageDto chatMessageDto) {
+        log.info("👩‍💻 Admin[{}] → User[{}]: {}", chatMessageDto.sender(), chatMessageDto.receiver(), chatMessageDto.content());
 
-        ChatMessage adminResponse = ChatMessage.builder()
+        ChatMessageDto adminResponse = ChatMessageDto.builder()
                 .sender("wishlist-admin")
-                .receiver(chatMessage.receiver())
-                .content(chatMessage.content())
+                .receiver(chatMessageDto.receiver())
+                .content(chatMessageDto.content())
                 .sendAt(LocalDateTime.now(ZoneOffset.UTC))
                 .type(ChatType.ADMIN)
                 .build();

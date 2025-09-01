@@ -6,7 +6,7 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public record ChatMessage (
+public record ChatMessageDto (
 
         String sender,
         String receiver,
