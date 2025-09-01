@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: wishlist-be
+
+logging:
+  level:
+    org.springframework.messaging: DEBUG
+    org.springframework.web.socket: DEBUG
+    org.springframework.web: DEBUG
