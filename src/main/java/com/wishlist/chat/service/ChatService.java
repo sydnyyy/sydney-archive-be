@@ -1,7 +1,9 @@
 package com.wishlist.chat.service;
 
 import com.wishlist.chat.dto.ChatMessageDto;
+import com.wishlist.chat.entity.ChatMessageEntity;
 import com.wishlist.chat.enums.ChatType;
+import com.wishlist.chat.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -16,11 +18,17 @@ import java.time.ZoneOffset;
 public class ChatService {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final ChatMessageRepository chatMessageRepository;
 
     public void processUserMessage(ChatMessageDto chatMessageDto) {
         log.info("📩 User[{}] → Admin[{}]: {}", chatMessageDto.sender(), chatMessageDto.receiver(), chatMessageDto.content());
+        saveChatMessage(chatMessageDto);
         sendMessageToAdmin(chatMessageDto);
         sendAutoMessageToUser(chatMessageDto);
+    }
+
+    private void saveChatMessage(ChatMessageDto chatMessageDto) {
+        chatMessageRepository.save(ChatMessageEntity.of(chatMessageDto));
     }
 
     private void sendMessageToAdmin(ChatMessageDto chatMessageDto) {
@@ -45,6 +53,7 @@ public class ChatService {
 
     public void processAdminMessage(ChatMessageDto chatMessageDto) {
         log.info("👩‍💻 Admin[{}] → User[{}]: {}", chatMessageDto.sender(), chatMessageDto.receiver(), chatMessageDto.content());
+        saveChatMessage(chatMessageDto);
         messagingTemplate.convertAndSendToUser(
                 chatMessageDto.receiver(),
                 "/queue/chat.messages",
