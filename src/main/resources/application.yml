@@ -2,6 +2,10 @@ spring:
   application:
     name: wishlist-be
 
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+
 logging:
   level:
     org.springframework.messaging: DEBUG
