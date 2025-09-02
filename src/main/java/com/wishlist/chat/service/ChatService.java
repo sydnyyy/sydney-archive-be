@@ -4,6 +4,7 @@ import com.wishlist.chat.dto.ChatMessageDto;
 import com.wishlist.chat.entity.ChatMessageEntity;
 import com.wishlist.chat.enums.ChatType;
 import com.wishlist.chat.repository.ChatMessageRepository;
+import com.wishlist.chat.repository.ChatMessageRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +21,7 @@ public class ChatService {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageRepository chatMessageRepository;
+    private final ChatMessageRepositoryImpl chatMessageRepositoryImpl;
 
     public void processUserMessage(ChatMessageDto chatMessageDto) {
         log.info("📩 User[{}] → Admin[{}]: {}", chatMessageDto.sender(), chatMessageDto.receiver(), chatMessageDto.content());
@@ -59,5 +62,14 @@ public class ChatService {
                 "/queue/chat.messages",
                 chatMessageDto
         );
+    }
+
+    public List<ChatMessageDto> getChatMessages(String clientId, String cursorId, boolean isAdmin) {
+        int limit = isAdmin ? 15 : 8;
+        return chatMessageRepositoryImpl
+                .findByClientIdBeforeId(clientId, cursorId, limit)
+                .stream()
+                .map(ChatMessageDto::of)
+                .toList();
     }
 }

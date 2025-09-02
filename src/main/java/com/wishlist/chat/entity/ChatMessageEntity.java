@@ -3,6 +3,7 @@ package com.wishlist.chat.entity;
 import com.wishlist.chat.dto.ChatMessageDto;
 import com.wishlist.chat.enums.ChatType;
 import lombok.Builder;
+import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 
 @Document(collection = "chat_messages")
 @Builder
+@Getter
 public class ChatMessageEntity {
 
     @Id
