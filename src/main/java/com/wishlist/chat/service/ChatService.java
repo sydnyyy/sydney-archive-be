@@ -5,6 +5,7 @@ import com.wishlist.chat.entity.ChatMessageEntity;
 import com.wishlist.chat.enums.ChatType;
 import com.wishlist.chat.repository.ChatMessageRepository;
 import com.wishlist.chat.repository.ChatMessageRepositoryImpl;
+import com.wishlist.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -22,9 +23,12 @@ public class ChatService {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatMessageRepositoryImpl chatMessageRepositoryImpl;
+    private final UserService userService;
 
     public void processUserMessage(ChatMessageDto chatMessageDto) {
         log.info("📩 User[{}] → Admin[{}]: {}", chatMessageDto.sender(), chatMessageDto.receiver(), chatMessageDto.content());
+
+        userService.saveGuest(chatMessageDto.sender());
         saveChatMessage(chatMessageDto);
         sendMessageToAdmin(chatMessageDto);
         sendAutoMessageToUser(chatMessageDto);
