@@ -65,7 +65,7 @@ public class ChatService {
     }
 
     public List<ChatMessageDto> getChatMessages(String clientId, String cursorId, boolean isAdmin) {
-        int limit = isAdmin ? 15 : 8;
+        int limit = isAdmin ? 15 : 10;
         return chatMessageRepositoryImpl
                 .findByClientIdBeforeId(clientId, cursorId, limit)
                 .stream()
