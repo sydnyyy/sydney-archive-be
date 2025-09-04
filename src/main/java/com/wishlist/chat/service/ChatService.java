@@ -11,8 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -47,7 +46,7 @@ public class ChatService {
                 .sender("wishlist-admin")
                 .receiver(chatMessageDto.sender())
                 .content("문의 감사합니다. 곧 답변드리겠습니다 🙏")
-                .sendAt(LocalDateTime.now(ZoneOffset.UTC))
+                .sendAt(Instant.now())
                 .type(ChatType.SYSTEM)
                 .build();
 

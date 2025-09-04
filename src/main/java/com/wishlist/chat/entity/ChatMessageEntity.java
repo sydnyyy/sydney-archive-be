@@ -7,7 +7,7 @@ import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Document(collection = "chat_messages")
 @Builder
@@ -21,7 +21,7 @@ public class ChatMessageEntity {
     private String sender;
     private String receiver;
     private String content;
-    private LocalDateTime sendAt;
+    private Instant sendAt;
     private ChatType type;
 
     public static ChatMessageEntity of(ChatMessageDto chatMessageDto) {

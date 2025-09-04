@@ -4,7 +4,7 @@ import com.wishlist.chat.entity.ChatMessageEntity;
 import com.wishlist.chat.enums.ChatType;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Builder
 public record ChatMessageDto (
@@ -13,7 +13,7 @@ public record ChatMessageDto (
         String sender,
         String receiver,
         String content,
-        LocalDateTime sendAt,
+        Instant sendAt,
         ChatType type
 ) {
 
