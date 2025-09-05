@@ -28,6 +28,8 @@ public class ChatService {
         log.info("📩 User[{}] → Admin[{}]: {}", chatMessageDto.sender(), chatMessageDto.receiver(), chatMessageDto.content());
 
         userService.saveGuest(chatMessageDto.sender());
+        userService.updateLastMessageAt(chatMessageDto.sender(), chatMessageDto.sendAt());
+
         saveChatMessage(chatMessageDto);
         sendMessageToAdmin(chatMessageDto);
         sendAutoMessageToUser(chatMessageDto);

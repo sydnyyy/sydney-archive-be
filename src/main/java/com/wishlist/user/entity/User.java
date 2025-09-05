@@ -22,6 +22,8 @@ public class User {
     @Indexed(unique = true)
     private String clientId;
 
+    private Instant lastMessageAt;
+
     @CreatedDate
     private Instant createdAt;
 
@@ -33,5 +35,9 @@ public class User {
                 .role(role)
                 .clientId(clientId)
                 .build();
+    }
+
+    public void updateLastMessageAt(Instant lastMessageAt) {
+        this.lastMessageAt = lastMessageAt;
     }
 }

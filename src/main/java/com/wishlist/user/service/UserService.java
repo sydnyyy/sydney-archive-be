@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -25,5 +27,19 @@ public class UserService {
         } catch (DuplicateKeyException e) {
             log.warn("[saveGuest] GUEST 중복 삽입 시도 clientId={}", clientId);
         }
+    }
+
+    public void updateLastMessageAt(String clientId, Instant sendAt) {
+        userRepository.findByClientId(clientId).ifPresentOrElse(
+                user -> {
+                    user.updateLastMessageAt(sendAt);
+                    userRepository.save(user);
+                },
+                () -> {
+                    User guest = User.of(Role.GUEST, clientId);
+                    guest.updateLastMessageAt(sendAt);
+                    userRepository.save(guest);
+                }
+        );
     }
 }
