@@ -2,6 +2,7 @@ package com.wishlist.user.entity;
 
 import com.wishlist.user.enums.Role;
 import lombok.Builder;
+import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -12,6 +13,7 @@ import java.time.Instant;
 
 @Document(collection = "users")
 @Builder
+@Getter
 public class User {
 
     @Id

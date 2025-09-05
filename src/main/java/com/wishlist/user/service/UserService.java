@@ -1,6 +1,7 @@
 package com.wishlist.user.service;
 
 import com.mongodb.DuplicateKeyException;
+import com.wishlist.user.dto.UserResponse;
 import com.wishlist.user.entity.User;
 import com.wishlist.user.enums.Role;
 import com.wishlist.user.repository.UserRepository;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,5 +43,12 @@ public class UserService {
                     userRepository.save(guest);
                 }
         );
+    }
+
+    public List<UserResponse> findRecentChatUsers() {
+        return userRepository.findAllByOrderByLastMessageAtDesc()
+                .stream()
+                .map(UserResponse::of)
+                .toList();
     }
 }
