@@ -2,8 +2,17 @@ spring:
   application:
     name: wishlist-be
 
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      auto-index-creation: true
+
 logging:
   level:
     org.springframework.messaging: DEBUG
     org.springframework.web.socket: DEBUG
     org.springframework.web: DEBUG
+    org.springframework.messaging.simp.SimpMessagingTemplate: DEBUG
+#    org.springframework.messaging.simp.stomp.StompSubProtocolHandler: DEBUG
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+#    org.mongodb.driver: DEBUG
