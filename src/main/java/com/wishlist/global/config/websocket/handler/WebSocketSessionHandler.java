@@ -2,6 +2,7 @@ package com.wishlist.global.config.websocket.handler;
 
 import com.wishlist.global.config.websocket.dto.websocket.WebSocketSessionInfo;
 import com.wishlist.global.config.websocket.interceptor.WebSocketHandshakeInterceptor;
+import com.wishlist.global.config.websocket.manager.WebSocketSessionManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
@@ -13,8 +14,12 @@ import java.nio.channels.ClosedChannelException;
 @Slf4j
 public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
 
-    public WebSocketSessionHandler(WebSocketHandler delegate) {
+    private final WebSocketSessionManager webSocketSessionManager;
+
+    public WebSocketSessionHandler(WebSocketHandler delegate,
+                                   WebSocketSessionManager webSocketSessionManager) {
         super(delegate);
+        this.webSocketSessionManager = webSocketSessionManager;
     }
 
     @Override
@@ -22,6 +27,7 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
         String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
         log.info("🟢 [afterConnectionEstablished] WebSocket 세션 연결 성공. clientId={}, sessionId={}", clientId, session.getId());
 
+        webSocketSessionManager.addSession(clientId, session.getId());
         super.afterConnectionEstablished(session);
     }
 
@@ -46,6 +52,9 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
         } else {
             log.info("🟢 [afterConnectionClosed] WebSocket 연결 정상 종료. {}", info);
         }
+
+        String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
+        webSocketSessionManager.removeSession(clientId, session.getId());
         super.afterConnectionClosed(session, closeStatus);
     }
 
