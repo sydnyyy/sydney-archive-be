@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -18,9 +19,9 @@ public class WebSocketSessionManager {
     private final DefaultRedisScript<Long> removeSessionScript;
 
     private static final String WEBSOCKET_SESSION_MAIN_KEY_PREFIX = "WS:MAIN:";
-    private static final String WEBSOCKET_SESSION_SENTINEL_KEY_PREFIX = "WS:SENTINEL:";
+    public static final String WEBSOCKET_SESSION_SENTINEL_KEY_PREFIX = "WS:SENTINEL:";
     private static final Duration MAIN_KEY_TTL = Duration.ofMinutes(30);
-    private static final Duration SENTINEL_KEY_TTL = Duration.ofMinutes(28);
+    private static final Duration SENTINEL_KEY_TTL = Duration.ofMinutes(1);
     private static final String SENTINEL_DUMMY_VALUE = "1";
 
     public void addSession(String clientId, String sessionId) {
@@ -58,5 +59,9 @@ public class WebSocketSessionManager {
                 List.of(mainKey, sentinelKey),
                 sessionId
         );
+    }
+
+    public Set<String> getSessions(String clientId) {
+        return redisTemplate.opsForSet().members(WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId);
     }
 }
