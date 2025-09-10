@@ -13,7 +13,7 @@ import java.util.Set;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class WebSocketSentinelExpiryListener implements MessageListener {
+public class WebSocketTerminateSignalExpiryListener implements MessageListener {
 
     private final WebSocketSessionManager webSocketSessionManager;
     private final SystemEventPublisher systemEventPublisher;
