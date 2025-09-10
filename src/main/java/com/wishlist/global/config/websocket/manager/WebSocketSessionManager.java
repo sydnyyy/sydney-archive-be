@@ -29,21 +29,21 @@ public class WebSocketSessionManager {
     public static final String WEBSOCKET_SESSION_MAIN_KEY_PREFIX = "WS:MAIN:";
     public static final String WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX = "WS:TERMINATE_SIGNAL:";
     private static final Duration MAIN_KEY_TTL = Duration.ofMinutes(30);
-    private static final Duration SENTINEL_KEY_TTL = Duration.ofMinutes(28);
-    private static final String SENTINEL_DUMMY_VALUE = "1";
+    public static final Duration TERMINATE_SIGNAL_KEY_TTL = Duration.ofMinutes(28);
+    public static final String TERMINATE_SIGNAL_KEY_DUMMY_VALUE = "1";
 
     public void addSession(WebSocketSession session) {
         String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
         String mainKey = WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
-        String sentinelKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+        String terminateSignalKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
 
         redisTemplate.execute(
                 addSessionScript,
-                List.of(mainKey, sentinelKey),
+                List.of(mainKey, terminateSignalKey),
                 session.getId(),
                 String.valueOf(MAIN_KEY_TTL.toSeconds()),
-                SENTINEL_DUMMY_VALUE,
-                String.valueOf(SENTINEL_KEY_TTL.toSeconds())
+                TERMINATE_SIGNAL_KEY_DUMMY_VALUE,
+                String.valueOf(TERMINATE_SIGNAL_KEY_TTL.toSeconds())
         );
 
         sessionMap.put(session.getId(), session);
@@ -53,24 +53,24 @@ public class WebSocketSessionManager {
 
     public void updateTTL(String clientId) {
         String mainKey = WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
-        String sentinelKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+        String terminateSignalKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
 
         redisTemplate.execute(
                 updateTTLScript,
-                List.of(mainKey, sentinelKey),
+                List.of(mainKey, terminateSignalKey),
                 String.valueOf(MAIN_KEY_TTL.toSeconds()),
-                String.valueOf(SENTINEL_KEY_TTL.toSeconds())
+                String.valueOf(TERMINATE_SIGNAL_KEY_TTL.toSeconds())
         );
     }
 
     public void removeSession(WebSocketSession session) {
         String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
         String mainKey = WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
-        String sentinelKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+        String terminateSignalKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
 
         redisTemplate.execute(
                 removeSessionScript,
-                List.of(mainKey, sentinelKey),
+                List.of(mainKey, terminateSignalKey),
                 session.getId()
         );
 
