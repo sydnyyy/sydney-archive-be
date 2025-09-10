@@ -27,7 +27,7 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
         String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
         log.info("🟢 [afterConnectionEstablished] WebSocket 세션 연결 성공. clientId={}, sessionId={}", clientId, session.getId());
 
-        webSocketSessionManager.addSession(clientId, session.getId());
+        webSocketSessionManager.addSession(session);
         super.afterConnectionEstablished(session);
     }
 
@@ -53,8 +53,7 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
             log.info("🟢 [afterConnectionClosed] WebSocket 연결 정상 종료. {}", info);
         }
 
-        String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
-        webSocketSessionManager.removeSession(clientId, session.getId());
+        webSocketSessionManager.removeSession(session);
         super.afterConnectionClosed(session, closeStatus);
     }
 
