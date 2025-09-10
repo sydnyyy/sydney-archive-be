@@ -82,6 +82,7 @@ public class RedisScriptConfig {
             if status == 'PENDING' then
                 redis.call('SET', KEYS[1], ARGV[1])
                 redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3])
+                redis.call('EXPIRE', KEYS[3], ARGV[4])
                 return 1
             else
                 return 0
@@ -89,5 +90,5 @@ public class RedisScriptConfig {
             """);
         script.setResultType(Long.class);
         return script;
-    };
+    }
 }

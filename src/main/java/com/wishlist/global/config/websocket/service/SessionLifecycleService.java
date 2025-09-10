@@ -19,15 +19,18 @@ public class SessionLifecycleService {
     private final DefaultRedisScript<Long> maintainSessionScript;
 
     public void processMaintain(SystemEventDto systemEvent) {
-        String terminateStatusKey = getTerminateStatusKey(systemEvent.clientId());
-        String terminateSignalKey = getTerminateSignalKey(systemEvent.clientId());
+        String clientId = systemEvent.clientId();
+        String terminateStatusKey = getTerminateStatusKey(clientId);
+        String terminateSignalKey = getTerminateSignalKey(clientId);
+        String mainKey = getMainKey(clientId);
 
         redisTemplate.execute(
                 maintainSessionScript,
-                List.of(terminateStatusKey, terminateSignalKey),
+                List.of(terminateStatusKey, terminateSignalKey, mainKey),
                 WebSocketSessionTerminateStatus.ACTIVE.toString(),
                 WebSocketSessionManager.TERMINATE_SIGNAL_KEY_DUMMY_VALUE,
-                String.valueOf(WebSocketSessionManager.TERMINATE_SIGNAL_KEY_TTL.toSeconds())
+                String.valueOf(WebSocketSessionManager.TERMINATE_SIGNAL_KEY_TTL.toSeconds()),
+                String.valueOf(WebSocketSessionManager.MAIN_KEY_TTL.toSeconds())
         );
     }
 
@@ -37,5 +40,9 @@ public class SessionLifecycleService {
 
     private String getTerminateSignalKey(String clientId) {
         return WebSocketSessionManager.WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+    }
+
+    private String getMainKey(String clientId) {
+        return WebSocketSessionManager.WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
     }
 }
