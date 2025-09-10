@@ -72,4 +72,22 @@ public class RedisScriptConfig {
         script.setResultType(Long.class);
         return script;
     }
+
+    @Bean
+    public DefaultRedisScript<Long> maintainSessionScript() {
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>();
+        script.setScriptText("""
+            local status = redis.call('GET', KEYS[1])
+            
+            if status == 'PENDING' then
+                redis.call('SET', KEYS[1], ARGV[1])
+                redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3])
+                return 1
+            else
+                return 0
+            end
+            """);
+        script.setResultType(Long.class);
+        return script;
+    };
 }

@@ -17,7 +17,7 @@ import java.util.*;
 @Slf4j
 public class WebSocketTerminateSignalExpiryListener implements MessageListener {
 
-    private static final String WEBSOCKET_SESSION_TERMINATE_STATUS_PREFIX = "WS:TERMINATE_STATUS:";
+    public static final String WEBSOCKET_SESSION_TERMINATE_STATUS_PREFIX = "WS:TERMINATE_STATUS:";
     private static final String WEBSOCKET_SESSION_TERMINATE_SESSIONS_PREFIX = "WS:TERMINATE_SESSIONS:";
 
     private final WebSocketSessionManager webSocketSessionManager;
