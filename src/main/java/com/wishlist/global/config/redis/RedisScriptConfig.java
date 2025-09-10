@@ -51,23 +51,7 @@ public class RedisScriptConfig {
     public DefaultRedisScript<Long> terminateSignalExpiryScript() {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
         script.setScriptText("""
-            if redis.call('EXISTS', KEYS[2]) == 1 then
-                return 0
-            end
-
-            redis.call('SET', KEYS[2], ARGV[1])
-
-            local sessions = redis.call('SMEMBERS', KEYS[1])
-            if #sessions == 0 then
-                return 0
-            end
-
-            local timestamp = tonumber(ARGV[2])
-            for i, sessionId in ipairs(sessions) do
-                redis.call('ZADD', KEYS[3], timestamp, sessionId)
-            end
-
-            return #sessions
+            return redis.call('SETNX', KEYS[1], ARGV[1])
         """);
         script.setResultType(Long.class);
         return script;
