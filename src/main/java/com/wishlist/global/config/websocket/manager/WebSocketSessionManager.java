@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +26,7 @@ public class WebSocketSessionManager {
     private final Map<String, Set<String>> clientSessionIds = new ConcurrentHashMap<>();  // { clientId, Set<sessionId> }
     private final Map<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();  // { sessionId, session }
 
-    private static final String WEBSOCKET_SESSION_MAIN_KEY_PREFIX = "WS:MAIN:";
+    public static final String WEBSOCKET_SESSION_MAIN_KEY_PREFIX = "WS:MAIN:";
     public static final String WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX = "WS:TERMINATE_SIGNAL:";
     private static final Duration MAIN_KEY_TTL = Duration.ofMinutes(30);
     private static final Duration SENTINEL_KEY_TTL = Duration.ofMinutes(28);
@@ -83,7 +84,7 @@ public class WebSocketSessionManager {
         }
     }
 
-    public Set<String> getSessions(String clientId) {
-        return redisTemplate.opsForSet().members(WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId);
+    public Set<String> getReadOnlyLocalSessions(String clientId) {
+        return Collections.unmodifiableSet(clientSessionIds.get(clientId));
     }
 }
