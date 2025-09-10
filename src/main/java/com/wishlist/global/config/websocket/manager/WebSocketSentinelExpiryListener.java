@@ -23,8 +23,8 @@ public class WebSocketSentinelExpiryListener implements MessageListener {
         String expiredKey = message.toString();
         log.info("🔑 TTL expired for key={}", expiredKey);
 
-        if (expiredKey.startsWith(WebSocketSessionManager.WEBSOCKET_SESSION_SENTINEL_KEY_PREFIX)) {
-            String clientId = expiredKey.substring(WebSocketSessionManager.WEBSOCKET_SESSION_SENTINEL_KEY_PREFIX.length());
+        if (expiredKey.startsWith(WebSocketSessionManager.WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX)) {
+            String clientId = expiredKey.substring(WebSocketSessionManager.WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX.length());
             Set<String> sessions = Optional.ofNullable(webSocketSessionManager.getSessions(clientId))
                     .orElseGet(Set::of);
 

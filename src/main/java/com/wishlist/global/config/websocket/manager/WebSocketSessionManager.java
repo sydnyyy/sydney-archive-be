@@ -26,7 +26,7 @@ public class WebSocketSessionManager {
     private final Map<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();  // { sessionId, session }
 
     private static final String WEBSOCKET_SESSION_MAIN_KEY_PREFIX = "WS:MAIN:";
-    public static final String WEBSOCKET_SESSION_SENTINEL_KEY_PREFIX = "WS:SENTINEL:";
+    public static final String WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX = "WS:TERMINATE_SIGNAL:";
     private static final Duration MAIN_KEY_TTL = Duration.ofMinutes(30);
     private static final Duration SENTINEL_KEY_TTL = Duration.ofMinutes(28);
     private static final String SENTINEL_DUMMY_VALUE = "1";
@@ -34,7 +34,7 @@ public class WebSocketSessionManager {
     public void addSession(WebSocketSession session) {
         String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
         String mainKey = WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
-        String sentinelKey = WEBSOCKET_SESSION_SENTINEL_KEY_PREFIX + clientId;
+        String sentinelKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
 
         redisTemplate.execute(
                 addSessionScript,
@@ -52,7 +52,7 @@ public class WebSocketSessionManager {
 
     public void updateTTL(String clientId) {
         String mainKey = WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
-        String sentinelKey = WEBSOCKET_SESSION_SENTINEL_KEY_PREFIX + clientId;
+        String sentinelKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
 
         redisTemplate.execute(
                 updateTTLScript,
@@ -65,7 +65,7 @@ public class WebSocketSessionManager {
     public void removeSession(WebSocketSession session) {
         String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
         String mainKey = WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
-        String sentinelKey = WEBSOCKET_SESSION_SENTINEL_KEY_PREFIX + clientId;
+        String sentinelKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
 
         redisTemplate.execute(
                 removeSessionScript,
