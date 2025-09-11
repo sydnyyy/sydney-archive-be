@@ -15,7 +15,7 @@ public class SystemResponseController {
     @MessageMapping("/system.response")
     public void handleSystemResponse(SystemEventDto response) {
         if (response.shouldTerminate()) {
-            System.out.println("종료 요청 받음: " + response.clientId());
+            sessionLifecycleService.processTerminate(response);
         } else {
             sessionLifecycleService.processMaintain(response);
         }

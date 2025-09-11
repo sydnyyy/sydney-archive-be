@@ -1,5 +1,6 @@
 package com.wishlist.global.config.websocket.service;
 
+import com.wishlist.global.config.redis.RedisStreamTailer;
 import com.wishlist.global.config.websocket.dto.SystemEventDto;
 import com.wishlist.global.config.websocket.enums.WebSocketSessionTerminateStatus;
 import com.wishlist.global.config.websocket.manager.WebSocketSessionManager;
@@ -17,6 +18,7 @@ public class SessionLifecycleService {
 
     private final StringRedisTemplate redisTemplate;
     private final DefaultRedisScript<Long> maintainSessionScript;
+    private final DefaultRedisScript<Long> terminateSessionScript;
     private final WebSocketSessionManager webSocketSessionManager;
 
     public void processMaintain(SystemEventDto systemEvent) {
@@ -39,6 +41,28 @@ public class SessionLifecycleService {
         );
     }
 
+    public void processTerminate(SystemEventDto systemEvent) {
+        String clientId = systemEvent.clientId();
+        if (!webSocketSessionManager.hasSession(clientId)) {
+            return;
+        }
+
+        String terminateStatusKey = getTerminateStatusKey(clientId);
+        String terminateSignalKey = getTerminateSignalKey(clientId);
+        String activeMainKey = getMainKey(clientId);
+        String terminatedSessionsZSetKey = getTerminateSessionsKey(clientId);
+        String terminateSessionStreamKey = RedisStreamTailer.streamKey;
+
+        redisTemplate.execute(
+                terminateSessionScript,
+                List.of(terminateStatusKey, terminateSignalKey,
+                        activeMainKey, terminatedSessionsZSetKey, terminateSessionStreamKey),
+                WebSocketSessionTerminateStatus.TERMINATE.toString(),
+                clientId,
+                String.valueOf(System.currentTimeMillis())
+        );
+    }
+
     private String getTerminateStatusKey(String clientId) {
         return WebSocketTerminateSignalExpiryListener.WEBSOCKET_SESSION_TERMINATE_STATUS_PREFIX + clientId;
     }
@@ -49,5 +73,9 @@ public class SessionLifecycleService {
 
     private String getMainKey(String clientId) {
         return WebSocketSessionManager.WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
+    }
+
+    private String getTerminateSessionsKey(String clientId) {
+        return WebSocketTerminateSignalExpiryListener.WEBSOCKET_SESSION_TERMINATE_SESSIONS_PREFIX + clientId;
     }
 }
