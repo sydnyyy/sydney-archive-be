@@ -29,7 +29,7 @@ public class WebSocketSessionManager {
     public static final String WEBSOCKET_SESSION_MAIN_KEY_PREFIX = "WS:MAIN:";
     public static final String WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX = "WS:TERMINATE_SIGNAL:";
     public static final Duration MAIN_KEY_TTL = Duration.ofMinutes(30);
-    public static final Duration TERMINATE_SIGNAL_KEY_TTL = Duration.ofMinutes(28);
+    public static final Duration TERMINATE_SIGNAL_KEY_TTL = Duration.ofMinutes(25);
     public static final String TERMINATE_SIGNAL_KEY_DUMMY_VALUE = "1";
 
     public void addSession(WebSocketSession session) {
