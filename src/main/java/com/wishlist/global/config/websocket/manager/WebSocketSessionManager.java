@@ -87,4 +87,9 @@ public class WebSocketSessionManager {
     public Set<String> getReadOnlyLocalSessions(String clientId) {
         return Collections.unmodifiableSet(clientSessionIds.get(clientId));
     }
+
+    public boolean hasSession(String clientId) {
+        return clientSessionIds.containsKey(clientId) &&
+                !clientSessionIds.get(clientId).isEmpty();
+    }
 }

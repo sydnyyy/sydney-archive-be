@@ -17,9 +17,14 @@ public class SessionLifecycleService {
 
     private final StringRedisTemplate redisTemplate;
     private final DefaultRedisScript<Long> maintainSessionScript;
+    private final WebSocketSessionManager webSocketSessionManager;
 
     public void processMaintain(SystemEventDto systemEvent) {
         String clientId = systemEvent.clientId();
+        if (!webSocketSessionManager.hasSession(clientId)) {
+            return;
+        }
+
         String terminateStatusKey = getTerminateStatusKey(clientId);
         String terminateSignalKey = getTerminateSignalKey(clientId);
         String mainKey = getMainKey(clientId);
