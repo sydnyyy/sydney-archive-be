@@ -1,6 +1,6 @@
 package com.wishlist.global.config.websocket.service;
 
-import com.wishlist.global.config.redis.RedisStreamTailer;
+import com.wishlist.global.config.redis.RedisStreamConsumer;
 import com.wishlist.global.config.websocket.dto.SystemEventDto;
 import com.wishlist.global.config.websocket.enums.WebSocketSessionTerminateStatus;
 import com.wishlist.global.config.websocket.manager.WebSocketSessionManager;
@@ -51,7 +51,7 @@ public class SessionLifecycleService {
         String terminateSignalKey = getTerminateSignalKey(clientId);
         String activeMainKey = getMainKey(clientId);
         String terminatedSessionsZSetKey = getTerminateSessionsKey(clientId);
-        String terminateSessionStreamKey = RedisStreamTailer.streamKey;
+        String terminateSessionStreamKey = RedisStreamConsumer.STREAM_TERMINATE_SESSION;
 
         redisTemplate.execute(
                 terminateSessionScript,
