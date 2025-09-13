@@ -4,6 +4,7 @@ import com.wishlist.global.config.websocket.handler.WebSocketSessionHandler;
 import com.wishlist.global.config.websocket.handler.WebSocketHandShakeHandler;
 import com.wishlist.global.config.websocket.interceptor.StompInterceptor;
 import com.wishlist.global.config.websocket.interceptor.WebSocketHandshakeInterceptor;
+import com.wishlist.global.config.websocket.manager.WebSocketSessionManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -23,6 +24,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final WebSocketHandshakeInterceptor webSocketHandshakeInterceptor;
     private final StompInterceptor stompInterceptor;
     private final WebSocketHandShakeHandler webSocketHandShakeHandler;
+
+    private final WebSocketSessionManager webSocketSessionManager;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -47,6 +50,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
-        registration.addDecoratorFactory(WebSocketSessionHandler::new);
+        registration.addDecoratorFactory(handler -> new WebSocketSessionHandler(handler, webSocketSessionManager));
     }
 }

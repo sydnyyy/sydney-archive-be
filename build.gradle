@@ -32,8 +32,9 @@ dependencies {
     // websocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
-    // DB
+    // DB & Cache
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     // env
     implementation 'io.github.cdimascio:java-dotenv:5.2.2'
