@@ -1,6 +1,6 @@
 package com.wishlist.useractivity.service;
 
-import com.wishlist.global.config.websocket.manager.WebSocketSessionManager;
+import com.wishlist.global.websocket.manager.WebSocketSessionManager;
 import com.wishlist.useractivity.entity.AccessEvent;
 import com.wishlist.useractivity.repository.AccessRepository;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
-package com.wishlist.global.config.websocket.dto.websocket;
+package com.wishlist.global.websocket.dto.websocket;
 
-import com.wishlist.global.config.websocket.interceptor.WebSocketHandshakeInterceptor;
+import com.wishlist.global.websocket.interceptor.WebSocketHandshakeInterceptor;
 import org.springframework.web.socket.WebSocketSession;
 
 public record WebSocketSessionInfo(

@@ -1,10 +1,10 @@
 package com.wishlist.global.config.websocket;
 
-import com.wishlist.global.config.websocket.handler.WebSocketSessionHandler;
-import com.wishlist.global.config.websocket.handler.WebSocketHandShakeHandler;
-import com.wishlist.global.config.websocket.interceptor.StompInterceptor;
-import com.wishlist.global.config.websocket.interceptor.WebSocketHandshakeInterceptor;
-import com.wishlist.global.config.websocket.manager.WebSocketSessionManager;
+import com.wishlist.global.websocket.handler.WebSocketSessionHandler;
+import com.wishlist.global.websocket.handler.WebSocketHandShakeHandler;
+import com.wishlist.global.websocket.interceptor.StompInterceptor;
+import com.wishlist.global.websocket.interceptor.WebSocketHandshakeInterceptor;
+import com.wishlist.global.websocket.manager.WebSocketSessionManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;

@@ -1,7 +1,7 @@
-package com.wishlist.global.config.websocket.controller;
+package com.wishlist.global.websocket.controller;
 
-import com.wishlist.global.config.websocket.dto.SystemEventDto;
-import com.wishlist.global.config.websocket.service.SessionLifecycleService;
+import com.wishlist.global.websocket.dto.SystemEventDto;
+import com.wishlist.global.websocket.service.SessionLifecycleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;

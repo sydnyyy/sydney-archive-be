@@ -1,6 +1,6 @@
-package com.wishlist.global.config.redis;
+package com.wishlist.global.redis.service;
 
-import com.wishlist.global.config.websocket.manager.WebSocketSessionManager;
+import com.wishlist.global.websocket.manager.WebSocketSessionManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.stream.MapRecord;

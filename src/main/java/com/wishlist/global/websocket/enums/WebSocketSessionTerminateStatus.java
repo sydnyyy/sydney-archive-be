@@ -1,4 +1,4 @@
-package com.wishlist.global.config.websocket.enums;
+package com.wishlist.global.websocket.enums;
 
 public enum WebSocketSessionTerminateStatus {
 

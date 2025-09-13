@@ -1,6 +1,6 @@
-package com.wishlist.global.config.websocket.service;
+package com.wishlist.global.websocket.service;
 
-import com.wishlist.global.config.websocket.dto.SystemEventDto;
+import com.wishlist.global.websocket.dto.SystemEventDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;

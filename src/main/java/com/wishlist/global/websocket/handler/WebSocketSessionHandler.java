@@ -1,8 +1,8 @@
-package com.wishlist.global.config.websocket.handler;
+package com.wishlist.global.websocket.handler;
 
-import com.wishlist.global.config.websocket.dto.websocket.WebSocketSessionInfo;
-import com.wishlist.global.config.websocket.interceptor.WebSocketHandshakeInterceptor;
-import com.wishlist.global.config.websocket.manager.WebSocketSessionManager;
+import com.wishlist.global.websocket.dto.websocket.WebSocketSessionInfo;
+import com.wishlist.global.websocket.interceptor.WebSocketHandshakeInterceptor;
+import com.wishlist.global.websocket.manager.WebSocketSessionManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;

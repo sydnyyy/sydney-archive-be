@@ -1,4 +1,4 @@
-package com.wishlist.global.config.database;
+package com.wishlist.global.config.mongo;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
