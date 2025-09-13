@@ -1,6 +1,7 @@
-package com.wishlist.global.websocket.manager;
+package com.wishlist.global.websocket.listener;
 
 import com.wishlist.global.websocket.enums.WebSocketSessionTerminateStatus;
+import com.wishlist.global.websocket.manager.WebSocketSessionManager;
 import com.wishlist.global.websocket.service.SystemEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

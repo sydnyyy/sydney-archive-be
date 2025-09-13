@@ -4,7 +4,7 @@ import com.wishlist.global.redis.service.RedisStreamConsumer;
 import com.wishlist.global.websocket.dto.SystemEventDto;
 import com.wishlist.global.websocket.enums.WebSocketSessionTerminateStatus;
 import com.wishlist.global.websocket.manager.WebSocketSessionManager;
-import com.wishlist.global.websocket.manager.WebSocketTerminateSignalExpiryListener;
+import com.wishlist.global.websocket.listener.WebSocketTerminateSignalExpiryListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
