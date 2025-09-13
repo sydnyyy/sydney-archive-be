@@ -1,4 +1,4 @@
-package com.wishlist.global.config.websocket.interceptor;
+package com.wishlist.global.websocket.interceptor;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

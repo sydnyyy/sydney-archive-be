@@ -1,6 +1,6 @@
-package com.wishlist.global.config.websocket.manager;
+package com.wishlist.global.websocket.manager;
 
-import com.wishlist.global.config.websocket.interceptor.WebSocketHandshakeInterceptor;
+import com.wishlist.global.websocket.interceptor.WebSocketHandshakeInterceptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;

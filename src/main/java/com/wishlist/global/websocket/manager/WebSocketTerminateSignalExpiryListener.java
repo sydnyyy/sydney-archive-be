@@ -1,7 +1,7 @@
-package com.wishlist.global.config.websocket.manager;
+package com.wishlist.global.websocket.manager;
 
-import com.wishlist.global.config.websocket.enums.WebSocketSessionTerminateStatus;
-import com.wishlist.global.config.websocket.service.SystemEventPublisher;
+import com.wishlist.global.websocket.enums.WebSocketSessionTerminateStatus;
+import com.wishlist.global.websocket.service.SystemEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;

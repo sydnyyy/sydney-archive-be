@@ -1,4 +1,4 @@
-package com.wishlist.global.config.websocket.dto;
+package com.wishlist.global.websocket.dto;
 
 import java.security.Principal;
 

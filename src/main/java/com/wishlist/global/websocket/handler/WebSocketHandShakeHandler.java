@@ -1,7 +1,7 @@
-package com.wishlist.global.config.websocket.handler;
+package com.wishlist.global.websocket.handler;
 
-import com.wishlist.global.config.websocket.dto.StompPrincipal;
-import com.wishlist.global.config.websocket.interceptor.WebSocketHandshakeInterceptor;
+import com.wishlist.global.websocket.dto.StompPrincipal;
+import com.wishlist.global.websocket.interceptor.WebSocketHandshakeInterceptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
