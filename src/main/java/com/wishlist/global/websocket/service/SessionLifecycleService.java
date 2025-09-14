@@ -47,7 +47,7 @@ public class SessionLifecycleService {
 
         redisTemplate.execute(
                 terminateSessionScript,
-                List.of(WEBSOCKET_SESSION_TERMINATE_CHECK_ZSET, STREAM_TERMINATE_SESSION),
+                List.of(WEBSOCKET_SESSION_TERMINATE_CHECK_ZSET, WEBSOCKET_SESSION_TERMINATE_STREAM),
                 clientId,
                 String.valueOf(System.currentTimeMillis())
         );
