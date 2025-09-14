@@ -10,11 +10,11 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.wishlist.global.websocket.constant.WebSocketKeys.WEBSOCKET_SESSION_MAIN_KEY_PREFIX;
+import static com.wishlist.global.websocket.constant.WebSocketKeys.WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX;
 
 @Component
 @RequiredArgsConstructor
@@ -29,8 +29,6 @@ public class WebSocketSessionManager {
     private final Map<String, Set<String>> clientSessionIds = new ConcurrentHashMap<>();  // { clientId, Set<sessionId> }
     private final Map<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();  // { sessionId, session }
 
-    public static final String WEBSOCKET_SESSION_MAIN_KEY_PREFIX = "WS:MAIN:";
-    public static final String WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX = "WS:TERMINATE_SIGNAL:";
     public static final Duration MAIN_KEY_TTL = Duration.ofMinutes(30);
     public static final Duration TERMINATE_SIGNAL_KEY_TTL = Duration.ofMinutes(25);
     public static final String TERMINATE_SIGNAL_KEY_DUMMY_VALUE = "1";

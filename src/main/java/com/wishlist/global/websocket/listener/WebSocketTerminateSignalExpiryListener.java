@@ -10,6 +10,7 @@ import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
+import static com.wishlist.global.websocket.constant.WebSocketKeys.*;
 
 import java.util.*;
 
@@ -17,9 +18,6 @@ import java.util.*;
 @RequiredArgsConstructor
 @Slf4j
 public class WebSocketTerminateSignalExpiryListener implements MessageListener {
-
-    public static final String WEBSOCKET_SESSION_TERMINATE_STATUS_PREFIX = "WS:TERMINATE_STATUS:";
-    public static final String WEBSOCKET_SESSION_TERMINATE_SESSIONS_PREFIX = "WS:TERMINATE_SESSIONS:";
 
     private final WebSocketSessionManager webSocketSessionManager;
     private final SystemEventPublisher systemEventPublisher;
@@ -32,8 +30,8 @@ public class WebSocketTerminateSignalExpiryListener implements MessageListener {
         String expiredKey = message.toString();
         log.info("🔑 TTL expired for key={}", expiredKey);
 
-        if (expiredKey.startsWith(WebSocketSessionManager.WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX)) {
-            String clientId = expiredKey.substring(WebSocketSessionManager.WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX.length());
+        if (expiredKey.startsWith(WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX)) {
+            String clientId = expiredKey.substring(WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX.length());
             prepareTerminationSessions(clientId);
             sendTerminationCheckToClient(clientId);
         }

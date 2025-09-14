@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.wishlist.global.websocket.constant.WebSocketKeys.*;
+
 @Service
 @RequiredArgsConstructor
 public class SessionLifecycleService {
@@ -64,18 +66,18 @@ public class SessionLifecycleService {
     }
 
     private String getTerminateStatusKey(String clientId) {
-        return WebSocketTerminateSignalExpiryListener.WEBSOCKET_SESSION_TERMINATE_STATUS_PREFIX + clientId;
+        return WEBSOCKET_SESSION_TERMINATE_STATUS_PREFIX + clientId;
     }
 
     private String getTerminateSignalKey(String clientId) {
-        return WebSocketSessionManager.WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+        return WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
     }
 
     private String getMainKey(String clientId) {
-        return WebSocketSessionManager.WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
+        return WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
     }
 
     private String getTerminateSessionsKey(String clientId) {
-        return WebSocketTerminateSignalExpiryListener.WEBSOCKET_SESSION_TERMINATE_SESSIONS_PREFIX + clientId;
+        return WEBSOCKET_SESSION_TERMINATE_SESSIONS_PREFIX + clientId;
     }
 }
