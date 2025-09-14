@@ -1,14 +1,11 @@
 package com.wishlist.global.websocket.listener;
 
-import com.wishlist.global.websocket.enums.WebSocketSessionTerminateStatus;
 import com.wishlist.global.websocket.manager.WebSocketSessionManager;
 import com.wishlist.global.websocket.service.SystemEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
 import static com.wishlist.global.websocket.constant.WebSocketKeys.*;
 
@@ -21,9 +18,6 @@ public class WebSocketTerminateSignalExpiryListener implements MessageListener {
 
     private final WebSocketSessionManager webSocketSessionManager;
     private final SystemEventPublisher systemEventPublisher;
-
-    private final StringRedisTemplate redisTemplate;
-    private final DefaultRedisScript<Long> terminateSignalExpiryScript;
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
