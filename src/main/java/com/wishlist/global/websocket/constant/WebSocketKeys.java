@@ -7,4 +7,5 @@ public final class WebSocketKeys {
 
     public static final String WEBSOCKET_SESSION_TERMINATE_STATUS_PREFIX = "WS:TERMINATE_STATUS:";
     public static final String WEBSOCKET_SESSION_TERMINATE_SESSIONS_PREFIX = "WS:TERMINATE_SESSIONS:";
+    public static final String WEBSOCKET_SESSION_TERMINATE_CHECK_ZSET = "TERMINATE_CHECK_CLIENT_IDS";
 }

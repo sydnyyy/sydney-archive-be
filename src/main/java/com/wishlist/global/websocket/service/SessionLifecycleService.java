@@ -29,14 +29,13 @@ public class SessionLifecycleService {
             return;
         }
 
-        String terminateStatusKey = getTerminateStatusKey(clientId);
-        String terminateSignalKey = getTerminateSignalKey(clientId);
-        String mainKey = getMainKey(clientId);
+        String terminateSignalKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+        String mainKey = WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
 
         redisTemplate.execute(
                 maintainSessionScript,
-                List.of(terminateStatusKey, terminateSignalKey, mainKey),
-                WebSocketSessionTerminateStatus.ACTIVE.toString(),
+                List.of(WEBSOCKET_SESSION_TERMINATE_CHECK_ZSET, terminateSignalKey, mainKey),
+                clientId,
                 WebSocketSessionManager.TERMINATE_SIGNAL_KEY_DUMMY_VALUE,
                 String.valueOf(WebSocketSessionManager.TERMINATE_SIGNAL_KEY_TTL.toSeconds()),
                 String.valueOf(WebSocketSessionManager.MAIN_KEY_TTL.toSeconds())

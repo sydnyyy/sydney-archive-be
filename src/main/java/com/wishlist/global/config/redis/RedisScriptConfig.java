@@ -61,10 +61,9 @@ public class RedisScriptConfig {
     public DefaultRedisScript<Long> maintainSessionScript() {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
         script.setScriptText("""
-            local status = redis.call('GET', KEYS[1])
+            local zsetScore = redis.call('ZSCORE', KEYS[1], ARGV[1])
             
-            if status == 'PENDING' then
-                redis.call('SET', KEYS[1], ARGV[1])
+            if not zsetScore then
                 redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3])
                 redis.call('EXPIRE', KEYS[3], ARGV[4])
                 return 1
