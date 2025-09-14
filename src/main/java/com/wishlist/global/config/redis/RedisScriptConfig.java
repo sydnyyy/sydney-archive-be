@@ -79,25 +79,16 @@ public class RedisScriptConfig {
     public DefaultRedisScript<Long> terminateSessionScript() {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
         script.setScriptText("""
-            local status = redis.call('GET', KEYS[1])
-            if status == ARGV[1] then
+            local exists = redis.call('ZSCORE', KEYS[1], ARGV[1])
+            if not exists then
+                local timestamp = tonumber(ARGV[2])
+                redis.call('ZADD', KEYS[1], timestamp, ARGV[1])
+        
+                redis.call('XADD', KEYS[2], '*', 'clientId', ARGV[1])
+                return 1
+            else
                 return 0
             end
-
-            redis.call('SET', KEYS[1], ARGV[1])
-       
-            if redis.call('EXISTS', KEYS[2]) == 1 then
-                        redis.call('DEL', KEYS[2])
-                    end
-    
-            local sessions = redis.call('SMEMBERS', KEYS[3])
-            local timestamp = tonumber(ARGV[3])
-            for i, sessionId in ipairs(sessions) do
-                redis.call('ZADD', KEYS[4], timestamp, sessionId)
-            end
-        
-            redis.call('XADD', KEYS[5], '*', 'clientId', ARGV[2])
-            return 1
         """);
         script.setResultType(Long.class);
         return script;

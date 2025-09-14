@@ -1,10 +1,7 @@
 package com.wishlist.global.websocket.service;
 
-import com.wishlist.global.redis.service.RedisStreamConsumer;
 import com.wishlist.global.websocket.dto.SystemEventDto;
-import com.wishlist.global.websocket.enums.WebSocketSessionTerminateStatus;
 import com.wishlist.global.websocket.manager.WebSocketSessionManager;
-import com.wishlist.global.websocket.listener.WebSocketTerminateSignalExpiryListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -48,35 +45,11 @@ public class SessionLifecycleService {
             return;
         }
 
-        String terminateStatusKey = getTerminateStatusKey(clientId);
-        String terminateSignalKey = getTerminateSignalKey(clientId);
-        String activeMainKey = getMainKey(clientId);
-        String terminatedSessionsZSetKey = getTerminateSessionsKey(clientId);
-        String terminateSessionStreamKey = RedisStreamConsumer.STREAM_TERMINATE_SESSION;
-
         redisTemplate.execute(
                 terminateSessionScript,
-                List.of(terminateStatusKey, terminateSignalKey,
-                        activeMainKey, terminatedSessionsZSetKey, terminateSessionStreamKey),
-                WebSocketSessionTerminateStatus.TERMINATE.toString(),
+                List.of(WEBSOCKET_SESSION_TERMINATE_CHECK_ZSET, STREAM_TERMINATE_SESSION),
                 clientId,
                 String.valueOf(System.currentTimeMillis())
         );
-    }
-
-    private String getTerminateStatusKey(String clientId) {
-        return WEBSOCKET_SESSION_TERMINATE_STATUS_PREFIX + clientId;
-    }
-
-    private String getTerminateSignalKey(String clientId) {
-        return WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
-    }
-
-    private String getMainKey(String clientId) {
-        return WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
-    }
-
-    private String getTerminateSessionsKey(String clientId) {
-        return WEBSOCKET_SESSION_TERMINATE_SESSIONS_PREFIX + clientId;
     }
 }
