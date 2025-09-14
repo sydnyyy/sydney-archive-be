@@ -32,19 +32,8 @@ public class WebSocketTerminateSignalExpiryListener implements MessageListener {
 
         if (expiredKey.startsWith(WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX)) {
             String clientId = expiredKey.substring(WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX.length());
-            prepareTerminationSessions(clientId);
             sendTerminationCheckToClient(clientId);
         }
-    }
-
-    private void prepareTerminationSessions(String clientId) {
-        String terminateStatusKey = WEBSOCKET_SESSION_TERMINATE_STATUS_PREFIX + clientId;
-
-        redisTemplate.execute(
-                terminateSignalExpiryScript,
-                List.of(terminateStatusKey),
-                WebSocketSessionTerminateStatus.PENDING.toString()
-        );
     }
 
     private void sendTerminationCheckToClient(String clientId) {
