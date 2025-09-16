@@ -4,6 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 
+import java.util.List;
+
 @Configuration
 public class RedisScriptConfig {
 
@@ -91,6 +93,45 @@ public class RedisScriptConfig {
             end
         """);
         script.setResultType(Long.class);
+        return script;
+    }
+
+    @Bean
+    public DefaultRedisScript<List> terminateCheckScript() {
+        DefaultRedisScript<List> script = new DefaultRedisScript<>();
+        script.setScriptText("""
+            local zsetKey = KEYS[1]
+            local streamKey = KEYS[2]
+
+            local now = tonumber(ARGV[1])
+            local safeMillis = tonumber(ARGV[2])
+
+            local clientIds = redis.call('ZRANGE', zsetKey, 0, -1)
+            local processed = {}
+
+            for _, clientId in ipairs(clientIds) do
+                local score = tonumber(redis.call('ZSCORE', zsetKey, clientId))
+                if now - score >= safeMillis then
+                    local mainKey = "WS:MAIN:" .. clientId
+                    local signalKey = "WS:TERMINATE_SIGNAL:" .. clientId
+
+                    local sessions = redis.call('SMEMBERS', mainKey)
+
+                    if #sessions == 0 then
+                        redis.call('ZREM', zsetKey, clientId)
+                        redis.call('DEL', signalKey)
+                    else
+                        redis.call('ZADD', zsetKey, now, clientId)
+                        redis.call('XADD', streamKey, '*', 'clientId', clientId)
+                    end
+
+                table.insert(processed, clientId)
+                end
+            end
+
+            return processed
+        """);
+        script.setResultType(List.class);
         return script;
     }
 }
