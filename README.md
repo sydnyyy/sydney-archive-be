@@ -29,4 +29,12 @@
 - 만약 main key의 value가 비었다면 종료 프로세스 종료
 - main key의 value에 session id가 남았다면 종료 명령 재전송 및 종료 체킹 ZSET에 client id 추가
 
+### 예외 케이스
+
+- [ ] Abrupt shutdown된 서버의 session id 제거 방법
+  - 종료 체킹 ZSET과 main key 상태 기반으로 강제 종료 재명령
+  - main key에 있는 session id가 모두 제거될 때까지 재명령
+  - 만약 session id를 소유했던 서버가 Abrupt shutdown했다면 재명령 효과 없으며, 의미 없는 재명령을 무한히 실행할 것
+  - Graceful shutdown 했다면 main key까지 정상 제거됨
+
 
