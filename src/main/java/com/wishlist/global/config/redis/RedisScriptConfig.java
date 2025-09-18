@@ -85,7 +85,6 @@ public class RedisScriptConfig {
             if not exists then
                 local timestamp = tonumber(ARGV[2])
                 redis.call('ZADD', KEYS[1], timestamp, ARGV[1])
-        
                 redis.call('XADD', KEYS[2], '*', 'clientId', ARGV[1])
                 return 1
             else
@@ -106,29 +105,28 @@ public class RedisScriptConfig {
             local now = tonumber(ARGV[1])
             local safeMillis = tonumber(ARGV[2])
 
-            local clientIds = redis.call('ZRANGE', zsetKey, 0, -1)
+            local expiredClientIds = redis.call('ZRANGEBYSCORE', zsetKey, 0, now - safeMillis)
             local processed = {}
 
-            for _, clientId in ipairs(clientIds) do
-                local score = tonumber(redis.call('ZSCORE', zsetKey, clientId))
-                if now - score >= safeMillis then
-                    local mainKey = "WS:MAIN:" .. clientId
-                    local signalKey = "WS:TERMINATE_SIGNAL:" .. clientId
-
-                    local sessions = redis.call('SMEMBERS', mainKey)
-
-                    if #sessions == 0 then
-                        redis.call('ZREM', zsetKey, clientId)
-                        redis.call('DEL', signalKey)
-                    else
-                        redis.call('ZADD', zsetKey, now, clientId)
-                        redis.call('XADD', streamKey, '*', 'clientId', clientId)
-                    end
+            for _, clientId in ipairs(expiredClientIds) do
+                local mainKey = "WS:MAIN:" .. clientId
+                local signalKey = "WS:TERMINATE_SIGNAL:" .. clientId
+        
+                local sessions = {}
+                if exists == 1 then
+                    sessions = redis.call('SMEMBERS', mainKey)
+                end
+        
+                if exists == 0 or #sessions == 0 then
+                    redis.call('ZREM', zsetKey, clientId)
+                    redis.call('DEL', signalKey)
+                else
+                    redis.call('ZADD', zsetKey, now, clientId)
+                    redis.call('XADD', streamKey, '*', 'clientId', clientId)
+                end
 
                 table.insert(processed, clientId)
-                end
             end
-
             return processed
         """);
         script.setResultType(List.class);
