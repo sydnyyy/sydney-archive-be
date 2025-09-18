@@ -29,7 +29,7 @@ public class WebSocketSessionManager {
     private final Map<String, Set<String>> clientSessionIds = new ConcurrentHashMap<>();  // { clientId, Set<sessionId> }
     private final Map<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();  // { sessionId, session }
 
-    public static final Duration MAIN_KEY_TTL = Duration.ofMinutes(30);
+    public static final Duration MAIN_KEY_TTL = Duration.ofHours(1);
     public static final Duration TERMINATE_SIGNAL_KEY_TTL = Duration.ofMinutes(25);
     public static final String TERMINATE_SIGNAL_KEY_DUMMY_VALUE = "1";
 
