@@ -39,7 +39,7 @@ public class RedisScriptConfig {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
         script.setScriptText("""
             redis.call('SREM', KEYS[1], ARGV[1])
-            if redis.call('SCARD', KEYS[1]) == 0 then
+            if redis.call('EXISTS', KEYS[1]) == 0 or redis.call('SCARD', KEYS[1]) == 0 then
                 redis.call('DEL', KEYS[1])
                 redis.call('DEL', KEYS[2])
             end
