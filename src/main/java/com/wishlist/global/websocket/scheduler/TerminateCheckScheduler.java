@@ -19,7 +19,7 @@ public class TerminateCheckScheduler {
     private final StringRedisTemplate redisTemplate;
     private final DefaultRedisScript<List> terminateCheckScript;
 
-    private static final long SAFE_MILLIS = 180_000L;
+    private static final long SAFE_MILLIS = 60_000L;
 
     // TODO: 리더 설정
     @Scheduled(fixedDelay = 30_000)
@@ -33,7 +33,7 @@ public class TerminateCheckScheduler {
         );
 
         if (processed != null && !processed.isEmpty()) {
-            log.info("[TerminateCheck] processed clientIds: {}", processed);
+            log.info("[checkTerminateCandidates] processed clientIds: {}", processed);
         }
     }
 }
