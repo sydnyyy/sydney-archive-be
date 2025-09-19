@@ -116,13 +116,15 @@ public class RedisScriptConfig {
                 if exists == 1 then
                     sessions = redis.call('SMEMBERS', mainKey)
                 end
+     
+                redis.call('ZREM', zsetKey, clientId)
         
-                if exists == 0 or #sessions == 0 then
-                    redis.call('ZREM', zsetKey, clientId)
-                    redis.call('DEL', signalKey)
-                else
+                if exists == 1 and #sessions > 0 then
                     redis.call('ZADD', zsetKey, now, clientId)
                     redis.call('XADD', streamKey, '*', 'clientId', clientId)
+                else
+                    redis.call('DEL', mainKey)
+                    redis.call('DEL', signalKey)
                 end
 
                 table.insert(processed, clientId)
