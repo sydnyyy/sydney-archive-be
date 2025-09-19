@@ -22,7 +22,7 @@ public class WebSocketTerminateSignalExpiryListener implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] pattern) {
         String expiredKey = message.toString();
-        log.info("🔑 TTL expired for key={}", expiredKey);
+        log.info("[onMessage] TTL expired for key={}", expiredKey);
 
         if (expiredKey.startsWith(WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX)) {
             String clientId = expiredKey.substring(WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX.length());
@@ -34,13 +34,13 @@ public class WebSocketTerminateSignalExpiryListener implements MessageListener {
         Set<String> sessions = Optional.ofNullable(webSocketSessionManager.getReadOnlyLocalSessions(clientId))
                 .orElseGet(Set::of);
 
-        log.info("📧 Sending session termination event to {} sessions for clientId={}", sessions.size(), clientId);
+        log.info("[sendTerminationCheckToClient] Sending session termination event to {} sessions for clientId={}", sessions.size(), clientId);
 
         sessions.forEach(sessionId -> {
             try {
                 systemEventPublisher.sendSessionTermination(clientId, sessionId, false);
             } catch (Exception e) {
-                log.error("⚠️ Failed to send termination event for clientId={}, sessionId={}", clientId, sessionId, e);
+                log.error("[sendTerminationCheckToClient] Failed to send termination event for clientId={}, sessionId={}", clientId, sessionId, e);
             }
         });
     }
