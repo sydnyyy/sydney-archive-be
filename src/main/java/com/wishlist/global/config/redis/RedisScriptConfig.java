@@ -112,6 +112,7 @@ public class RedisScriptConfig {
                 local mainKey = "WS:MAIN:" .. clientId
                 local signalKey = "WS:TERMINATE_SIGNAL:" .. clientId
         
+                local exists = redis.call('EXISTS', mainKey)
                 local sessions = {}
                 if exists == 1 then
                     sessions = redis.call('SMEMBERS', mainKey)
