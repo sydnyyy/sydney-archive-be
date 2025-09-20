@@ -21,7 +21,6 @@ public class TerminateCheckScheduler {
 
     private static final long SAFE_MILLIS = 60_000L;
 
-    // TODO: 리더 설정
     @Scheduled(fixedDelay = 30_000)
     public void checkTerminateCandidates() {
         List<String> processed = redisTemplate.execute(
