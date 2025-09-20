@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
@@ -73,7 +74,7 @@ public class WebSocketSessionManager {
             try {
                 log.info("[removeAllSessions] WebSocket session 강제 종료. clientId={}, sessionId={}", clientId, sessionId);
                 if (webSocketSession != null && webSocketSession.isOpen()) {
-                    webSocketSession.close();
+                    webSocketSession.close(CloseStatus.NORMAL);
                 }
             } catch (IOException e) {
                 log.warn("[removeAllSessions] 세션 강제종료 실패. clientId={}, sessionId={}, err={}", clientId, sessionId, e.toString());
