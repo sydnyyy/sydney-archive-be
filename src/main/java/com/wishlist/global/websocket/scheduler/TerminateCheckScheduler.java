@@ -7,7 +7,6 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,37 +28,19 @@ public class TerminateCheckScheduler {
 
     @Scheduled(fixedDelay = 30_000)
     public void checkTerminateCandidates() {
-        Boolean locked = redisTemplate.opsForValue().setIfAbsent(
-                LOCK_KEY,
+        List<String> processed = redisTemplate.execute(
+                terminateCheckScript,
+                List.of(WEBSOCKET_SESSION_TERMINATE_CHECK_ZSET,
+                        WEBSOCKET_SESSION_TERMINATE_STREAM,
+                        LOCK_KEY),
+                String.valueOf(System.currentTimeMillis()),
+                String.valueOf(SAFE_MILLIS),
                 serverId,
-                Duration.ofMillis(LOCK_EXPIRE_MILLIS)
+                String.valueOf(LOCK_EXPIRE_MILLIS)
         );
 
-        if (Boolean.TRUE.equals(locked)) {
-            log.info("[checkTerminateCandidates] terminate_scheduler 분산락 획득");
-
-            try {
-                List<String> processed = redisTemplate.execute(
-                        terminateCheckScript,
-                        List.of(WEBSOCKET_SESSION_TERMINATE_CHECK_ZSET,
-                                WEBSOCKET_SESSION_TERMINATE_STREAM),
-                        String.valueOf(System.currentTimeMillis()),
-                        String.valueOf(SAFE_MILLIS)
-                );
-
-                if (processed != null && !processed.isEmpty()) {
-                    log.info("[checkTerminateCandidates] processed clientIds: {}", processed);
-                }
-            } finally {
-                if (serverId.equals(redisTemplate.opsForValue().get(LOCK_KEY))) {
-                    redisTemplate.delete(LOCK_KEY);
-                    log.info("[checkTerminateCandidates] terminate_scheduler 분산락 해제");
-                } else {
-                    log.warn("[checkTerminateCandidates] terminate_scheduler 분산락 해제 실패 (다른 서버가 획득)");
-                }
-            }
-        } else {
-            log.debug("[checkTerminateCandidates] 다른 서버에서 terminate_scheduler 분산락 획득");
+        if (processed != null && !processed.isEmpty()) {
+            log.info("[checkTerminateCandidates] processed clientIds: {}", processed);
         }
     }
 }

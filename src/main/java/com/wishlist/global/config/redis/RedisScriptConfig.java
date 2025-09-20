@@ -101,9 +101,17 @@ public class RedisScriptConfig {
         script.setScriptText("""
             local zsetKey = KEYS[1]
             local streamKey = KEYS[2]
+            local lockKey = KEYS[3]
 
             local now = tonumber(ARGV[1])
             local safeMillis = tonumber(ARGV[2])
+            local serverId = ARGV[3]
+            local lockExpireMillis = tonumber(ARGV[4])
+        
+            local lockSet = redis.call('SET', lockKey, serverId, 'PX', lockExpireMillis, 'NX')
+            if not lockSet then
+                return {}
+            end
 
             local expiredClientIds = redis.call('ZRANGEBYSCORE', zsetKey, 0, now - safeMillis)
             local processed = {}
@@ -130,6 +138,11 @@ public class RedisScriptConfig {
 
                 table.insert(processed, clientId)
             end
+        
+            if redis.call('GET', lockKey) == serverId then
+                redis.call('DEL', lockKey)
+            end
+        
             return processed
         """);
         script.setResultType(List.class);
