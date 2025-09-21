@@ -1,6 +1,6 @@
 package com.wishlist.global.websocket.handler;
 
-import com.wishlist.global.websocket.dto.websocket.WebSocketSessionInfo;
+import com.wishlist.global.websocket.dto.WebSocketSessionInfo;
 import com.wishlist.global.websocket.interceptor.WebSocketHandshakeInterceptor;
 import com.wishlist.global.websocket.manager.WebSocketSessionManager;
 import lombok.extern.slf4j.Slf4j;

@@ -4,6 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 
+import java.util.List;
+
 @Configuration
 public class RedisScriptConfig {
 
@@ -37,7 +39,7 @@ public class RedisScriptConfig {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
         script.setScriptText("""
             redis.call('SREM', KEYS[1], ARGV[1])
-            if redis.call('SCARD', KEYS[1]) == 0 then
+            if redis.call('EXISTS', KEYS[1]) == 0 or redis.call('SCARD', KEYS[1]) == 0 then
                 redis.call('DEL', KEYS[1])
                 redis.call('DEL', KEYS[2])
             end
@@ -61,10 +63,9 @@ public class RedisScriptConfig {
     public DefaultRedisScript<Long> maintainSessionScript() {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
         script.setScriptText("""
-            local status = redis.call('GET', KEYS[1])
+            local zsetScore = redis.call('ZSCORE', KEYS[1], ARGV[1])
             
-            if status == 'PENDING' then
-                redis.call('SET', KEYS[1], ARGV[1])
+            if not zsetScore then
                 redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3])
                 redis.call('EXPIRE', KEYS[3], ARGV[4])
                 return 1
@@ -80,27 +81,71 @@ public class RedisScriptConfig {
     public DefaultRedisScript<Long> terminateSessionScript() {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
         script.setScriptText("""
-            local status = redis.call('GET', KEYS[1])
-            if status == ARGV[1] then
+            local exists = redis.call('ZSCORE', KEYS[1], ARGV[1])
+            if not exists then
+                local timestamp = tonumber(ARGV[2])
+                redis.call('ZADD', KEYS[1], timestamp, ARGV[1])
+                redis.call('XADD', KEYS[2], '*', 'clientId', ARGV[1])
+                return 1
+            else
                 return 0
             end
-
-            redis.call('SET', KEYS[1], ARGV[1])
-       
-            if redis.call('EXISTS', KEYS[2]) == 1 then
-                        redis.call('DEL', KEYS[2])
-                    end
-    
-            local sessions = redis.call('SMEMBERS', KEYS[3])
-            local timestamp = tonumber(ARGV[3])
-            for i, sessionId in ipairs(sessions) do
-                redis.call('ZADD', KEYS[4], timestamp, sessionId)
-            end
-        
-            redis.call('XADD', KEYS[5], '*', 'clientId', ARGV[2])
-            return 1
         """);
         script.setResultType(Long.class);
+        return script;
+    }
+
+    @Bean
+    public DefaultRedisScript<List> terminateCheckScript() {
+        DefaultRedisScript<List> script = new DefaultRedisScript<>();
+        script.setScriptText("""
+            local zsetKey = KEYS[1]
+            local streamKey = KEYS[2]
+            local lockKey = KEYS[3]
+
+            local now = tonumber(ARGV[1])
+            local safeMillis = tonumber(ARGV[2])
+            local serverId = ARGV[3]
+            local lockExpireMillis = tonumber(ARGV[4])
+        
+            local lockSet = redis.call('SET', lockKey, serverId, 'PX', lockExpireMillis, 'NX')
+            if not lockSet then
+                return {}
+            end
+
+            local expiredClientIds = redis.call('ZRANGEBYSCORE', zsetKey, 0, now - safeMillis)
+            local processed = {}
+
+            for _, clientId in ipairs(expiredClientIds) do
+                local mainKey = "WS:MAIN:" .. clientId
+                local signalKey = "WS:TERMINATE_SIGNAL:" .. clientId
+        
+                local exists = redis.call('EXISTS', mainKey)
+                local sessions = {}
+                if exists == 1 then
+                    sessions = redis.call('SMEMBERS', mainKey)
+                end
+     
+                redis.call('ZREM', zsetKey, clientId)
+        
+                if exists == 1 and #sessions > 0 then
+                    redis.call('ZADD', zsetKey, now, clientId)
+                    redis.call('XADD', streamKey, '*', 'clientId', clientId)
+                else
+                    redis.call('DEL', mainKey)
+                    redis.call('DEL', signalKey)
+                end
+
+                table.insert(processed, clientId)
+            end
+        
+            if redis.call('GET', lockKey) == serverId then
+                redis.call('DEL', lockKey)
+            end
+        
+            return processed
+        """);
+        script.setResultType(List.class);
         return script;
     }
 }

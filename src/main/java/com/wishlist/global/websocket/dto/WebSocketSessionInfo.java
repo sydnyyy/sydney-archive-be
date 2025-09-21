@@ -1,4 +1,4 @@
-package com.wishlist.global.websocket.dto.websocket;
+package com.wishlist.global.websocket.dto;
 
 import com.wishlist.global.websocket.interceptor.WebSocketHandshakeInterceptor;
 import org.springframework.web.socket.WebSocketSession;

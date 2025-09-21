@@ -6,15 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.wishlist.global.websocket.constant.WebSocketKeys.WEBSOCKET_SESSION_MAIN_KEY_PREFIX;
+import static com.wishlist.global.websocket.constant.WebSocketKeys.WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX;
 
 @Component
 @RequiredArgsConstructor
@@ -29,9 +30,7 @@ public class WebSocketSessionManager {
     private final Map<String, Set<String>> clientSessionIds = new ConcurrentHashMap<>();  // { clientId, Set<sessionId> }
     private final Map<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();  // { sessionId, session }
 
-    public static final String WEBSOCKET_SESSION_MAIN_KEY_PREFIX = "WS:MAIN:";
-    public static final String WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX = "WS:TERMINATE_SIGNAL:";
-    public static final Duration MAIN_KEY_TTL = Duration.ofMinutes(30);
+    public static final Duration MAIN_KEY_TTL = Duration.ofHours(1);
     public static final Duration TERMINATE_SIGNAL_KEY_TTL = Duration.ofMinutes(25);
     public static final String TERMINATE_SIGNAL_KEY_DUMMY_VALUE = "1";
 
@@ -74,10 +73,14 @@ public class WebSocketSessionManager {
             WebSocketSession webSocketSession = sessionMap.get(sessionId);
             try {
                 log.info("[removeAllSessions] WebSocket session 강제 종료. clientId={}, sessionId={}", clientId, sessionId);
-                webSocketSession.close();
-                sessionMap.remove(sessionId);
+                if (webSocketSession != null && webSocketSession.isOpen()) {
+                    webSocketSession.close(CloseStatus.NORMAL);
+                }
             } catch (IOException e) {
+                log.warn("[removeAllSessions] 세션 강제종료 실패. clientId={}, sessionId={}, err={}", clientId, sessionId, e.toString());
                 // TODO 웹소켓 강제 종료 재시도
+            } finally {
+                sessionMap.remove(sessionId);
             }
         });
     }
