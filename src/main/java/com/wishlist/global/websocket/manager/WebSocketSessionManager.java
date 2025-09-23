@@ -22,6 +22,10 @@ import static com.wishlist.global.websocket.constant.WebSocketKeys.WEBSOCKET_SES
 @Slf4j
 public class WebSocketSessionManager {
 
+    public static final Duration MAIN_KEY_TTL = Duration.ofHours(1);
+    public static final Duration TERMINATE_SIGNAL_KEY_TTL = Duration.ofMinutes(25);
+    public static final String TERMINATE_SIGNAL_KEY_DUMMY_VALUE = "1";
+
     private final StringRedisTemplate redisTemplate;
     private final DefaultRedisScript<Long> addSessionScript;
     private final DefaultRedisScript<Long> updateTTLScript;
@@ -29,10 +33,6 @@ public class WebSocketSessionManager {
 
     private final Map<String, Set<String>> clientSessionIds = new ConcurrentHashMap<>();  // { clientId, Set<sessionId> }
     private final Map<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();  // { sessionId, session }
-
-    public static final Duration MAIN_KEY_TTL = Duration.ofHours(1);
-    public static final Duration TERMINATE_SIGNAL_KEY_TTL = Duration.ofMinutes(25);
-    public static final String TERMINATE_SIGNAL_KEY_DUMMY_VALUE = "1";
 
     public void addSession(WebSocketSession session) {
         String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
