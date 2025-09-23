@@ -3,16 +3,14 @@ package com.wishlist.useractivity.manager;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 @Component
 public class UserAccessManager {
 
-    private final Map<String, Long> lastAccessTime = new ConcurrentHashMap<>();
+    private final Map<String, Long> lastAccessTimeMap = new ConcurrentHashMap<>();
     private final Set<AccessEntry> accessSortedSet = new ConcurrentSkipListSet<>();
 
     static class AccessEntry implements Comparable<AccessEntry> {
@@ -47,13 +45,36 @@ public class UserAccessManager {
     }
 
     public void recordAccess(String clientId) {
-        Long previousTimestamp = lastAccessTime.get(clientId);
+        Long previousTimestamp = lastAccessTimeMap.get(clientId);
         if (previousTimestamp != null) {
             accessSortedSet.remove(new AccessEntry(previousTimestamp, clientId));
         }
 
         long now = System.currentTimeMillis();
-        lastAccessTime.put(clientId, now);
+        lastAccessTimeMap.put(clientId, now);
         accessSortedSet.add(new AccessEntry(now, clientId));
+    }
+
+    public List<String> removeExpiredClientIds(long cutoff) {
+        List<String> expiredClientIds = new ArrayList<>();
+        Iterator<AccessEntry> iterator = accessSortedSet.iterator();
+        while (iterator.hasNext()) {
+            AccessEntry entry = iterator.next();
+            if (entry.timestamp > cutoff) {
+                break;
+            }
+
+            Long lastAccessTime = lastAccessTimeMap.get(entry.clientId);
+            if (lastAccessTime != null && Objects.equals(lastAccessTime, entry.timestamp)) {
+                iterator.remove();
+                lastAccessTimeMap.remove(entry.clientId);
+                expiredClientIds.add(entry.clientId);
+            }
+        }
+        return expiredClientIds;
+    }
+
+    public boolean hasActiveClient(String clientId) {
+        return lastAccessTimeMap.containsKey(clientId);
     }
 }
