@@ -81,12 +81,16 @@ public class UserAccessManager {
         try {
             log.info("[recordAccess] clientId='{}' acquired lock index={}", clientId, lock.index);
 
+            long now = System.currentTimeMillis();
             Long previousTimestamp = lastAccessTimeMap.get(clientId);
+            if (previousTimestamp != null && previousTimestamp > now) {
+                return;
+            }
+
             if (previousTimestamp != null) {
                 accessSortedSet.remove(new AccessEntry(previousTimestamp, clientId));
             }
 
-            long now = System.currentTimeMillis();
             lastAccessTimeMap.put(clientId, now);
             accessSortedSet.add(new AccessEntry(now, clientId));
         } finally {
