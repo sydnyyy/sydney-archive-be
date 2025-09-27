@@ -29,12 +29,10 @@
   - 만약 main key의 value가 비었다면 종료 프로세스 종료
   - main key의 value에 session id가 남았다면 종료 명령 재전송 및 종료 체킹 ZSET에 client id 추가
 
-- [ ] 웹소켓 로컬 모니터링 (Fallback)
-  - Redis 기반 모니터링(1차 책임)으로 웹소켓 종료 완료 (정상 시나리오)
-  - Redis 시그널 키 만료 감지 실패 등 여러 원인으로 종료 누락 가능성 있음 (예외 케이스)
-  - 각 서버에서 자체적으로 웹소켓 접근 시간 추적해 2차 종료 수행 (Fallback)
-  - Redis 기반 종료 프로세스: 사용자 마지막 접근 25m 경과 시 종료 프로세스 시작
-  - 로컬(Fallback) 종료 프로세스: 사용자 마지막 접근 30m 경과 시 종료 프로세스 시작
+- [x] 웹소켓 로컬 모니터링 (Fallback)
+  - 메인 모니터링 장애 시 로컬 모니터링이 세션 관리
+  - ConcurrentHashMap: 마지막 접근 시각 관리, ConcurrentSkipListSet: time-based LRU 구현
+  - lock striping 기법 적용해 두 컬렉션 간 데이터 일관성 보장
 
 ### 예외 케이스
 
