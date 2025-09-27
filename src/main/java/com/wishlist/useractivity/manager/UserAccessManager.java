@@ -26,35 +26,21 @@ public class UserAccessManager {
     private final Map<String, Long> lastAccessTimeMap = new ConcurrentHashMap<>();
     private final Set<AccessEntry> accessSortedSet = new ConcurrentSkipListSet<>();
 
-    static class AccessEntry implements Comparable<AccessEntry> {
-
-        final long timestamp;
-        final String clientId;
-
-        AccessEntry(long timestamp, String clientId) {
-            this.timestamp = timestamp;
-            this.clientId = clientId;
-        }
+    record AccessEntry(long timestamp, String clientId) implements Comparable<AccessEntry> {
 
         @Override
-        public int compareTo(@NotNull AccessEntry o) {
-            int cmp = Long.compare(this.timestamp, o.timestamp);
-            if (cmp != 0) return cmp;
-            return this.clientId.compareTo(o.clientId);
-        }
+            public int compareTo(@NotNull AccessEntry o) {
+                int cmp = Long.compare(this.timestamp, o.timestamp);
+                if (cmp != 0) return cmp;
+                return this.clientId.compareTo(o.clientId);
+            }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof AccessEntry)) return false;
-            AccessEntry that = (AccessEntry) o;
-            return timestamp == that.timestamp && clientId.equals(that.clientId);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(timestamp, clientId);
-        }
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (!(o instanceof AccessEntry(long timestamp, String clientId))) return false;
+                return this.timestamp == timestamp && this.clientId.equals(clientId);
+            }
     }
 
     private static class LockWithIndex {
