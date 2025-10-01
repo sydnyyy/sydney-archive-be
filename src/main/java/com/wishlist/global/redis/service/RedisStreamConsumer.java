@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.wishlist.global.websocket.constant.WebSocketKeys.WEBSOCKET_SESSION_TERMINATE_STREAM;
+import static com.wishlist.global.redis.constant.WebSocketRedisKeys.WEBSOCKET_SESSION_TERMINATE_STREAM;
 
 @Component
 @RequiredArgsConstructor

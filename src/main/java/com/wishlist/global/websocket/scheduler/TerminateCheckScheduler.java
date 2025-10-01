@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
-import static com.wishlist.global.websocket.constant.WebSocketKeys.*;
+import static com.wishlist.global.redis.constant.WebSocketRedisKeys.*;
 
 @Component
 @RequiredArgsConstructor

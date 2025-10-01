@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static com.wishlist.global.websocket.constant.WebSocketKeys.*;
+import static com.wishlist.global.redis.constant.WebSocketRedisKeys.*;
 
 @Service
 @RequiredArgsConstructor

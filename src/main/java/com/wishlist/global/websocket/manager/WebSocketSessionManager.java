@@ -14,8 +14,8 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.wishlist.global.websocket.constant.WebSocketKeys.WEBSOCKET_SESSION_MAIN_KEY_PREFIX;
-import static com.wishlist.global.websocket.constant.WebSocketKeys.WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX;
+import static com.wishlist.global.redis.constant.WebSocketRedisKeys.WEBSOCKET_SESSION_MAIN_KEY_PREFIX;
+import static com.wishlist.global.redis.constant.WebSocketRedisKeys.WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX;
 
 @Component
 @RequiredArgsConstructor

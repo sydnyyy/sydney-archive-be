@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Component;
-import static com.wishlist.global.websocket.constant.WebSocketKeys.*;
+import static com.wishlist.global.redis.constant.WebSocketRedisKeys.*;
 
 import java.util.*;
 
