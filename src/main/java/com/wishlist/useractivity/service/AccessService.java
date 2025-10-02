@@ -28,6 +28,6 @@ public class AccessService {
     private void broadcastUserActivity(AccessEvent accessEvent) {
         Map<String, String> message = new HashMap<>();
         message.put("clientId", accessEvent.clientId());
-        redisTemplate.opsForStream().add(RedisKeys.KEY_USER_ACTIVITY_STREAM, message);
+        redisTemplate.opsForStream().add(RedisKeys.USER_ACTIVITY_STREAM, message);
     }
 }

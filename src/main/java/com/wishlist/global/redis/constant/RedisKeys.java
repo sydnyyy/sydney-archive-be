@@ -8,5 +8,5 @@ public final class RedisKeys {
     public static final String WS_SESSION_TERMINATE_CHECK_ZSET = "WS:TERMINATE_CHECK_CLIENT_IDS";
 
     public static final String WS_SESSION_TERMINATE_STREAM = "BROADCAST:WS:TERMINATE_SESSION";
-    public static final String KEY_USER_ACTIVITY_STREAM = "BROADCAST:USER_ACTIVITY";
+    public static final String USER_ACTIVITY_STREAM = "BROADCAST:USER_ACTIVITY";
 }
