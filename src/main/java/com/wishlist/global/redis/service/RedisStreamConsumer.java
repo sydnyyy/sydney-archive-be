@@ -31,6 +31,7 @@ public class RedisStreamConsumer {
 
     static {
         lastIds.put(WS_SESSION_TERMINATE_STREAM, "0");
+        lastIds.put(USER_ACTIVITY_STREAM, "0");
         lastIds.put(STREAM_OTHER_EVENT, "0");
     }
 
@@ -38,15 +39,34 @@ public class RedisStreamConsumer {
     public void pollStreams() {
         List<MapRecord<String, Object, Object>> messages = redisTemplate.opsForStream()
                 .read(StreamReadOptions.empty().count(100),
-                        StreamOffset.create(WS_SESSION_TERMINATE_STREAM,
-                                ReadOffset.from(lastIds.get(WS_SESSION_TERMINATE_STREAM))));
+                        lastIds.entrySet().stream()
+                                .map(e -> StreamOffset.create(e.getKey(), ReadOffset.from(e.getValue())))
+                                .toArray(StreamOffset[]::new)
+                );
 
         for (MapRecord<String, Object, Object> msg : messages) {
-            String clientId = msg.getValue().get(FIELD_CLIENT_ID).toString();
-            log.info("[WebSocket TerminateStream] Received terminate for clientId: {}", clientId);
-            webSocketSessionManager.removeAllSessions(clientId);
-
-            lastIds.put(WS_SESSION_TERMINATE_STREAM, msg.getId().getValue());
+            String streamKey = msg.getStream();
+            lastIds.put(streamKey, msg.getId().getValue());
+            handleMessage(streamKey, msg);
         }
+    }
+
+    private void handleMessage(String streamKey, MapRecord<String, Object, Object> msg) {
+        switch (streamKey) {
+            case WS_SESSION_TERMINATE_STREAM -> handleTerminate(msg);
+            case USER_ACTIVITY_STREAM -> handleUserActivity(msg);
+            default -> log.warn("Unhandled stream: {} message: {}", streamKey, msg);
+        }
+    }
+
+    private void handleTerminate(MapRecord<String, Object, Object> msg) {
+        String clientId = msg.getValue().get(FIELD_CLIENT_ID).toString();
+        log.info("[WebSocketSessionTerminateStream] clientId={}", clientId);
+        webSocketSessionManager.removeAllSessions(clientId);
+    }
+
+    private void handleUserActivity(MapRecord<String, Object, Object> msg) {
+        String clientId = msg.getValue().get(FIELD_CLIENT_ID).toString();
+        log.info("[UserActivityStream] {}", msg.getValue());
     }
 }
