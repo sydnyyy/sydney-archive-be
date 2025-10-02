@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Component;
-import static com.wishlist.global.redis.constant.WebSocketRedisKeys.*;
+import static com.wishlist.global.redis.constant.RedisKeys.*;
 
 import java.util.*;
 
@@ -24,8 +24,8 @@ public class WebSocketTerminateSignalExpiryListener implements MessageListener {
         String expiredKey = message.toString();
         log.info("[onMessage] TTL expired for key={}", expiredKey);
 
-        if (expiredKey.startsWith(WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX)) {
-            String clientId = expiredKey.substring(WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX.length());
+        if (expiredKey.startsWith(WS_TERMINATE_SIGNAL_KEY_PREFIX)) {
+            String clientId = expiredKey.substring(WS_TERMINATE_SIGNAL_KEY_PREFIX.length());
             sendTerminationCheckToClient(clientId);
         }
     }

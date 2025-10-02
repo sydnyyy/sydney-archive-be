@@ -14,8 +14,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.wishlist.global.redis.constant.WebSocketRedisKeys.WEBSOCKET_SESSION_MAIN_KEY_PREFIX;
-import static com.wishlist.global.redis.constant.WebSocketRedisKeys.WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX;
+import static com.wishlist.global.redis.constant.RedisKeys.*;
 
 @Component
 @RequiredArgsConstructor
@@ -36,8 +35,8 @@ public class WebSocketSessionManager {
 
     public void addSession(WebSocketSession session) {
         String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
-        String mainKey = WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
-        String terminateSignalKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + clientId;
+        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
 
         redisTemplate.execute(
                 addSessionScript,
@@ -54,8 +53,8 @@ public class WebSocketSessionManager {
     }
 
     public void updateTTL(String clientId) {
-        String mainKey = WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
-        String terminateSignalKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + clientId;
+        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
 
         redisTemplate.execute(
                 updateTTLScript,
@@ -92,8 +91,8 @@ public class WebSocketSessionManager {
         }
 
         String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
-        String mainKey = WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
-        String terminateSignalKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + clientId;
+        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
 
         redisTemplate.execute(
                 removeSessionScript,

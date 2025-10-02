@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.wishlist.global.redis.constant.WebSocketRedisKeys.WEBSOCKET_SESSION_TERMINATE_STREAM;
+import static com.wishlist.global.redis.constant.RedisKeys.*;
 
 @Component
 @RequiredArgsConstructor
@@ -30,7 +30,7 @@ public class RedisStreamConsumer {
     private static final Map<String, String> lastIds = new ConcurrentHashMap<>();
 
     static {
-        lastIds.put(WEBSOCKET_SESSION_TERMINATE_STREAM, "0");
+        lastIds.put(WS_SESSION_TERMINATE_STREAM, "0");
         lastIds.put(STREAM_OTHER_EVENT, "0");
     }
 
@@ -38,15 +38,15 @@ public class RedisStreamConsumer {
     public void pollStreams() {
         List<MapRecord<String, Object, Object>> messages = redisTemplate.opsForStream()
                 .read(StreamReadOptions.empty().count(100),
-                        StreamOffset.create(WEBSOCKET_SESSION_TERMINATE_STREAM,
-                                ReadOffset.from(lastIds.get(WEBSOCKET_SESSION_TERMINATE_STREAM))));
+                        StreamOffset.create(WS_SESSION_TERMINATE_STREAM,
+                                ReadOffset.from(lastIds.get(WS_SESSION_TERMINATE_STREAM))));
 
         for (MapRecord<String, Object, Object> msg : messages) {
             String clientId = msg.getValue().get(FIELD_CLIENT_ID).toString();
             log.info("[WebSocket TerminateStream] Received terminate for clientId: {}", clientId);
             webSocketSessionManager.removeAllSessions(clientId);
 
-            lastIds.put(WEBSOCKET_SESSION_TERMINATE_STREAM, msg.getId().getValue());
+            lastIds.put(WS_SESSION_TERMINATE_STREAM, msg.getId().getValue());
         }
     }
 }
