@@ -1,6 +1,7 @@
 package com.wishlist.global.redis.service;
 
 import com.wishlist.global.websocket.manager.WebSocketSessionManager;
+import com.wishlist.useractivity.manager.UserAccessManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.stream.MapRecord;
@@ -26,6 +27,7 @@ public class RedisStreamConsumer {
     public static final String FIELD_CLIENT_ID = "clientId";
 
     private final WebSocketSessionManager webSocketSessionManager;
+    private final UserAccessManager userAccessManager;
     private final StringRedisTemplate redisTemplate;
     private static final Map<String, String> lastIds = new ConcurrentHashMap<>();
 
@@ -67,6 +69,7 @@ public class RedisStreamConsumer {
 
     private void handleUserActivity(MapRecord<String, Object, Object> msg) {
         String clientId = msg.getValue().get(FIELD_CLIENT_ID).toString();
-        log.info("[UserActivityStream] {}", msg.getValue());
+        log.info("[UserActivityStream] clientId={}", clientId);
+        userAccessManager.recordAccess(clientId);
     }
 }
