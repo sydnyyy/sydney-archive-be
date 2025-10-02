@@ -63,13 +63,13 @@ public class RedisStreamConsumer {
 
     private void handleTerminate(MapRecord<String, Object, Object> msg) {
         String clientId = msg.getValue().get(FIELD_CLIENT_ID).toString();
-        log.info("[WebSocketSessionTerminateStream] clientId={}", clientId);
+        log.info("[RedisStream] stream=WS_SESSION_TERMINATE_STREAM clientId={}", clientId);
         webSocketSessionManager.removeAllSessions(clientId);
     }
 
     private void handleUserActivity(MapRecord<String, Object, Object> msg) {
         String clientId = msg.getValue().get(FIELD_CLIENT_ID).toString();
-        log.info("[UserActivityStream] clientId={}", clientId);
+        log.info("[RedisStream] stream=USER_ACTIVITY_STREAM clientId={}", clientId);
         userAccessManager.recordAccess(clientId);
     }
 }
