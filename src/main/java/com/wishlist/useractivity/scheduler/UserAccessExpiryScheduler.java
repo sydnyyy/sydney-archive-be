@@ -19,7 +19,7 @@ public class UserAccessExpiryScheduler {
     private final UserAccessManager userAccessManager;
     private final WebSocketSessionManager webSocketSessionManager;
 
-    @Scheduled(cron = "0 */1 * * * *")
+    @Scheduled(cron = "0 * * * * *")
     public void expireInactiveClients() {
         long cutoff = System.currentTimeMillis() - EXPIRY_MILLIS;
         List<String> expiredClientIds = userAccessManager.removeExpiredClientIds(cutoff);

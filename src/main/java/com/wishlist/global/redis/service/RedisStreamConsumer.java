@@ -37,7 +37,7 @@ public class RedisStreamConsumer {
         lastIds.put(STREAM_OTHER_EVENT, "0");
     }
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(cron = "0 * * * * *")
     public void pollStreams() {
         List<MapRecord<String, Object, Object>> messages = redisTemplate.opsForStream()
                 .read(StreamReadOptions.empty().count(100),
