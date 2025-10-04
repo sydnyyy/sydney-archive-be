@@ -16,8 +16,7 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
 
     private final WebSocketSessionManager webSocketSessionManager;
 
-    public WebSocketSessionHandler(WebSocketHandler delegate,
-                                   WebSocketSessionManager webSocketSessionManager) {
+    public WebSocketSessionHandler(WebSocketHandler delegate, WebSocketSessionManager webSocketSessionManager) {
         super(delegate);
         this.webSocketSessionManager = webSocketSessionManager;
     }
@@ -32,8 +31,7 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
     }
 
     @Override
-    public void handleTransportError(WebSocketSession session,
-                                     Throwable exception) throws Exception {
+    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         WebSocketSessionInfo info = WebSocketSessionInfo.of(session);
         if (isClosedChannelException(exception)) {
             log.warn("🔴 [handleTransportError] 비정상적인 채널 닫힘 감지(ClosedChannelException). {}", info);
@@ -44,8 +42,7 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session,
-                                      CloseStatus closeStatus) throws Exception {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
         WebSocketSessionInfo info = WebSocketSessionInfo.of(session);
         if (closeStatus.getCode() != CloseStatus.NORMAL.getCode()) {
             log.warn("🔴 [afterConnectionClosed] 비정상적인 WebSocket 연결 종료. {}, closeStatus={}", info, closeStatus);

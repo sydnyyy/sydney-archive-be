@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static com.wishlist.global.websocket.constant.WebSocketKeys.*;
+import static com.wishlist.global.redis.constant.RedisKeys.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,12 +26,12 @@ public class SessionLifecycleService {
             return;
         }
 
-        String terminateSignalKey = WEBSOCKET_SESSION_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
-        String mainKey = WEBSOCKET_SESSION_MAIN_KEY_PREFIX + clientId;
+        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + clientId;
 
         redisTemplate.execute(
                 maintainSessionScript,
-                List.of(WEBSOCKET_SESSION_TERMINATE_CHECK_ZSET, terminateSignalKey, mainKey),
+                List.of(WS_SESSION_TERMINATE_CHECK_ZSET, terminateSignalKey, mainKey),
                 clientId,
                 WebSocketSessionManager.TERMINATE_SIGNAL_KEY_DUMMY_VALUE,
                 String.valueOf(WebSocketSessionManager.TERMINATE_SIGNAL_KEY_TTL.toSeconds()),
@@ -47,7 +47,7 @@ public class SessionLifecycleService {
 
         redisTemplate.execute(
                 terminateSessionScript,
-                List.of(WEBSOCKET_SESSION_TERMINATE_CHECK_ZSET, WEBSOCKET_SESSION_TERMINATE_STREAM),
+                List.of(WS_SESSION_TERMINATE_CHECK_ZSET, WS_SESSION_TERMINATE_STREAM),
                 clientId,
                 String.valueOf(System.currentTimeMillis())
         );

@@ -1,7 +1,8 @@
 ## WebSocket 관리
 
 - 분산 서버 가정
-- 30분간 사용자 접근 없으면 웹소켓 종료 프로세스 실행
+- 30분간 사용자 접근 없으면 웹소켓 연결 종료 프로세스 시작
+- 웹소켓 연결 종료 프로세스를 통해 서버 리소스 효율적으로 관리하는 것이 목적
 
 ### 관련 데이터
 - Redis에서 signal key, main key 관리
@@ -27,6 +28,11 @@
   - 종료 체킹 ZSET에서 n분이 지난 client id를 가져와 main key 상태 확인
   - 만약 main key의 value가 비었다면 종료 프로세스 종료
   - main key의 value에 session id가 남았다면 종료 명령 재전송 및 종료 체킹 ZSET에 client id 추가
+
+- [x] 웹소켓 로컬 모니터링 (Fallback)
+  - 메인 모니터링 장애 시 로컬 모니터링이 세션 관리
+  - ConcurrentHashMap: 마지막 접근 시각 관리, ConcurrentSkipListSet: time-based LRU 구현
+  - lock striping 기법 적용해 두 컬렉션 간 데이터 일관성 보장
 
 ### 예외 케이스
 

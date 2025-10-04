@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
-import static com.wishlist.global.websocket.constant.WebSocketKeys.*;
+import static com.wishlist.global.redis.constant.RedisKeys.*;
 
 @Component
 @RequiredArgsConstructor
@@ -30,8 +30,8 @@ public class TerminateCheckScheduler {
     public void checkTerminateCandidates() {
         List<String> processed = redisTemplate.execute(
                 terminateCheckScript,
-                List.of(WEBSOCKET_SESSION_TERMINATE_CHECK_ZSET,
-                        WEBSOCKET_SESSION_TERMINATE_STREAM,
+                List.of(WS_SESSION_TERMINATE_CHECK_ZSET,
+                        WS_SESSION_TERMINATE_STREAM,
                         LOCK_KEY),
                 String.valueOf(System.currentTimeMillis()),
                 String.valueOf(SAFE_MILLIS),
