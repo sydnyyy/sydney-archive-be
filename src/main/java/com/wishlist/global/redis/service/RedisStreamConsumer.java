@@ -46,6 +46,10 @@ public class RedisStreamConsumer {
                                 .toArray(StreamOffset[]::new)
                 );
 
+        if (messages == null || messages.isEmpty()) {
+            return;
+        }
+
         for (MapRecord<String, Object, Object> msg : messages) {
             String streamKey = msg.getStream();
             lastIds.put(streamKey, msg.getId().getValue());
