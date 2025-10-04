@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4j
 public class UserAccessExpiryScheduler {
 
-    private static final long EXPIRY_MILLIS = 30 * 60_000L;
+    private static final long EXPIRY_MILLIS = 40 * 60_000L;
 
     private final UserAccessManager userAccessManager;
     private final WebSocketSessionManager webSocketSessionManager;
