@@ -20,8 +20,10 @@ public class AccessService {
     private final StringRedisTemplate redisTemplate;
 
     public void recordAccess(AccessEvent accessEvent) {
-        webSocketSessionManager.updateTTL(accessEvent.clientId());
-        userAccessManager.recordAccess(accessEvent.clientId());
+        if (webSocketSessionManager.hasSession(accessEvent.clientId())) {
+            webSocketSessionManager.updateTTL(accessEvent.clientId());
+            userAccessManager.recordAccess(accessEvent.clientId());
+        }
         broadcastUserActivity(accessEvent);
     }
 
