@@ -3,6 +3,7 @@ package com.wishlist.global.websocket.handler;
 import com.wishlist.global.websocket.dto.WebSocketSessionInfo;
 import com.wishlist.global.websocket.interceptor.WebSocketHandshakeInterceptor;
 import com.wishlist.global.websocket.manager.WebSocketSessionManager;
+import com.wishlist.useractivity.manager.UserAccessManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
@@ -15,10 +16,14 @@ import java.nio.channels.ClosedChannelException;
 public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
 
     private final WebSocketSessionManager webSocketSessionManager;
+    private final UserAccessManager userAccessManager;
 
-    public WebSocketSessionHandler(WebSocketHandler delegate, WebSocketSessionManager webSocketSessionManager) {
+    public WebSocketSessionHandler(WebSocketHandler delegate,
+                                   WebSocketSessionManager webSocketSessionManager,
+                                   UserAccessManager userAccessManager) {
         super(delegate);
         this.webSocketSessionManager = webSocketSessionManager;
+        this.userAccessManager = userAccessManager;
     }
 
     @Override
@@ -27,6 +32,7 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
         log.info("🟢 [afterConnectionEstablished] WebSocket 세션 연결 성공. clientId={}, sessionId={}", clientId, session.getId());
 
         webSocketSessionManager.addSession(session);
+        userAccessManager.recordAccess(clientId);
         super.afterConnectionEstablished(session);
     }
 
