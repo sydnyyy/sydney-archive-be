@@ -51,6 +51,11 @@ public class RedisStreamConsumer {
         }
 
         for (MapRecord<String, Object, Object> msg : messages) {
+            if (msg.getStream() == null) {
+                log.warn("Received a record without stream key: {}", msg);
+                continue;
+            }
+
             String streamKey = msg.getStream();
             lastIds.put(streamKey, msg.getId().getValue());
             handleMessage(streamKey, msg);
