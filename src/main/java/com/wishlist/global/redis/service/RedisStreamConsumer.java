@@ -29,6 +29,7 @@ public class RedisStreamConsumer {
     private final WebSocketSessionManager webSocketSessionManager;
     private final UserAccessManager userAccessManager;
     private final StringRedisTemplate redisTemplate;
+
     private static final Map<String, String> lastIds = new ConcurrentHashMap<>();
 
     static {

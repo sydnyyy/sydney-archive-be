@@ -28,11 +28,10 @@ public class WebSocketSessionManager {
     private final DefaultRedisScript<Long> addSessionScript;
     private final DefaultRedisScript<Long> updateTTLScript;
     private final DefaultRedisScript<Long> removeSessionScript;
+    private final WebSocketSessionCloser webSocketSessionCloser;
 
     private final Map<String, Set<String>> clientSessionIds = new ConcurrentHashMap<>();  // { clientId, Set<sessionId> }
     private final Map<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();  // { sessionId, session }
-
-    private final WebSocketSessionCloser webSocketSessionCloser;
 
     public void addSession(WebSocketSession session) {
         String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();

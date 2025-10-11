@@ -18,13 +18,12 @@ import static com.wishlist.global.redis.constant.RedisKeys.*;
 public class TerminateCheckScheduler {
 
     private static final String LOCK_KEY = "distributed_lock:terminate_scheduler";
-    private final String serverId = UUID.randomUUID().toString();
+    private static final String serverId = UUID.randomUUID().toString();
+    private static final long SAFE_MILLIS = 60_000L;
     private static final long LOCK_EXPIRE_MILLIS = 60_000L;
 
     private final StringRedisTemplate redisTemplate;
     private final DefaultRedisScript<List> terminateCheckScript;
-
-    private static final long SAFE_MILLIS = 60_000L;
 
     @Scheduled(fixedDelay = 30_000)
     public void checkTerminateCandidates() {
