@@ -1,6 +1,7 @@
 package com.wishlist.useractivity.service;
 
 import com.wishlist.global.redis.constant.RedisKeys;
+import com.wishlist.global.redis.service.RedisStreamConsumer;
 import com.wishlist.global.websocket.manager.WebSocketSessionManager;
 import com.wishlist.useractivity.entity.AccessEvent;
 import com.wishlist.useractivity.manager.UserAccessManager;
@@ -20,14 +21,16 @@ public class AccessService {
     private final StringRedisTemplate redisTemplate;
 
     public void recordAccess(AccessEvent accessEvent) {
-        webSocketSessionManager.updateTTL(accessEvent.clientId());
-        userAccessManager.recordAccess(accessEvent.clientId());
+        if (webSocketSessionManager.hasSession(accessEvent.clientId())) {
+            webSocketSessionManager.updateTTL(accessEvent.clientId());
+            userAccessManager.recordAccess(accessEvent.clientId());
+        }
         broadcastUserActivity(accessEvent);
     }
 
     private void broadcastUserActivity(AccessEvent accessEvent) {
         Map<String, String> message = new HashMap<>();
-        message.put("clientId", accessEvent.clientId());
+        message.put(RedisStreamConsumer.FIELD_CLIENT_ID, accessEvent.clientId());
         redisTemplate.opsForStream().add(RedisKeys.USER_ACTIVITY_STREAM, message);
     }
 }

@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
@@ -29,6 +28,7 @@ public class WebSocketSessionManager {
     private final DefaultRedisScript<Long> addSessionScript;
     private final DefaultRedisScript<Long> updateTTLScript;
     private final DefaultRedisScript<Long> removeSessionScript;
+    private final WebSocketSessionCloser webSocketSessionCloser;
 
     private final Map<String, Set<String>> clientSessionIds = new ConcurrentHashMap<>();  // { clientId, Set<sessionId> }
     private final Map<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();  // { sessionId, session }
@@ -69,17 +69,15 @@ public class WebSocketSessionManager {
         if (sessionIds == null || sessionIds.isEmpty()) return;
 
         sessionIds.forEach(sessionId -> {
-            WebSocketSession webSocketSession = sessionMap.get(sessionId);
+            WebSocketSession session = sessionMap.get(sessionId);
+            log.info("[removeAllSessions] WebSocket session 강제 종료 시작. clientId={}, sessionId={}", clientId, sessionId);
             try {
-                log.info("[removeAllSessions] WebSocket session 강제 종료. clientId={}, sessionId={}", clientId, sessionId);
-                if (webSocketSession != null && webSocketSession.isOpen()) {
-                    webSocketSession.close(CloseStatus.NORMAL);
-                }
+                webSocketSessionCloser.closeSession(session);
             } catch (IOException e) {
-                log.warn("[removeAllSessions] 세션 강제종료 실패. clientId={}, sessionId={}, err={}", clientId, sessionId, e.toString());
-                // TODO 웹소켓 강제 종료 재시도
+                log.info("[removeAllSessions] WebSocket session 강제 종료 실패. clientId={}, sessionId={}", clientId, sessionId);
+                // TODO: 디스코드 경고 알림
             } finally {
-                sessionMap.remove(sessionId);
+                removeSession(session);
             }
         });
     }
