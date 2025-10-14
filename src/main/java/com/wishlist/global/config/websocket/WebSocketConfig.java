@@ -21,6 +21,7 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private static final String ENDPOINT = "/ws";
+    private final String[] allowedOrigins;
 
     private final WebSocketHandshakeInterceptor webSocketHandshakeInterceptor;
     private final StompInterceptor stompInterceptor;
@@ -34,7 +35,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint(ENDPOINT)
                 .addInterceptors(webSocketHandshakeInterceptor)
                 .setHandshakeHandler(webSocketHandShakeHandler)
-                .setAllowedOriginPatterns("*")
+                .setAllowedOriginPatterns(allowedOrigins)
                 .withSockJS();
     }
 
