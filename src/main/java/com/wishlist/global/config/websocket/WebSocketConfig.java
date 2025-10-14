@@ -1,5 +1,6 @@
 package com.wishlist.global.config.websocket;
 
+import com.wishlist.global.config.cors.CorsProperties;
 import com.wishlist.global.websocket.handler.WebSocketSessionHandler;
 import com.wishlist.global.websocket.handler.WebSocketHandShakeHandler;
 import com.wishlist.global.websocket.interceptor.StompInterceptor;
@@ -7,6 +8,7 @@ import com.wishlist.global.websocket.interceptor.WebSocketHandshakeInterceptor;
 import com.wishlist.global.websocket.manager.WebSocketSessionManager;
 import com.wishlist.useractivity.manager.UserAccessManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -18,10 +20,10 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
+@EnableConfigurationProperties(CorsProperties.class)
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private static final String ENDPOINT = "/ws";
-    private final String[] allowedOrigins;
 
     private final WebSocketHandshakeInterceptor webSocketHandshakeInterceptor;
     private final StompInterceptor stompInterceptor;
@@ -30,12 +32,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final WebSocketSessionManager webSocketSessionManager;
     private final UserAccessManager userAccessManager;
 
+    private final CorsProperties corsProperties;
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint(ENDPOINT)
                 .addInterceptors(webSocketHandshakeInterceptor)
                 .setHandshakeHandler(webSocketHandShakeHandler)
-                .setAllowedOriginPatterns(allowedOrigins)
+                .setAllowedOriginPatterns(corsProperties.allowedOrigins())
                 .withSockJS();
     }
 

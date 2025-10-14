@@ -11,6 +11,10 @@ spring:
       port: 6379
       timeout: 2000
 
+app:
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS}
+
 logging:
   level:
     org.springframework.messaging: DEBUG
