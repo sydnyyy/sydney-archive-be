@@ -116,4 +116,8 @@ public class WebSocketSessionManager {
         return clientSessionIds.containsKey(clientId) &&
                 !clientSessionIds.get(clientId).isEmpty();
     }
+
+    public Collection<WebSocketSession> getAllSessions() {
+        return Collections.unmodifiableCollection(sessionMap.values());
+    }
 }
