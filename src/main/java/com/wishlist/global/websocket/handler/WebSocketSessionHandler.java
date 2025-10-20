@@ -5,9 +5,7 @@ import com.wishlist.global.websocket.interceptor.WebSocketHandshakeInterceptor;
 import com.wishlist.global.websocket.manager.WebSocketSessionManager;
 import com.wishlist.useractivity.manager.UserAccessManager;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 
 import java.nio.channels.ClosedChannelException;
@@ -58,6 +56,16 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
 
         webSocketSessionManager.removeSession(session);
         super.afterConnectionClosed(session, closeStatus);
+    }
+
+    @Override
+    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
+        if (message instanceof PongMessage pongMessage) {
+            log.info("[PONG 수신 완료] sessionId={}", session.getId());
+            return;
+        }
+
+        super.handleMessage(session, message);
     }
 
     private boolean isClosedChannelException(Throwable exception) {
