@@ -16,9 +16,9 @@ public class WebSocketSessionCloser {
             maxAttempts = 3,
             backoff = @Backoff(delay = 2000, multiplier = 2)
     )
-    public void closeSession(WebSocketSession session) throws IOException {
+    public void closeSession(WebSocketSession session, CloseStatus closeStatus) throws IOException {
         if (session != null && session.isOpen()) {
-            session.close(CloseStatus.NORMAL);
+            session.close(closeStatus);
         }
     }
 }
