@@ -13,13 +13,13 @@ import java.util.Collection;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WebSocketPingScheduler {
+public class WebSocketHeartbeatScheduler {
 
     private final WebSocketSessionManager webSocketSessionManager;
     private final WebSocketPingService webSocketPingService;
 
     @Scheduled(cron = "0 * * * * *")
-    public void sendPingToAllSessions() {
+    public void checkTimeoutAndSendPing() {
         Collection<WebSocketSession> sessions = webSocketSessionManager.getAllSessions();
         log.info("[WS Scheduler] PING broadcast 시작. 세션 수={}", sessions.size());
         if (!sessions.isEmpty()) {
