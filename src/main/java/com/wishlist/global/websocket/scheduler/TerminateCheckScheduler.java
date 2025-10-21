@@ -25,7 +25,7 @@ public class TerminateCheckScheduler {
     private final StringRedisTemplate redisTemplate;
     private final DefaultRedisScript<List> terminateCheckScript;
 
-    @Scheduled(fixedDelay = 30_000)
+    @Scheduled(cron = "*/10 * * * * *")
     public void checkTerminateCandidates() {
         List<String> processed = redisTemplate.execute(
                 terminateCheckScript,
