@@ -12,13 +12,17 @@ import java.io.IOException;
 public class WebSocketSessionCloser {
 
     @Retryable(
-            retryFor = IOException.class,
+            retryFor = RuntimeException.class,
             maxAttempts = 3,
             backoff = @Backoff(delay = 2000, multiplier = 2)
     )
-    public void closeSession(WebSocketSession session, CloseStatus closeStatus) throws IOException {
+    public void closeSession(WebSocketSession session, CloseStatus closeStatus) {
         if (session != null && session.isOpen()) {
-            session.close(closeStatus);
+            try {
+                session.close(closeStatus);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

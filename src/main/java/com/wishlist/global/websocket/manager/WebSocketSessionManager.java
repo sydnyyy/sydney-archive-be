@@ -72,14 +72,8 @@ public class WebSocketSessionManager {
         sessionIds.forEach(sessionId -> {
             WebSocketSession session = sessionMap.get(sessionId);
             log.info("[removeAllSessions] WebSocket session 강제 종료 시작. clientId={}, sessionId={}", clientId, sessionId);
-            try {
-                webSocketSessionCloser.closeSession(session, CloseStatus.NORMAL);
-            } catch (IOException e) {
-                log.info("[removeAllSessions] WebSocket session 강제 종료 실패. clientId={}, sessionId={}", clientId, sessionId);
-                // TODO: 디스코드 경고 알림
-            } finally {
-                removeSession(session);
-            }
+            webSocketSessionCloser.closeSession(session, CloseStatus.NORMAL);
+            removeSession(session);
         });
     }
 
