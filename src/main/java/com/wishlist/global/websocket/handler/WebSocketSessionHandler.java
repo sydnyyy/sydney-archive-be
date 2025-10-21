@@ -5,15 +5,15 @@ import com.wishlist.global.websocket.interceptor.WebSocketHandshakeInterceptor;
 import com.wishlist.global.websocket.manager.WebSocketSessionManager;
 import com.wishlist.useractivity.manager.UserAccessManager;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 
 import java.nio.channels.ClosedChannelException;
 
 @Slf4j
 public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
+
+    public static final String WS_LAST_HEARTBEAT_TIME = "lastHeartbeatTime";
 
     private final WebSocketSessionManager webSocketSessionManager;
     private final UserAccessManager userAccessManager;
@@ -31,6 +31,7 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
         String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
         log.info("🟢 [afterConnectionEstablished] WebSocket 세션 연결 성공. clientId={}, sessionId={}", clientId, session.getId());
 
+        session.getAttributes().put(WS_LAST_HEARTBEAT_TIME, System.currentTimeMillis());
         webSocketSessionManager.addSession(session);
         userAccessManager.recordAccess(clientId);
         super.afterConnectionEstablished(session);
@@ -58,6 +59,17 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
 
         webSocketSessionManager.removeSession(session);
         super.afterConnectionClosed(session, closeStatus);
+    }
+
+    @Override
+    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
+        if (message instanceof PongMessage pongMessage) {
+            log.info("[PONG 수신 완료] sessionId={}", session.getId());
+            session.getAttributes().put(WS_LAST_HEARTBEAT_TIME, System.currentTimeMillis());
+            return;
+        }
+
+        super.handleMessage(session, message);
     }
 
     private boolean isClosedChannelException(Throwable exception) {
