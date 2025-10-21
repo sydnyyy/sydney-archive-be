@@ -21,4 +21,4 @@
 - [x] Redis 기반 메인 모니터링
 - [x] 로컬 모니터링 (Fallback)
 - [x] nginx proxy_read/send_timeout 설정
-- [ ] ping/pong
+- [x] ping/pong (프로토콜 레벨)
