@@ -30,17 +30,24 @@ public class ChatService {
         userService.saveGuest(chatMessageDto.sender());
         userService.updateLastMessageAt(chatMessageDto.sender(), chatMessageDto.sendAt());
 
-        saveChatMessage(chatMessageDto);
+        chatMessageDto = saveChatMessage(chatMessageDto);
+
+        sendMessageToUser(chatMessageDto.sender(), chatMessageDto);
         sendMessageToAdmin(chatMessageDto);
         sendAutoMessageToUser(chatMessageDto);
     }
 
-    private void saveChatMessage(ChatMessageDto chatMessageDto) {
-        chatMessageRepository.save(ChatMessageEntity.of(chatMessageDto));
+    private ChatMessageDto saveChatMessage(ChatMessageDto chatMessageDto) {
+        ChatMessageEntity chatMessageEntity = chatMessageRepository.save(ChatMessageEntity.of(chatMessageDto));
+        return ChatMessageDto.of(chatMessageEntity);
     }
 
     private void sendMessageToAdmin(ChatMessageDto chatMessageDto) {
         messagingTemplate.convertAndSend("/topic/admin.chat", chatMessageDto);
+    }
+
+    private void sendMessageToUser(String user, ChatMessageDto payload) {
+        messagingTemplate.convertAndSendToUser(user, "/queue/chat.messages", payload);
     }
 
     private void sendAutoMessageToUser(ChatMessageDto chatMessageDto) {
@@ -61,12 +68,11 @@ public class ChatService {
 
     public void processAdminMessage(ChatMessageDto chatMessageDto) {
         log.info("👩‍💻 Admin[{}] → User[{}]: {}", chatMessageDto.sender(), chatMessageDto.receiver(), chatMessageDto.content());
-        saveChatMessage(chatMessageDto);
-        messagingTemplate.convertAndSendToUser(
-                chatMessageDto.receiver(),
-                "/queue/chat.messages",
-                chatMessageDto
-        );
+
+        chatMessageDto = saveChatMessage(chatMessageDto);
+
+        sendMessageToAdmin(chatMessageDto);
+        sendMessageToUser(chatMessageDto.receiver(), chatMessageDto);
     }
 
     public List<ChatMessageDto> getChatMessages(String clientId, String cursorId, boolean isAdmin) {
