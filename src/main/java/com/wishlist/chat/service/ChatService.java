@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +53,7 @@ public class ChatService {
 
     private void sendAutoMessageToUser(ChatMessageDto chatMessageDto) {
         ChatMessageDto autoReply = ChatMessageDto.builder()
+                .id(String.valueOf(UUID.randomUUID()))
                 .sender("wishlist-admin")
                 .receiver(chatMessageDto.sender())
                 .content("문의 감사합니다. 곧 답변드리겠습니다 🙏")
