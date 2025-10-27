@@ -2,7 +2,6 @@ package com.wishlist.chat.service;
 
 import com.wishlist.chat.dto.ChatMessageDto;
 import com.wishlist.chat.entity.ChatMessageEntity;
-import com.wishlist.chat.enums.ChatType;
 import com.wishlist.chat.repository.ChatMessageRepository;
 import com.wishlist.chat.repository.ChatMessageRepositoryImpl;
 import com.wishlist.user.service.UserService;
@@ -11,9 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +32,6 @@ public class ChatService {
 
         sendMessageToUser(chatMessageDto.sender(), chatMessageDto);
         sendMessageToAdmin(chatMessageDto);
-        sendAutoMessageToUser(chatMessageDto);
     }
 
     private ChatMessageDto saveChatMessage(ChatMessageDto chatMessageDto) {
@@ -49,23 +45,6 @@ public class ChatService {
 
     private void sendMessageToUser(String user, ChatMessageDto payload) {
         messagingTemplate.convertAndSendToUser(user, "/queue/chat.messages", payload);
-    }
-
-    private void sendAutoMessageToUser(ChatMessageDto chatMessageDto) {
-        ChatMessageDto autoReply = ChatMessageDto.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .sender("wishlist-admin")
-                .receiver(chatMessageDto.sender())
-                .content("문의 감사합니다. 곧 답변드리겠습니다 🙏")
-                .sendAt(Instant.now())
-                .type(ChatType.SYSTEM)
-                .build();
-
-        messagingTemplate.convertAndSendToUser(
-                autoReply.receiver(),
-                "/queue/chat.messages",
-                autoReply
-        );
     }
 
     public void processAdminMessage(ChatMessageDto chatMessageDto) {
