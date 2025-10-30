@@ -2,7 +2,6 @@ package com.wishlist.chat.service;
 
 import com.wishlist.chat.dto.ChatMessageDto;
 import com.wishlist.chat.entity.ChatMessageEntity;
-import com.wishlist.chat.enums.ChatType;
 import com.wishlist.chat.repository.ChatMessageRepository;
 import com.wishlist.chat.repository.ChatMessageRepositoryImpl;
 import com.wishlist.user.service.UserService;
@@ -11,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -30,43 +28,32 @@ public class ChatService {
         userService.saveGuest(chatMessageDto.sender());
         userService.updateLastMessageAt(chatMessageDto.sender(), chatMessageDto.sendAt());
 
-        saveChatMessage(chatMessageDto);
+        chatMessageDto = saveChatMessage(chatMessageDto);
+
+        sendMessageToUser(chatMessageDto.sender(), chatMessageDto);
         sendMessageToAdmin(chatMessageDto);
-        sendAutoMessageToUser(chatMessageDto);
     }
 
-    private void saveChatMessage(ChatMessageDto chatMessageDto) {
-        chatMessageRepository.save(ChatMessageEntity.of(chatMessageDto));
+    private ChatMessageDto saveChatMessage(ChatMessageDto chatMessageDto) {
+        ChatMessageEntity chatMessageEntity = chatMessageRepository.save(ChatMessageEntity.of(chatMessageDto));
+        return ChatMessageDto.of(chatMessageEntity);
     }
 
     private void sendMessageToAdmin(ChatMessageDto chatMessageDto) {
         messagingTemplate.convertAndSend("/topic/admin.chat", chatMessageDto);
     }
 
-    private void sendAutoMessageToUser(ChatMessageDto chatMessageDto) {
-        ChatMessageDto autoReply = ChatMessageDto.builder()
-                .sender("wishlist-admin")
-                .receiver(chatMessageDto.sender())
-                .content("문의 감사합니다. 곧 답변드리겠습니다 🙏")
-                .sendAt(Instant.now())
-                .type(ChatType.SYSTEM)
-                .build();
-
-        messagingTemplate.convertAndSendToUser(
-                autoReply.receiver(),
-                "/queue/chat.messages",
-                autoReply
-        );
+    private void sendMessageToUser(String user, ChatMessageDto payload) {
+        messagingTemplate.convertAndSendToUser(user, "/queue/chat.messages", payload);
     }
 
     public void processAdminMessage(ChatMessageDto chatMessageDto) {
         log.info("👩‍💻 Admin[{}] → User[{}]: {}", chatMessageDto.sender(), chatMessageDto.receiver(), chatMessageDto.content());
-        saveChatMessage(chatMessageDto);
-        messagingTemplate.convertAndSendToUser(
-                chatMessageDto.receiver(),
-                "/queue/chat.messages",
-                chatMessageDto
-        );
+
+        chatMessageDto = saveChatMessage(chatMessageDto);
+
+        sendMessageToAdmin(chatMessageDto);
+        sendMessageToUser(chatMessageDto.receiver(), chatMessageDto);
     }
 
     public List<ChatMessageDto> getChatMessages(String clientId, String cursorId, boolean isAdmin) {
