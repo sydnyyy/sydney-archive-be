@@ -19,6 +19,7 @@ import java.util.Map;
 public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
 
     public static final String CLIENT_ID_KEY = "client_id";
+    public static final String TAB_ID_KEY = "tab_id";
 
     @Override
     public boolean beforeHandshake(@NonNull ServerHttpRequest request,
@@ -33,7 +34,10 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             return false;
         }
 
+        String tabId = getTabId(request);
+
         attributes.put(CLIENT_ID_KEY, clientId);
+        attributes.put(TAB_ID_KEY, tabId);
         return true;
     }
 
@@ -43,6 +47,14 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
                 .build()
                 .getQueryParams()
                 .getFirst(CLIENT_ID_KEY);
+    }
+
+    private String getTabId(ServerHttpRequest request) {
+        return UriComponentsBuilder
+                .fromUri(request.getURI())
+                .build()
+                .getQueryParams()
+                .getFirst(TAB_ID_KEY);
     }
 
     @Override
