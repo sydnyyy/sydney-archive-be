@@ -106,7 +106,7 @@ public class WebSocketSessionManager {
         return Collections.unmodifiableSet(clientSessionIds.get(clientId));
     }
 
-    public boolean hasSession(String clientId) {
+    public boolean hasSessionByClientId(String clientId) {
         return clientSessionIds.containsKey(clientId) &&
                 !clientSessionIds.get(clientId).isEmpty();
     }

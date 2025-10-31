@@ -21,7 +21,7 @@ public class AccessService {
     private final StringRedisTemplate redisTemplate;
 
     public void recordAccess(AccessEvent accessEvent) {
-        if (webSocketSessionManager.hasSession(accessEvent.clientId())) {
+        if (webSocketSessionManager.hasSessionByClientId(accessEvent.clientId())) {
             webSocketSessionManager.updateTTL(accessEvent.clientId());
             userAccessManager.recordAccess(accessEvent.clientId());
         }
