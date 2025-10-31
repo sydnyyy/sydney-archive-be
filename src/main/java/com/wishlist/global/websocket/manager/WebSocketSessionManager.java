@@ -113,6 +113,10 @@ public class WebSocketSessionManager {
                 !clientTabIds.get(clientId).isEmpty();
     }
 
+    public boolean hasSessionByTabId(String tabId) {
+        return sessionMap.containsKey(tabId);
+    }
+
     public Collection<WebSocketSession> getAllSessions() {
         return Collections.unmodifiableCollection(sessionMap.values());
     }
