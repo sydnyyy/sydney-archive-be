@@ -30,8 +30,8 @@ public class WebSocketSessionManager {
     private final DefaultRedisScript<Long> removeSessionScript;
     private final WebSocketSessionCloser webSocketSessionCloser;
 
-    private final Map<String, Set<String>> clientSessionIds = new ConcurrentHashMap<>();  // { clientId, Set<sessionId> }
-    private final Map<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();  // { sessionId, session }
+    private final Map<String, Set<String>> clientTabIds = new ConcurrentHashMap<>();  // { clientId, Set<tabId> }
+    private final Map<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();  // { tabId, session }
 
     public void addSession(WebSocketSession session) {
         String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
@@ -47,9 +47,11 @@ public class WebSocketSessionManager {
                 String.valueOf(TERMINATE_SIGNAL_KEY_TTL.toSeconds())
         );
 
-        sessionMap.put(session.getId(), session);
-        clientSessionIds.computeIfAbsent(clientId, k -> ConcurrentHashMap.newKeySet())
-                .add(session.getId());
+        String tabId = session.getAttributes().get(WebSocketHandshakeInterceptor.TAB_ID_KEY).toString();
+        sessionMap.put(tabId, session);
+        clientTabIds
+                .computeIfAbsent(clientId, k -> ConcurrentHashMap.newKeySet())
+                .add(tabId);
     }
 
     public void updateTTL(String clientId) {
@@ -65,20 +67,20 @@ public class WebSocketSessionManager {
     }
 
     public void removeAllSessions(String clientId) {
-        Set<String> sessionIds = clientSessionIds.remove(clientId);
-        if (sessionIds == null || sessionIds.isEmpty()) return;
+        Set<String> tabIds = clientTabIds.remove(clientId);
+        if (tabIds == null || tabIds.isEmpty()) return;
 
-        sessionIds.forEach(sessionId -> {
-            WebSocketSession session = sessionMap.get(sessionId);
-            log.info("[removeAllSessions] WebSocket session 강제 종료 시작. clientId={}, sessionId={}", clientId, sessionId);
+        tabIds.forEach(tabId -> {
+            WebSocketSession session = sessionMap.get(tabId);
+            log.info("[removeAllSessions] WebSocket session 강제 종료 시작. clientId={}, sessionId={}", clientId, session.getId());
             webSocketSessionCloser.closeSession(session, CloseStatus.NORMAL);
             removeSession(session);
         });
     }
 
     public void removeSession(WebSocketSession session) {
-        String sessionId = session.getId();
-        if (!sessionMap.containsKey(sessionId)) {
+        String tabId = session.getAttributes().get(WebSocketHandshakeInterceptor.TAB_ID_KEY).toString();
+        if (!sessionMap.containsKey(tabId)) {
             return;
         }
 
@@ -92,23 +94,27 @@ public class WebSocketSessionManager {
                 session.getId()
         );
 
-        sessionMap.remove(session.getId());
-        Set<String> sessionIds = clientSessionIds.get(clientId);
-        if (sessionIds != null) {
-            sessionIds.remove(session.getId());
-            if (sessionIds.isEmpty()) {
-                clientSessionIds.remove(clientId, sessionIds);
+        sessionMap.remove(tabId);
+        Set<String> tabIds = clientTabIds.get(clientId);
+        if (tabIds != null) {
+            tabIds.remove(tabId);
+            if (tabIds.isEmpty()) {
+                clientTabIds.remove(clientId, tabIds);
             }
         }
     }
 
     public Set<String> getReadOnlyLocalSessions(String clientId) {
-        return Collections.unmodifiableSet(clientSessionIds.get(clientId));
+        return Collections.unmodifiableSet(clientTabIds.get(clientId));
     }
 
-    public boolean hasSession(String clientId) {
-        return clientSessionIds.containsKey(clientId) &&
-                !clientSessionIds.get(clientId).isEmpty();
+    public boolean hasSessionByClientId(String clientId) {
+        return clientTabIds.containsKey(clientId) &&
+                !clientTabIds.get(clientId).isEmpty();
+    }
+
+    public boolean hasSessionByTabId(String tabId) {
+        return sessionMap.containsKey(tabId);
     }
 
     public Collection<WebSocketSession> getAllSessions() {

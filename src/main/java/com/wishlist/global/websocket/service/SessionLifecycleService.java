@@ -22,7 +22,7 @@ public class SessionLifecycleService {
 
     public void processMaintain(SystemEventDto systemEvent) {
         String clientId = systemEvent.clientId();
-        if (!webSocketSessionManager.hasSession(clientId)) {
+        if (!webSocketSessionManager.hasSessionByClientId(clientId)) {
             return;
         }
 
@@ -41,7 +41,7 @@ public class SessionLifecycleService {
 
     public void processTerminate(SystemEventDto systemEvent) {
         String clientId = systemEvent.clientId();
-        if (!webSocketSessionManager.hasSession(clientId)) {
+        if (!webSocketSessionManager.hasSessionByClientId(clientId)) {
             return;
         }
 
