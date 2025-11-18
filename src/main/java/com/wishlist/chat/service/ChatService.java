@@ -2,6 +2,7 @@ package com.wishlist.chat.service;
 
 import com.wishlist.chat.dto.ChatMessageDto;
 import com.wishlist.chat.entity.ChatMessageEntity;
+import com.wishlist.chat.enums.ChatType;
 import com.wishlist.chat.repository.ChatMessageRepository;
 import com.wishlist.chat.repository.ChatMessageRepositoryImpl;
 import com.wishlist.user.service.UserService;
@@ -30,7 +31,11 @@ public class ChatService {
 
         chatMessageDto = saveChatMessage(chatMessageDto);
 
-        sendMessageToUser(chatMessageDto.sender(), chatMessageDto);
+        String user = chatMessageDto.type() == ChatType.SYSTEM
+                ? chatMessageDto.receiver()
+                : chatMessageDto.sender();
+
+        sendMessageToUser(user, chatMessageDto);
         sendMessageToAdmin(chatMessageDto);
     }
 
