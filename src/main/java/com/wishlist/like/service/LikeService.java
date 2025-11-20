@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -25,5 +28,11 @@ public class LikeService {
 
     public void deleteLike(String userId, String itemId) {
         likeRepository.deleteByUserIdAndItemId(userId, itemId);
+    }
+
+    public Set<String> getLikedItemIds(String userId) {
+        return likeRepository.findByUserId(userId).stream()
+                .map(Like::getItemId)
+                .collect(Collectors.toSet());
     }
 }
