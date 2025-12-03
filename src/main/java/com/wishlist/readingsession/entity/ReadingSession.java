@@ -1,5 +1,8 @@
 package com.wishlist.readingsession.entity;
 
+import com.wishlist.readingsession.enums.ReadingSessionStatus;
+import lombok.Builder;
+import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -7,6 +10,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Document(collection = "reading_sessions")
+@Builder
+@Getter
 public class ReadingSession {
 
     @Id
@@ -19,6 +24,8 @@ public class ReadingSession {
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDateTime meetingDate;
+
+    private ReadingSessionStatus readingSessionStatus;
 
     private String purchaseLink;
     private Integer currentReservations;
