@@ -22,3 +22,9 @@
 - [x] 로컬 모니터링 (Fallback)
 - [x] nginx proxy_read/send_timeout 설정
 - [x] ping/pong (프로토콜 레벨)
+
+### 기능
+- [ ] 아이템
+- [ ] 스터디
+- [ ] 마이페이지
+- [ ] 채팅
