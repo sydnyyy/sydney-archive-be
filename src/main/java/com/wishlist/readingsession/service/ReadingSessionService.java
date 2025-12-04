@@ -1,11 +1,13 @@
 package com.wishlist.readingsession.service;
 
+import com.wishlist.global.exception.DuplicateReadingSessionException;
 import com.wishlist.readingsession.dto.ReadingSessionCreateRequest;
 import com.wishlist.readingsession.dto.ReadingSessionDto;
 import com.wishlist.readingsession.entity.ReadingSession;
 import com.wishlist.readingsession.enums.ReadingSessionStatus;
 import com.wishlist.readingsession.repository.ReadingSessionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -48,7 +50,11 @@ public class ReadingSessionService {
 
     public ReadingSessionDto createReadingSession(ReadingSessionCreateRequest readingSessionCreateRequest) {
         ReadingSession readingSession = ReadingSession.of(readingSessionCreateRequest);
-        readingSessionRepository.save(readingSession);
+        try {
+            readingSessionRepository.save(readingSession);
+        } catch (DuplicateKeyException e) {
+            throw new DuplicateReadingSessionException();
+        }
         return ReadingSessionDto.of(readingSession);
     }
 }
