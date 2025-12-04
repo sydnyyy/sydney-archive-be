@@ -1,6 +1,8 @@
 package com.wishlist.readingsession.service;
 
+import com.wishlist.readingsession.dto.ReadingSessionCreateRequest;
 import com.wishlist.readingsession.dto.ReadingSessionDto;
+import com.wishlist.readingsession.entity.ReadingSession;
 import com.wishlist.readingsession.enums.ReadingSessionStatus;
 import com.wishlist.readingsession.repository.ReadingSessionRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,5 +44,11 @@ public class ReadingSessionService {
                             .compare(a.startDate(), b.startDate());
                 })
                 .toList();
+    }
+
+    public ReadingSessionDto createReadingSession(ReadingSessionCreateRequest readingSessionCreateRequest) {
+        ReadingSession readingSession = ReadingSession.of(readingSessionCreateRequest);
+        readingSessionRepository.save(readingSession);
+        return ReadingSessionDto.of(readingSession);
     }
 }

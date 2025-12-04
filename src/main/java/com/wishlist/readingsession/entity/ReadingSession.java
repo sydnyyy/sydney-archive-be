@@ -1,5 +1,6 @@
 package com.wishlist.readingsession.entity;
 
+import com.wishlist.readingsession.dto.ReadingSessionCreateRequest;
 import com.wishlist.readingsession.enums.ReadingSessionStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,4 +30,18 @@ public class ReadingSession {
 
     private String purchaseLink;
     private Integer currentReservations;
+
+    public static ReadingSession of(ReadingSessionCreateRequest readingSessionCreateRequest) {
+        return ReadingSession.builder()
+                .imageUrl(readingSessionCreateRequest.imageUrl())
+                .title(readingSessionCreateRequest.title())
+                .author(readingSessionCreateRequest.author())
+                .startDate(readingSessionCreateRequest.startDate())
+                .endDate(readingSessionCreateRequest.endDate())
+                .meetingDate(readingSessionCreateRequest.meetingDate())
+                .readingSessionStatus(ReadingSessionStatus.OPEN)
+                .purchaseLink(readingSessionCreateRequest.purchaseLink())
+                .currentReservations(0)
+                .build();
+    }
 }
