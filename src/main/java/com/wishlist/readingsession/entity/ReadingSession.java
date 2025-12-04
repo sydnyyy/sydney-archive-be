@@ -5,12 +5,18 @@ import com.wishlist.readingsession.enums.ReadingSessionStatus;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Document(collection = "reading_sessions")
+@CompoundIndex(
+        name = "unique_author_title",
+        def = "{'author': 1, 'title': 1}",
+        unique = true
+)
 @Builder
 @Getter
 public class ReadingSession {
