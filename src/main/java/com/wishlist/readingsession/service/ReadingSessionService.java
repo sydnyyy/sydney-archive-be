@@ -40,7 +40,7 @@ public class ReadingSessionService {
 
                     if (a.readingSessionStatus() == ReadingSessionStatus.CLOSE) {
                         return Comparator.<LocalDateTime>nullsLast(Comparator.reverseOrder())
-                                .compare(a.meetingDate(), b.meetingDate());
+                                .compare(a.meetingAt(), b.meetingAt());
                     }
                     return Comparator.<LocalDate>nullsLast(Comparator.naturalOrder())
                             .compare(a.startDate(), b.startDate());

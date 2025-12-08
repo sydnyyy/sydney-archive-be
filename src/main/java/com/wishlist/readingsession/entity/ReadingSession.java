@@ -30,7 +30,7 @@ public class ReadingSession {
 
     private LocalDate startDate;
     private LocalDate endDate;
-    private LocalDateTime meetingDate;
+    private LocalDateTime meetingAt;
 
     private ReadingSessionStatus readingSessionStatus;
 
@@ -44,7 +44,7 @@ public class ReadingSession {
                 .author(readingSessionCreateRequest.author())
                 .startDate(readingSessionCreateRequest.startDate())
                 .endDate(readingSessionCreateRequest.endDate())
-                .meetingDate(readingSessionCreateRequest.meetingDate())
+                .meetingAt(readingSessionCreateRequest.meetingAt())
                 .readingSessionStatus(ReadingSessionStatus.OPEN)
                 .purchaseLink(readingSessionCreateRequest.purchaseLink())
                 .currentReservations(0)

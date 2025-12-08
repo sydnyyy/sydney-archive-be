@@ -10,7 +10,7 @@ public record ReadingSessionCreateRequest (
 
         LocalDate startDate,
         LocalDate endDate,
-        LocalDateTime meetingDate,
+        LocalDateTime meetingAt,
 
         String purchaseLink
 ) { }

@@ -17,7 +17,7 @@ public record ReadingSessionDto (
 
         LocalDate startDate,
         LocalDate endDate,
-        LocalDateTime meetingDate,
+        LocalDateTime meetingAt,
 
         ReadingSessionStatus readingSessionStatus,
 
@@ -33,7 +33,7 @@ public record ReadingSessionDto (
                 .author(readingSession.getAuthor())
                 .startDate(readingSession.getStartDate())
                 .endDate(readingSession.getEndDate())
-                .meetingDate(readingSession.getMeetingDate())
+                .meetingAt(readingSession.getMeetingAt())
                 .readingSessionStatus(readingSession.getReadingSessionStatus())
                 .purchaseLink(readingSession.getPurchaseLink())
                 .currentReservations(readingSession.getCurrentReservations())
