@@ -8,22 +8,24 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record BookItemWithUserResponse(
+public record ItemWithUserResponse(
         String itemId,
         ItemType itemType,
         String title,
-        String author,
         String description,
         List<String> imageUrls,
         Integer thumbnailIndex,
+
+        // book item only
+        String author,
 
         String userId,
         String displayName,
         String profileImageUrl
 ) {
 
-    public static BookItemWithUserResponse of(BookItemResponse bookItemResponse, UserSummaryResponse userSummaryResponse) {
-        return BookItemWithUserResponse.builder()
+    public static ItemWithUserResponse of(BookItemResponse bookItemResponse, UserSummaryResponse userSummaryResponse) {
+        return ItemWithUserResponse.builder()
                 .itemId(bookItemResponse.itemId())
                 .itemType(bookItemResponse.itemType())
                 .title(bookItemResponse.title())

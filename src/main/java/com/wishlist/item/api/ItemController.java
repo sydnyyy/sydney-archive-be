@@ -1,6 +1,6 @@
 package com.wishlist.item.api;
 
-import com.wishlist.item.dto.BookItemWithUserResponse;
+import com.wishlist.item.dto.ItemWithUserResponse;
 import com.wishlist.item.service.ItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<?> findAllItems() {
-        List<BookItemWithUserResponse> responses = itemService.findAllBookItemsWithUser();
+        List<ItemWithUserResponse> responses = itemService.findAllItemsWithUser();
         return ResponseEntity.ok(responses);
     }
 }
