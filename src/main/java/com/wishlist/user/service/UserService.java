@@ -2,6 +2,7 @@ package com.wishlist.user.service;
 
 import com.mongodb.DuplicateKeyException;
 import com.wishlist.user.dto.UserResponse;
+import com.wishlist.user.dto.UserSummaryResponse;
 import com.wishlist.user.entity.User;
 import com.wishlist.user.enums.Role;
 import com.wishlist.user.repository.UserRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -50,5 +52,10 @@ public class UserService {
                 .stream()
                 .map(UserResponse::of)
                 .toList();
+    }
+
+    public UserSummaryResponse findUserSummary(String userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        return UserSummaryResponse.ofOrUnknown(userOptional);
     }
 }
