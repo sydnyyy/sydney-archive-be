@@ -32,6 +32,8 @@ public class ReadingSession {
     private LocalDate endDate;
     private LocalDateTime meetingAt;
 
+    private String description;
+
     private ReadingSessionStatus readingSessionStatus;
 
     private String purchaseLink;
@@ -45,6 +47,7 @@ public class ReadingSession {
                 .startDate(readingSessionCreateRequest.startDate())
                 .endDate(readingSessionCreateRequest.endDate())
                 .meetingAt(readingSessionCreateRequest.meetingAt())
+                .description(readingSessionCreateRequest.description())
                 .readingSessionStatus(ReadingSessionStatus.OPEN)
                 .purchaseLink(readingSessionCreateRequest.purchaseLink())
                 .currentReservations(0)

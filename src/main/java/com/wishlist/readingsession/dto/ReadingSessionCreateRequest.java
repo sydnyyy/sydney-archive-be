@@ -12,5 +12,7 @@ public record ReadingSessionCreateRequest (
         LocalDate endDate,
         LocalDateTime meetingAt,
 
+        String description,
+
         String purchaseLink
 ) { }
