@@ -24,3 +24,7 @@ logging:
 #    org.springframework.messaging.simp.stomp.StompSubProtocolHandler: DEBUG
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
 #    org.mongodb.driver: DEBUG
+
+jwt:
+  issuer: ${JWT_ISSUER}
+  secret_key: ${JWT_SECRET_KEY}
