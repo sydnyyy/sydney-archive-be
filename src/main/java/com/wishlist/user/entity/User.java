@@ -1,5 +1,6 @@
 package com.wishlist.user.entity;
 
+import com.wishlist.auth.dto.OAuth2Profile;
 import com.wishlist.user.enums.Role;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,6 +25,20 @@ public class User {
     @Indexed(unique = true)
     private String clientId;
 
+    private String realName;
+
+    private String displayName;
+
+    private String provider;
+
+    private String providerId;
+
+    private String email;
+
+    private String mobileNumber;
+
+    private String profileImageUrl;
+
     private Instant lastMessageAt;
 
     @CreatedDate
@@ -36,6 +51,17 @@ public class User {
         return User.builder()
                 .role(role)
                 .clientId(clientId)
+                .build();
+    }
+
+    public static User of(OAuth2Profile oauth2Profile) {
+        return User.builder()
+                .role(oauth2Profile.role())
+                .realName(oauth2Profile.realName())
+                .provider(oauth2Profile.provider())
+                .providerId(oauth2Profile.providerId())
+                .email(oauth2Profile.email())
+                .mobileNumber(oauth2Profile.mobileNumber())
                 .build();
     }
 

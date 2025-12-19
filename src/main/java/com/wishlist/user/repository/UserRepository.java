@@ -11,4 +11,5 @@ public interface UserRepository extends MongoRepository<User, String> {
     Optional<User> findByClientId(String clientId);
     boolean existsByClientId(String clientId);
     List<User> findAllByOrderByLastMessageAtDesc();
+    Optional<User> findByProviderAndProviderId(String provider, String providerId);
 }
