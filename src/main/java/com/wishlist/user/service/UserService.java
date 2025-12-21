@@ -64,8 +64,11 @@ public class UserService {
                 .toList();
     }
 
-    public UserSummaryResponse findUserSummary(String userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        return UserSummaryResponse.ofOrUnknown(userOptional);
+    public UserSummaryResponse findUserSummaryByUid(String uid) {
+        return UserSummaryResponse.ofOrUnknown(userRepository.findByUid(uid));
+    }
+
+    public UserSummaryResponse findUserSummaryByUserId(String userId) {
+        return UserSummaryResponse.ofOrUnknown(userRepository.findById(userId));
     }
 }
