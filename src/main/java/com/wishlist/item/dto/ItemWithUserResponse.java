@@ -19,7 +19,7 @@ public record ItemWithUserResponse(
         // book item only
         String author,
 
-        String userId,
+        String uid,
         String displayName,
         String profileImageUrl
 ) {
@@ -33,7 +33,7 @@ public record ItemWithUserResponse(
                 .description(bookItemResponse.description())
                 .imageUrls(bookItemResponse.imageUrls())
                 .thumbnailIndex(bookItemResponse.thumbnailIndex())
-                .userId(userSummaryResponse.id())
+                .uid(userSummaryResponse.uid())
                 .displayName(userSummaryResponse.displayName())
                 .profileImageUrl(userSummaryResponse.profileImageUrl())
                 .build();

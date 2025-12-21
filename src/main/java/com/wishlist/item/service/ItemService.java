@@ -21,7 +21,7 @@ public class ItemService {
         List<BookItemResponse> bookItemResponses = bookItemService.findAllBookItems();
 
         return bookItemResponses.stream().map(bookItemResponse -> {
-            UserSummaryResponse userSummaryResponse = userService.findUserSummary(bookItemResponse.userId());
+            UserSummaryResponse userSummaryResponse = userService.findUserSummaryByUid(bookItemResponse.uid());
             return ItemWithUserResponse.of(bookItemResponse, userSummaryResponse);
         }).toList();
     }
