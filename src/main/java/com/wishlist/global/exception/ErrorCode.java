@@ -13,6 +13,9 @@ public enum ErrorCode {
 
     // JWT
     JWT_CREATION_FAILED("JW001", HttpStatus.INTERNAL_SERVER_ERROR, "JWT 생성에 실패했습니다"),
+
+    // User
+    USER_NOT_FOUND("UR001", HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다"),
     ;
 
     private final String code;
