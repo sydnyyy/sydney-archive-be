@@ -7,14 +7,14 @@ import java.util.Optional;
 
 @Builder
 public record UserSummaryResponse (
-        String id,
+        String uid,
         String displayName,
         String profileImageUrl
 ) {
 
     public static UserSummaryResponse of(User user) {
         return UserSummaryResponse.builder()
-                .id(user.getId())
+                .uid(user.getUid())
                 .displayName(user.getDisplayName())
                 .profileImageUrl(user.getProfileImageUrl())
                 .build();
@@ -23,14 +23,14 @@ public record UserSummaryResponse (
     public static UserSummaryResponse ofOrUnknown(Optional<User> userOptional) {
         if (userOptional.isEmpty()) {
             return UserSummaryResponse.builder()
-                    .id("unknown")
+                    .uid("unknown")
                     .displayName("알 수 없는 사용자")
                     .profileImageUrl(null)
                     .build();
         }
 
         return UserSummaryResponse.builder()
-                .id(userOptional.get().getId())
+                .uid(userOptional.get().getUid())
                 .displayName(userOptional.get().getDisplayName())
                 .profileImageUrl(userOptional.get().getProfileImageUrl())
                 .build();

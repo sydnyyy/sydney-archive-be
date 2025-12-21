@@ -22,15 +22,15 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public void saveGuest(String clientId) {
-        boolean isExist = userRepository.existsByClientId(clientId);
+    public void saveGuest(String uid) {
+        boolean isExist = userRepository.existsByUid(uid);
         if (isExist) return;
 
         try {
-            User guest = User.of(Role.GUEST, clientId);
+            User guest = User.of(Role.GUEST, uid);
             userRepository.save(guest);
         } catch (DuplicateKeyException e) {
-            log.warn("[saveGuest] GUEST 중복 삽입 시도 clientId={}", clientId);
+            log.warn("[saveGuest] GUEST 중복 삽입 시도 uid={}", uid);
         }
     }
 
@@ -43,14 +43,14 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void updateLastMessageAt(String clientId, Instant sendAt) {
-        userRepository.findByClientId(clientId).ifPresentOrElse(
+    public void updateLastMessageAt(String uid, Instant sendAt) {
+        userRepository.findByUid(uid).ifPresentOrElse(
                 user -> {
                     user.updateLastMessageAt(sendAt);
                     userRepository.save(user);
                 },
                 () -> {
-                    User guest = User.of(Role.GUEST, clientId);
+                    User guest = User.of(Role.GUEST, uid);
                     guest.updateLastMessageAt(sendAt);
                     userRepository.save(guest);
                 }

@@ -23,7 +23,7 @@ public class User {
     private Role role;
 
     @Indexed(unique = true)
-    private String clientId;
+    private String uid;
 
     private String realName;
 
@@ -47,10 +47,10 @@ public class User {
     @LastModifiedDate
     private Instant updatedAt;
 
-    public static User of(Role role, String clientId) {
+    public static User of(Role role, String uid) {
         return User.builder()
                 .role(role)
-                .clientId(clientId)
+                .uid(uid)
                 .build();
     }
 
