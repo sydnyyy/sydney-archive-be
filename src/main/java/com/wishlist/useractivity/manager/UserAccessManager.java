@@ -26,20 +26,20 @@ public class UserAccessManager {
     private final Map<String, Long> lastAccessTimeMap = new ConcurrentHashMap<>();
     private final Set<AccessEntry> accessSortedSet = new ConcurrentSkipListSet<>();
 
-    record AccessEntry(long timestamp, String clientId) implements Comparable<AccessEntry> {
+    record AccessEntry(long timestamp, String uid) implements Comparable<AccessEntry> {
 
         @Override
             public int compareTo(@NotNull AccessEntry o) {
                 int cmp = Long.compare(this.timestamp, o.timestamp);
                 if (cmp != 0) return cmp;
-                return this.clientId.compareTo(o.clientId);
+                return this.uid.compareTo(o.uid);
             }
 
             @Override
             public boolean equals(Object o) {
                 if (this == o) return true;
-                if (!(o instanceof AccessEntry(long timestamp, String clientId))) return false;
-                return this.timestamp == timestamp && this.clientId.equals(clientId);
+                if (!(o instanceof AccessEntry(long timestamp, String uid))) return false;
+                return this.timestamp == timestamp && this.uid.equals(uid);
             }
     }
 
@@ -56,37 +56,37 @@ public class UserAccessManager {
         void unlock() { lock.unlock(); }
     }
 
-    private LockWithIndex getLock(String clientId) {
-        int index = clientId.hashCode() & (STRIPE_COUNT - 1);
+    private LockWithIndex getLock(String uid) {
+        int index = uid.hashCode() & (STRIPE_COUNT - 1);
         return new LockWithIndex(locks[index], index);
     }
 
-    public void recordAccess(String clientId) {
-        LockWithIndex lock = getLock(clientId);
+    public void recordAccess(String uid) {
+        LockWithIndex lock = getLock(uid);
         lock.lock();
         try {
-            log.info("[recordAccess] clientId='{}' acquired lock index={}", clientId, lock.index);
+            log.info("[recordAccess] uid='{}' acquired lock index={}", uid, lock.index);
 
             long now = System.currentTimeMillis();
-            Long previousTimestamp = lastAccessTimeMap.get(clientId);
+            Long previousTimestamp = lastAccessTimeMap.get(uid);
             if (previousTimestamp != null && previousTimestamp > now) {
                 return;
             }
 
             if (previousTimestamp != null) {
-                accessSortedSet.remove(new AccessEntry(previousTimestamp, clientId));
+                accessSortedSet.remove(new AccessEntry(previousTimestamp, uid));
             }
 
-            lastAccessTimeMap.put(clientId, now);
-            accessSortedSet.add(new AccessEntry(now, clientId));
+            lastAccessTimeMap.put(uid, now);
+            accessSortedSet.add(new AccessEntry(now, uid));
         } finally {
             lock.unlock();
-            log.info("[recordAccess] clientId='{}' released lock index={}", clientId, lock.index);
+            log.info("[recordAccess] uid='{}' released lock index={}", uid, lock.index);
         }
     }
 
-    public List<String> removeExpiredClientIds(long cutoff) {
-        List<String> expiredClientIds = new ArrayList<>();
+    public List<String> removeExpiredUids(long cutoff) {
+        List<String> expiredUids = new ArrayList<>();
         Iterator<AccessEntry> iterator = accessSortedSet.iterator();
         while (iterator.hasNext()) {
             AccessEntry entry = iterator.next();
@@ -94,17 +94,17 @@ public class UserAccessManager {
                 break;
             }
 
-            Long lastAccessTime = lastAccessTimeMap.get(entry.clientId);
+            Long lastAccessTime = lastAccessTimeMap.get(entry.uid);
             if (lastAccessTime != null && Objects.equals(lastAccessTime, entry.timestamp)) {
                 iterator.remove();
-                lastAccessTimeMap.remove(entry.clientId);
-                expiredClientIds.add(entry.clientId);
+                lastAccessTimeMap.remove(entry.uid);
+                expiredUids.add(entry.uid);
             }
         }
-        return expiredClientIds;
+        return expiredUids;
     }
 
-    public boolean hasActiveClient(String clientId) {
-        return lastAccessTimeMap.containsKey(clientId);
+    public boolean hasActiveUid(String uid) {
+        return lastAccessTimeMap.containsKey(uid);
     }
 }

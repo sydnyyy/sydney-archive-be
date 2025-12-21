@@ -20,17 +20,17 @@ public class UserAccessExpiryScheduler {
     private final WebSocketSessionManager webSocketSessionManager;
 
     @Scheduled(cron = "0 * * * * *")
-    public void expireInactiveClients() {
+    public void expireInactiveUids() {
         long cutoff = System.currentTimeMillis() - EXPIRY_MILLIS;
-        List<String> expiredClientIds = userAccessManager.removeExpiredClientIds(cutoff);
+        List<String> expiredUids = userAccessManager.removeExpiredUids(cutoff);
 
-        if (!expiredClientIds.isEmpty()) {
-            log.info("[expireInactiveClients] Expired clients detected: {}", expiredClientIds);
+        if (!expiredUids.isEmpty()) {
+            log.info("[expireInactiveUids] Expired uid detected: {}", expiredUids);
         }
 
-        for (String clientId : expiredClientIds) {
-            if (!userAccessManager.hasActiveClient(clientId)) {
-                webSocketSessionManager.removeAllSessions(clientId);
+        for (String uid : expiredUids) {
+            if (!userAccessManager.hasActiveUid(uid)) {
+                webSocketSessionManager.removeAllSessions(uid);
             }
         }
     }
