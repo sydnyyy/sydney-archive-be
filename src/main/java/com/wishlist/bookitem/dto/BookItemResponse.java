@@ -10,7 +10,7 @@ import java.util.List;
 public record BookItemResponse(
 
         String itemId,
-        String userId,
+        String uid,
         ItemType itemType,
 
         String title,
@@ -21,10 +21,10 @@ public record BookItemResponse(
         Integer thumbnailIndex
 ) {
 
-    public static BookItemResponse of(BookItem bookItem) {
+    public static BookItemResponse of(BookItem bookItem, String uid) {
         return BookItemResponse.builder()
                 .itemId(bookItem.getId())
-                .userId(bookItem.getUserId())
+                .uid(uid)
                 .itemType(bookItem.getItemType())
                 .title(bookItem.getTitle())
                 .author(bookItem.getAuthor())
