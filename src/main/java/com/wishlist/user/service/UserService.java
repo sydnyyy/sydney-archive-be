@@ -2,6 +2,8 @@ package com.wishlist.user.service;
 
 import com.mongodb.DuplicateKeyException;
 import com.wishlist.auth.dto.OAuth2Profile;
+import com.wishlist.global.exception.ErrorCode;
+import com.wishlist.global.exception.UserException;
 import com.wishlist.user.dto.UserResponse;
 import com.wishlist.user.dto.UserSummaryResponse;
 import com.wishlist.user.entity.User;
@@ -41,6 +43,24 @@ public class UserService {
                 .orElseGet(() -> User.of(oauth2Profile));
 
         userRepository.save(user);
+    }
+
+    public String findUserIdByUid(String uid) {
+        Optional<User> userOptional = userRepository.findByUid(uid);
+        if (userOptional.isEmpty()) {
+            throw new UserException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        return userOptional.get().getId();
+    }
+
+    public String findUidByUserId(String userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new UserException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        return userOptional.get().getUid();
     }
 
     public void updateLastMessageAt(String uid, Instant sendAt) {
