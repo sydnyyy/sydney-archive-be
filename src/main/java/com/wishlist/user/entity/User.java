@@ -54,9 +54,10 @@ public class User {
                 .build();
     }
 
-    public static User of(OAuth2Profile oauth2Profile) {
+    public static User of(OAuth2Profile oauth2Profile, String uid) {
         return User.builder()
                 .role(oauth2Profile.role())
+                .uid(uid)
                 .realName(oauth2Profile.realName())
                 .provider(oauth2Profile.provider())
                 .providerId(oauth2Profile.providerId())

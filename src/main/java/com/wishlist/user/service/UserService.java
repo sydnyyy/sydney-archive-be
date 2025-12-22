@@ -1,5 +1,6 @@
 package com.wishlist.user.service;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.mongodb.DuplicateKeyException;
 import com.wishlist.auth.dto.OAuth2Profile;
 import com.wishlist.global.exception.ErrorCode;
@@ -11,6 +12,9 @@ import com.wishlist.user.enums.Role;
 import com.wishlist.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -36,13 +40,27 @@ public class UserService {
         }
     }
 
+    @Retryable(
+            retryFor = DuplicateKeyException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100)
+    )
     public void saveOrUpdate(OAuth2Profile oauth2Profile) {
         User user = userRepository.findByProviderAndProviderId(
                 oauth2Profile.provider(), oauth2Profile.providerId())
 //                .map(entity -> entity.update(OAuth2Profile))
-                .orElseGet(() -> User.of(oauth2Profile));
+                .orElseGet(() -> {
+                    String uid = NanoIdUtils.randomNanoId();
+                    return User.of(oauth2Profile, uid);
+                });
 
         userRepository.save(user);
+    }
+
+    @Recover
+    public void recover(DuplicateKeyException e, OAuth2Profile oAuth2Profile) {
+        log.error("[UserService] UID 생성 실패 (중복 지속 발생). oauth2Profile.provider={}", oAuth2Profile.provider());
+        throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR, "UID 생성 중복 오류");
     }
 
     public String findUserIdByUid(String uid) {
