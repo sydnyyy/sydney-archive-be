@@ -4,7 +4,7 @@ import java.time.Instant;
 
 public record AccessEvent(
         String uid,
-        String cardId,
+        String itemId,
         Instant accessTime
 ) {
 }
