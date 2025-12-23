@@ -1,6 +1,6 @@
 package com.wishlist.global.config.websocket;
 
-import com.wishlist.global.config.cors.CorsProperties;
+import com.wishlist.global.config.web.CorsProperties;
 import com.wishlist.global.websocket.handler.WebSocketSessionHandler;
 import com.wishlist.global.websocket.handler.WebSocketHandShakeHandler;
 import com.wishlist.global.websocket.interceptor.StompInterceptor;
