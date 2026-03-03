@@ -1,6 +1,5 @@
 package com.wishlist.global.websocket.interceptor;
 
-import com.wishlist.global.websocket.manager.WebSocketSessionManager;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +19,6 @@ import java.util.Map;
 public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
 
     public static final String CLIENT_ID_KEY = "client_id";
-    public static final String TAB_ID_KEY = "tab_id";
-    private final WebSocketSessionManager webSocketSessionManager;
 
     @Override
     public boolean beforeHandshake(@NonNull ServerHttpRequest request,
@@ -36,14 +33,7 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             return false;
         }
 
-        String tabId = getTabId(request);
-        if (webSocketSessionManager.hasSessionByTabId(tabId)) {
-            log.warn("[beforeHandshake] Duplicate WebSocket connection prevented. URI={}", request.getURI());
-            return false;
-        }
-
         attributes.put(CLIENT_ID_KEY, clientId);
-        attributes.put(TAB_ID_KEY, tabId);
         return true;
     }
 
@@ -53,14 +43,6 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
                 .build()
                 .getQueryParams()
                 .getFirst(CLIENT_ID_KEY);
-    }
-
-    private String getTabId(ServerHttpRequest request) {
-        return UriComponentsBuilder
-                .fromUri(request.getURI())
-                .build()
-                .getQueryParams()
-                .getFirst(TAB_ID_KEY);
     }
 
     @Override

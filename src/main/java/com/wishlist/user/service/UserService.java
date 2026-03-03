@@ -1,6 +1,10 @@
 package com.wishlist.user.service;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.mongodb.DuplicateKeyException;
+import com.wishlist.auth.dto.OAuth2Profile;
+import com.wishlist.global.exception.ErrorCode;
+import com.wishlist.global.exception.UserException;
 import com.wishlist.user.dto.UserResponse;
 import com.wishlist.user.dto.UserSummaryResponse;
 import com.wishlist.user.entity.User;
@@ -8,6 +12,9 @@ import com.wishlist.user.enums.Role;
 import com.wishlist.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -21,26 +28,67 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public void saveGuest(String clientId) {
-        boolean isExist = userRepository.existsByClientId(clientId);
+    public void saveGuest(String uid) {
+        boolean isExist = userRepository.existsByUid(uid);
         if (isExist) return;
 
         try {
-            User guest = User.of(Role.GUEST, clientId);
+            User guest = User.of(Role.GUEST, uid);
             userRepository.save(guest);
         } catch (DuplicateKeyException e) {
-            log.warn("[saveGuest] GUEST 중복 삽입 시도 clientId={}", clientId);
+            log.warn("[saveGuest] GUEST 중복 삽입 시도 uid={}", uid);
         }
     }
 
-    public void updateLastMessageAt(String clientId, Instant sendAt) {
-        userRepository.findByClientId(clientId).ifPresentOrElse(
+    @Retryable(
+            retryFor = DuplicateKeyException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100)
+    )
+    public void saveOrUpdate(OAuth2Profile oauth2Profile) {
+        User user = userRepository.findByProviderAndProviderId(
+                oauth2Profile.provider(), oauth2Profile.providerId())
+//                .map(entity -> entity.update(OAuth2Profile))
+                .orElseGet(() -> {
+                    String uid = NanoIdUtils.randomNanoId();
+                    return User.of(oauth2Profile, uid);
+                });
+
+        userRepository.save(user);
+    }
+
+    @Recover
+    public void recover(DuplicateKeyException e, OAuth2Profile oAuth2Profile) {
+        log.error("[UserService] UID 생성 실패 (중복 지속 발생). oauth2Profile.provider={}", oAuth2Profile.provider());
+        throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR, "UID 생성 중복 오류");
+    }
+
+    public String findUserIdByUid(String uid) {
+        Optional<User> userOptional = userRepository.findByUid(uid);
+        if (userOptional.isEmpty()) {
+            throw new UserException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        return userOptional.get().getId();
+    }
+
+    public String findUidByUserId(String userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new UserException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        return userOptional.get().getUid();
+    }
+
+    public void updateLastMessageAt(String uid, Instant sendAt) {
+        userRepository.findByUid(uid).ifPresentOrElse(
                 user -> {
                     user.updateLastMessageAt(sendAt);
                     userRepository.save(user);
                 },
                 () -> {
-                    User guest = User.of(Role.GUEST, clientId);
+                    User guest = User.of(Role.GUEST, uid);
                     guest.updateLastMessageAt(sendAt);
                     userRepository.save(guest);
                 }
@@ -54,8 +102,11 @@ public class UserService {
                 .toList();
     }
 
-    public UserSummaryResponse findUserSummary(String userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        return UserSummaryResponse.ofOrUnknown(userOptional);
+    public UserSummaryResponse findUserSummaryByUid(String uid) {
+        return UserSummaryResponse.ofOrUnknown(userRepository.findByUid(uid));
+    }
+
+    public UserSummaryResponse findUserSummaryByUserId(String userId) {
+        return UserSummaryResponse.ofOrUnknown(userRepository.findById(userId));
     }
 }

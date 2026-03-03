@@ -8,15 +8,13 @@ import java.time.Instant;
 @Builder
 public record UserResponse (
 
-        String userId,
-        String clientId,
+        String uid,
         Instant lastMessageAt
 ) {
 
     public static UserResponse of(User user) {
         return UserResponse.builder()
-                .userId(user.getId())
-                .clientId(user.getClientId())
+                .uid(user.getUid())
                 .lastMessageAt(user.getLastMessageAt())
                 .build();
     }

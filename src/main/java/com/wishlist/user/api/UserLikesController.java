@@ -17,9 +17,9 @@ public class UserLikesController {
 
     private final LikeService likeService;
 
-    @GetMapping("/{clientId}/likes")
-    public ResponseEntity<?> getUserLikes(@PathVariable String clientId) {
-        Set<String> likedItemIds = likeService.getLikedItemIds(clientId);
+    @GetMapping("/{uid}/likes")
+    public ResponseEntity<?> getUserLikes(@PathVariable String uid) {
+        Set<String> likedItemIds = likeService.getLikedItemIds(uid);
         return ResponseEntity.ok(likedItemIds);
     }
 }

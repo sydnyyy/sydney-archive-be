@@ -1,4 +1,4 @@
-package com.wishlist.global.config.cors;
+package com.wishlist.global.config.web;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

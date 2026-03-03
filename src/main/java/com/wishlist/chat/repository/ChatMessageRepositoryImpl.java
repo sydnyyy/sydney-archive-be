@@ -18,9 +18,9 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepositoryCustom {
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public List<ChatMessageEntity> findByClientIdBeforeId(String clientId, String lastId, int limit) {
+    public List<ChatMessageEntity> findByUserIdAndBeforeId(String userId, String lastId, int limit) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("clientId").is(clientId));
+        query.addCriteria(Criteria.where("userId").is(userId));
 
         if (lastId != null && !lastId.isEmpty()) {
             query.addCriteria(Criteria.where("_id").lt(lastId));

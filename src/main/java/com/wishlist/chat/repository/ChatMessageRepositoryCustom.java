@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface ChatMessageRepositoryCustom {
 
-    List<ChatMessageEntity> findByClientIdBeforeId(String clientId, String lastId, int limit);
+    List<ChatMessageEntity> findByUserIdAndBeforeId(String userId, String lastId, int limit);
 }

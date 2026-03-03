@@ -11,6 +11,11 @@ public enum ErrorCode {
     // ReadingSession
     DUPLICATE_READING_SESSION("RS001", HttpStatus.CONFLICT, "이미 존재하는 독서 세션입니다 (title + author 중복)"),
 
+    // JWT
+    JWT_CREATION_FAILED("JW001", HttpStatus.INTERNAL_SERVER_ERROR, "JWT 생성에 실패했습니다"),
+
+    // User
+    USER_NOT_FOUND("UR001", HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다"),
     ;
 
     private final String code;
