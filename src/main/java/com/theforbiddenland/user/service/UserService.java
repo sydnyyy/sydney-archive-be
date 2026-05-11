@@ -115,11 +115,7 @@ public class UserService {
                 .toList();
     }
 
-    public UserSummaryResponse findUserSummaryByUid(String uid) {
-        return UserSummaryResponse.ofOrUnknown(userRepository.findBySid(uid));
-    }
-
-    public UserSummaryResponse findUserSummaryByUserId(String userId) {
-        return UserSummaryResponse.ofOrUnknown(userRepository.findById(userId));
+    public UserSummaryResponse findUserSummaryByUid(String sid) {
+        return UserSummaryResponse.ofOrUnknown(userRepository.findBySid(sid));
     }
 }
