@@ -33,7 +33,7 @@ public record ItemWithUserResponse(
                 .description(bookItemResponse.description())
                 .imageUrls(bookItemResponse.imageUrls())
                 .thumbnailIndex(bookItemResponse.thumbnailIndex())
-                .uid(userSummaryResponse.uid())
+                .uid(userSummaryResponse.sid())
                 .displayName(userSummaryResponse.displayName())
                 .profileImageUrl(userSummaryResponse.profileImageUrl())
                 .build();

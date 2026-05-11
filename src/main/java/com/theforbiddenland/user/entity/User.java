@@ -23,7 +23,7 @@ public class User {
     private Role role;
 
     @Indexed(unique = true)
-    private String uid;
+    private String sid;
 
     private String realName;
 
@@ -47,17 +47,17 @@ public class User {
     @LastModifiedDate
     private Instant updatedAt;
 
-    public static User of(Role role, String uid) {
+    public static User of(Role role, String sid) {
         return User.builder()
                 .role(role)
-                .uid(uid)
+                .sid(sid)
                 .build();
     }
 
-    public static User of(OAuth2Profile oauth2Profile, String uid) {
+    public static User of(OAuth2Profile oauth2Profile, String sid) {
         return User.builder()
                 .role(oauth2Profile.role())
-                .uid(uid)
+                .sid(sid)
                 .realName(oauth2Profile.realName())
                 .provider(oauth2Profile.provider())
                 .providerId(oauth2Profile.providerId())

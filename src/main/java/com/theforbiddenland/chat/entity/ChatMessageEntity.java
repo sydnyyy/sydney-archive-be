@@ -18,17 +18,17 @@ public class ChatMessageEntity {
     private String id;
 
     private String userId;
-    private String senderUserId;
-    private String receiverUserId;
+    private String senderSid;
+    private String receiverSid;
     private String content;
     private Instant sendAt;
     private ChatType type;
 
-    public static ChatMessageEntity of(ChatMessageDto chatMessageDto, String senderUserId, String receiverUserId) {
+    public static ChatMessageEntity of(ChatMessageDto chatMessageDto, String senderSid, String receiverSid) {
         return ChatMessageEntity.builder()
-                .userId(chatMessageDto.type().equals(ChatType.USER) ? senderUserId : receiverUserId)
-                .senderUserId(senderUserId)
-                .receiverUserId(receiverUserId)
+                .userId(chatMessageDto.type().equals(ChatType.USER) ? senderSid : receiverSid)
+                .senderSid(senderSid)
+                .receiverSid(receiverSid)
                 .content(chatMessageDto.content())
                 .sendAt(chatMessageDto.sendAt())
                 .type(chatMessageDto.type())

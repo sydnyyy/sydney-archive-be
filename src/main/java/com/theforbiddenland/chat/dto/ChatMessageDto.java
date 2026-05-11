@@ -10,18 +10,18 @@ import java.time.Instant;
 public record ChatMessageDto (
 
         String id,
-        String senderUid,
-        String receiverUid,
+        String senderSid,
+        String receiverSid,
         String content,
         Instant sendAt,
         ChatType type
 ) {
 
-    public static ChatMessageDto of(ChatMessageEntity chatMessageEntity, String senderUid, String receiverUid) {
+    public static ChatMessageDto of(ChatMessageEntity chatMessageEntity, String senderSid, String receiverSid) {
         return ChatMessageDto.builder()
                 .id(chatMessageEntity.getId())
-                .senderUid(senderUid)
-                .receiverUid(receiverUid)
+                .senderSid(senderSid)
+                .receiverSid(receiverSid)
                 .content(chatMessageEntity.getContent())
                 .sendAt(chatMessageEntity.getSendAt())
                 .type(chatMessageEntity.getType())
