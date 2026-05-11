@@ -29,7 +29,7 @@ public class UserService {
     private final UserRepository userRepository;
 
     public void saveGuest(String uid) {
-        boolean isExist = userRepository.existsByUid(uid);
+        boolean isExist = userRepository.existsBySid(uid);
         if (isExist) return;
 
         try {
@@ -37,6 +37,19 @@ public class UserService {
             userRepository.save(guest);
         } catch (DuplicateKeyException e) {
             log.warn("[saveGuest] GUEST 중복 삽입 시도 uid={}", uid);
+        }
+    }
+
+    public String saveGuest() {
+        String sid = NanoIdUtils.randomNanoId();
+
+        try {
+            User guest = User.of(Role.GUEST, sid);
+            userRepository.save(guest);
+            return sid;
+        } catch (DuplicateKeyException e) {
+            log.warn("[saveGuest] GUEST 중복 삽입 시도 sid={}", sid);
+            throw new UserException(ErrorCode.SID_CREATION_FAILED);
         }
     }
 
@@ -64,7 +77,7 @@ public class UserService {
     }
 
     public String findUserIdByUid(String uid) {
-        Optional<User> userOptional = userRepository.findByUid(uid);
+        Optional<User> userOptional = userRepository.findBySid(uid);
         if (userOptional.isEmpty()) {
             throw new UserException(ErrorCode.USER_NOT_FOUND);
         }
@@ -78,11 +91,11 @@ public class UserService {
             throw new UserException(ErrorCode.USER_NOT_FOUND);
         }
 
-        return userOptional.get().getUid();
+        return userOptional.get().getSid();
     }
 
     public void updateLastMessageAt(String uid, Instant sendAt) {
-        userRepository.findByUid(uid).ifPresentOrElse(
+        userRepository.findBySid(uid).ifPresentOrElse(
                 user -> {
                     user.updateLastMessageAt(sendAt);
                     userRepository.save(user);
@@ -103,7 +116,7 @@ public class UserService {
     }
 
     public UserSummaryResponse findUserSummaryByUid(String uid) {
-        return UserSummaryResponse.ofOrUnknown(userRepository.findByUid(uid));
+        return UserSummaryResponse.ofOrUnknown(userRepository.findBySid(uid));
     }
 
     public UserSummaryResponse findUserSummaryByUserId(String userId) {
