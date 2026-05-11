@@ -1,4 +1,4 @@
-package com.theforbiddenland.global.item;
+package com.theforbiddenland.item.enums;
 
 public enum ItemType {
 
