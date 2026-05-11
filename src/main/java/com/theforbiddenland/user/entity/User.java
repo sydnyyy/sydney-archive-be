@@ -11,6 +11,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Document(collection = "users")
 @Builder
@@ -47,6 +49,9 @@ public class User {
     @LastModifiedDate
     private Instant updatedAt;
 
+    @Builder.Default
+    private Set<String> likedItemIds = new LinkedHashSet<>();
+
     public static User of(Role role, String sid) {
         return User.builder()
                 .role(role)
@@ -68,5 +73,18 @@ public class User {
 
     public void updateLastMessageAt(Instant lastMessageAt) {
         this.lastMessageAt = lastMessageAt;
+    }
+
+    public void addLikedItemId(String itemId) {
+        // 최신 설정
+        if (this.likedItemIds.contains(itemId)) {
+            this.likedItemIds.remove(itemId);
+        }
+
+        this.likedItemIds.add(itemId);
+    }
+
+    public void deleteLikeItemId(String itemId) {
+        this.likedItemIds.remove(itemId);
     }
 }
