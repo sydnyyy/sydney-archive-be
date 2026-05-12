@@ -21,7 +21,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -76,15 +75,6 @@ public class UserService {
     public void recover(DuplicateKeyException e, OAuth2Profile oAuth2Profile) {
         log.error("[UserService] SID 생성 실패 (중복 지속 발생). oauth2Profile.provider={}", oAuth2Profile.provider());
         throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR, "SID 생성 중복 오류");
-    }
-
-    public String findUserIdBySid(String sid) {
-        Optional<User> userOptional = userRepository.findBySid(sid);
-        if (userOptional.isEmpty()) {
-            throw new UserException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        return userOptional.get().getId();
     }
 
     public void updateLastMessageAt(String sid, Instant sendAt) {

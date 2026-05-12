@@ -18,7 +18,7 @@ import java.util.Map;
 @Slf4j
 public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
 
-    public static final String CLIENT_ID_KEY = "client_id";
+    public static final String SID_KEY = "sid";
 
     @Override
     public boolean beforeHandshake(@NonNull ServerHttpRequest request,
@@ -26,23 +26,23 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
                                    @NonNull WebSocketHandler wsHandler,
                                    @NonNull Map<String, Object> attributes) throws Exception {
 
-        String clientId = getClientId(request);
-        if (clientId == null || clientId.isBlank()) {
-            log.warn("[beforeHandshake] Missing or empty Client ID in handshake request. URI: {}", request.getURI());
+        String sid = getSid(request);
+        if (sid == null || sid.isBlank()) {
+            log.warn("[beforeHandshake] Missing or empty sid in handshake request. URI: {}", request.getURI());
             response.setStatusCode(HttpStatus.BAD_REQUEST);
             return false;
         }
 
-        attributes.put(CLIENT_ID_KEY, clientId);
+        attributes.put(SID_KEY, sid);
         return true;
     }
 
-    private String getClientId(ServerHttpRequest request) {
+    private String getSid(ServerHttpRequest request) {
         return UriComponentsBuilder
                 .fromUri(request.getURI())
                 .build()
                 .getQueryParams()
-                .getFirst(CLIENT_ID_KEY);
+                .getFirst(SID_KEY);
     }
 
     @Override

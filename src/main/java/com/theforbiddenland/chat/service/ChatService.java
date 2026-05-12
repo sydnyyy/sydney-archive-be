@@ -24,7 +24,7 @@ public class ChatService {
     private final UserService userService;
 
     public void processUserMessage(ChatMessageDto chatMessageDto) {
-        log.info("📩 UserUid[{}] → AdminUid[{}]: {}", chatMessageDto.senderSid(), chatMessageDto.receiverSid(), chatMessageDto.content());
+        log.info("📩 UserSid[{}] → AdminSid[{}]: {}", chatMessageDto.senderSid(), chatMessageDto.receiverSid(), chatMessageDto.content());
 
         userService.saveGuest(chatMessageDto.senderSid());
         userService.updateLastMessageAt(chatMessageDto.senderSid(), chatMessageDto.sendAt());
@@ -40,10 +40,7 @@ public class ChatService {
     }
 
     private ChatMessageDto saveChatMessage(ChatMessageDto chatMessageDto) {
-        String senderUserId = userService.findUserIdByUid(chatMessageDto.senderSid());
-        String receiverUserId = userService.findUserIdByUid(chatMessageDto.receiverSid());
-
-        ChatMessageEntity chatMessage = ChatMessageEntity.of(chatMessageDto, senderUserId, receiverUserId);
+        ChatMessageEntity chatMessage = ChatMessageEntity.of(chatMessageDto, chatMessageDto.senderSid(), chatMessageDto.receiverSid());
         ChatMessageEntity chatMessageEntity = chatMessageRepository.save(chatMessage);
         return ChatMessageDto.of(chatMessageEntity, chatMessageDto.senderSid(), chatMessageDto.receiverSid());
     }
@@ -57,7 +54,7 @@ public class ChatService {
     }
 
     public void processAdminMessage(ChatMessageDto chatMessageDto) {
-        log.info("👩‍💻 AdminUid[{}] → UserUid[{}]: {}", chatMessageDto.senderSid(), chatMessageDto.receiverSid(), chatMessageDto.content());
+        log.info("👩‍💻 AdminSid[{}] → UserSid[{}]: {}", chatMessageDto.senderSid(), chatMessageDto.receiverSid(), chatMessageDto.content());
 
         chatMessageDto = saveChatMessage(chatMessageDto);
 
@@ -65,15 +62,13 @@ public class ChatService {
         sendMessageToUser(chatMessageDto.receiverSid(), chatMessageDto);
     }
 
-    public List<ChatMessageDto> getChatMessages(String userId, String cursorId, boolean isAdmin) {
+    public List<ChatMessageDto> getChatMessages(String sid, String cursorId, boolean isAdmin) {
         int limit = isAdmin ? 15 : 10;
         return chatMessageRepositoryImpl
-                .findByUserIdAndBeforeId(userId, cursorId, limit)
+                .findBySidAndBeforeId(sid, cursorId, limit)
                 .stream()
                 .map(chatMessage -> {
-                    String senderUid = userService.findUidByUserId(chatMessage.getSenderSid());
-                    String receiverUid = userService.findUidByUserId(chatMessage.getReceiverSid());
-                    return ChatMessageDto.of(chatMessage, senderUid, receiverUid);
+                    return ChatMessageDto.of(chatMessage, chatMessage.getSenderSid(), chatMessage.getReceiverSid());
                 })
                 .toList();
     }

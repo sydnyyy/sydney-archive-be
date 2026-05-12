@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Set;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -17,9 +17,9 @@ public class UserLikesController {
 
     private final LikeService likeService;
 
-    @GetMapping("/{uid}/likes")
-    public ResponseEntity<?> getUserLikes(@PathVariable String uid) {
-        Set<String> likedItemIds = likeService.getLikedItemIds(uid);
+    @GetMapping("/{sid}/likes")
+    public ResponseEntity<?> getUserLikes(@PathVariable String sid) {
+        List<String> likedItemIds = likeService.getLikedItemIds(sid);
         return ResponseEntity.ok(likedItemIds);
     }
 }

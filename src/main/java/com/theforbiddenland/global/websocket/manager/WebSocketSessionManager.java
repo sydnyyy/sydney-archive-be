@@ -34,9 +34,9 @@ public class WebSocketSessionManager {
     private final Map<String, Set<WebSocketSession>> sessionsByUser = new ConcurrentHashMap<>();
 
     public void addSession(WebSocketSession session) {
-        String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
-        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + clientId;
-        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+        String sid = session.getAttributes().get(WebSocketHandshakeInterceptor.SID_KEY).toString();
+        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + sid;
+        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + sid;
 
         redisTemplate.execute(
                 addSessionScript,
@@ -48,13 +48,13 @@ public class WebSocketSessionManager {
         );
 
         sessionsByUser
-                .computeIfAbsent(clientId, k -> ConcurrentHashMap.newKeySet())
+                .computeIfAbsent(sid, k -> ConcurrentHashMap.newKeySet())
                 .add(session);
     }
 
-    public void updateTTL(String clientId) {
-        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + clientId;
-        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+    public void updateTTL(String sid) {
+        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + sid;
+        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + sid;
 
         redisTemplate.execute(
                 updateTTLScript,
@@ -64,13 +64,13 @@ public class WebSocketSessionManager {
         );
     }
 
-    public void removeAllSessions(String clientId) {
-        Set<WebSocketSession> sessions = sessionsByUser.get(clientId);
+    public void removeAllSessions(String sid) {
+        Set<WebSocketSession> sessions = sessionsByUser.get(sid);
         if (sessions == null || sessions.isEmpty()) return;
 
         Set<WebSocketSession> snapshot = Set.copyOf(sessions);
         snapshot.forEach(session -> {
-            log.info("[removeAllSessions] WebSocket session 강제 종료. clientId={}, sessionId={}", clientId, session.getId());
+            log.info("[removeAllSessions] WebSocket session 강제 종료. sid={}, sessionId={}", sid, session.getId());
             removeSession(session);
         });
     }
@@ -78,13 +78,13 @@ public class WebSocketSessionManager {
     public void removeSession(WebSocketSession session) {
         webSocketSessionCloser.closeSession(session, CloseStatus.NORMAL);
 
-        String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
-        if (!sessionsByUser.containsKey(clientId)) {
+        String sid = session.getAttributes().get(WebSocketHandshakeInterceptor.SID_KEY).toString();
+        if (!sessionsByUser.containsKey(sid)) {
             return;
         }
 
-        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + clientId;
-        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
+        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + sid;
+        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + sid;
 
         redisTemplate.execute(
                 removeSessionScript,
@@ -92,17 +92,17 @@ public class WebSocketSessionManager {
                 session.getId()
         );
 
-        Set<WebSocketSession> sessions = sessionsByUser.get(clientId);
+        Set<WebSocketSession> sessions = sessionsByUser.get(sid);
         if (sessions == null) return;
 
         sessions.remove(session);
         if (sessions.isEmpty()) {
-            sessionsByUser.remove(clientId);
+            sessionsByUser.remove(sid);
         }
     }
 
-    public Set<String> getReadOnlyLocalSessions(String clientId) {
-        Set<WebSocketSession> sessions = sessionsByUser.get(clientId);
+    public Set<String> getReadOnlyLocalSessions(String sid) {
+        Set<WebSocketSession> sessions = sessionsByUser.get(sid);
         if (sessions == null || sessions.isEmpty()) {
             return Collections.emptySet();
         }
@@ -112,8 +112,8 @@ public class WebSocketSessionManager {
                 .collect(Collectors.toUnmodifiableSet());
     }
 
-    public boolean hasSessionByClientId(String clientId) {
-        Set<WebSocketSession> sessions = sessionsByUser.get(clientId);
+    public boolean hasSessionBySid(String sid) {
+        Set<WebSocketSession> sessions = sessionsByUser.get(sid);
         return sessions != null && !sessions.isEmpty();
     }
 

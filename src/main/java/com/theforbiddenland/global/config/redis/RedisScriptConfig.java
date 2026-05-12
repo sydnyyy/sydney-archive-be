@@ -85,7 +85,7 @@ public class RedisScriptConfig {
             if not exists then
                 local timestamp = tonumber(ARGV[2])
                 redis.call('ZADD', KEYS[1], timestamp, ARGV[1])
-                redis.call('XADD', KEYS[2], '*', 'clientId', ARGV[1])
+                redis.call('XADD', KEYS[2], '*', 'sid', ARGV[1])
                 return 1
             else
                 return 0
@@ -113,12 +113,12 @@ public class RedisScriptConfig {
                 return {}
             end
 
-            local expiredClientIds = redis.call('ZRANGEBYSCORE', zsetKey, 0, now - safeMillis)
+            local expiredSids = redis.call('ZRANGEBYSCORE', zsetKey, 0, now - safeMillis)
             local processed = {}
 
-            for _, clientId in ipairs(expiredClientIds) do
-                local mainKey = "WS:MAIN:" .. clientId
-                local signalKey = "WS:TERMINATE_SIGNAL:" .. clientId
+            for _, sid in ipairs(expiredSids) do
+                local mainKey = "WS:MAIN:" .. sid
+                local signalKey = "WS:TERMINATE_SIGNAL:" .. sid
         
                 local exists = redis.call('EXISTS', mainKey)
                 local sessions = {}
@@ -126,17 +126,17 @@ public class RedisScriptConfig {
                     sessions = redis.call('SMEMBERS', mainKey)
                 end
      
-                redis.call('ZREM', zsetKey, clientId)
+                redis.call('ZREM', zsetKey, sid)
         
                 if exists == 1 and #sessions > 0 then
-                    redis.call('ZADD', zsetKey, now, clientId)
-                    redis.call('XADD', streamKey, '*', 'clientId', clientId)
+                    redis.call('ZADD', zsetKey, now, sid)
+                    redis.call('XADD', streamKey, '*', 'sid', sid)
                 else
                     redis.call('DEL', mainKey)
                     redis.call('DEL', signalKey)
                 end
 
-                table.insert(processed, clientId)
+                table.insert(processed, sid)
             end
         
             if redis.call('GET', lockKey) == serverId then

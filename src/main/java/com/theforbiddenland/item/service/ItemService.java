@@ -22,7 +22,7 @@ public class ItemService {
         List<Item> items = itemRepository.findAll();
 
         return items.stream().map(item -> {
-            UserSummaryResponse userSummaryResponse = userService.findUserSummaryByUid(item.getOwnerSid());
+            UserSummaryResponse userSummaryResponse = userService.findUserSummaryBySid(item.getOwnerSid());
             return ItemResponse.of(item, userSummaryResponse);
         }).toList();
     }

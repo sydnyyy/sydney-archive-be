@@ -25,22 +25,22 @@ public class WebSocketTerminateSignalExpiryListener implements MessageListener {
         log.info("[onMessage] TTL expired for key={}", expiredKey);
 
         if (expiredKey.startsWith(WS_TERMINATE_SIGNAL_KEY_PREFIX)) {
-            String clientId = expiredKey.substring(WS_TERMINATE_SIGNAL_KEY_PREFIX.length());
-            sendTerminationCheckToClient(clientId);
+            String sid = expiredKey.substring(WS_TERMINATE_SIGNAL_KEY_PREFIX.length());
+            sendTerminationCheckToClient(sid);
         }
     }
 
-    private void sendTerminationCheckToClient(String clientId) {
-        Set<String> sessions = Optional.ofNullable(webSocketSessionManager.getReadOnlyLocalSessions(clientId))
+    private void sendTerminationCheckToClient(String sid) {
+        Set<String> sessions = Optional.ofNullable(webSocketSessionManager.getReadOnlyLocalSessions(sid))
                 .orElseGet(Set::of);
 
-        log.info("[sendTerminationCheckToClient] Sending session termination event to {} sessions for clientId={}", sessions.size(), clientId);
+        log.info("[sendTerminationCheckToClient] Sending session termination event to {} sessions for sid={}", sessions.size(), sid);
 
         sessions.forEach(sessionId -> {
             try {
-                systemEventPublisher.sendSessionTermination(clientId, sessionId, false);
+                systemEventPublisher.sendSessionTermination(sid, sessionId, false);
             } catch (Exception e) {
-                log.error("[sendTerminationCheckToClient] Failed to send termination event for clientId={}, sessionId={}", clientId, sessionId, e);
+                log.error("[sendTerminationCheckToClient] Failed to send termination event for sid={}, sessionId={}", sid, sessionId, e);
             }
         });
     }

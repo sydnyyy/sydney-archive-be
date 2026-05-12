@@ -21,18 +21,18 @@ public class SessionLifecycleService {
     private final WebSocketSessionManager webSocketSessionManager;
 
     public void processMaintain(SystemEventDto systemEvent) {
-        String clientId = systemEvent.clientId();
-        if (!webSocketSessionManager.hasSessionByClientId(clientId)) {
+        String sid = systemEvent.sid();
+        if (!webSocketSessionManager.hasSessionBySid(sid)) {
             return;
         }
 
-        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + clientId;
-        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + clientId;
+        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + sid;
+        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + sid;
 
         redisTemplate.execute(
                 maintainSessionScript,
                 List.of(WS_SESSION_TERMINATE_CHECK_ZSET, terminateSignalKey, mainKey),
-                clientId,
+                sid,
                 WebSocketSessionManager.TERMINATE_SIGNAL_KEY_DUMMY_VALUE,
                 String.valueOf(WebSocketSessionManager.TERMINATE_SIGNAL_KEY_TTL.toSeconds()),
                 String.valueOf(WebSocketSessionManager.MAIN_KEY_TTL.toSeconds())
@@ -40,15 +40,15 @@ public class SessionLifecycleService {
     }
 
     public void processTerminate(SystemEventDto systemEvent) {
-        String clientId = systemEvent.clientId();
-        if (!webSocketSessionManager.hasSessionByClientId(clientId)) {
+        String sid = systemEvent.sid();
+        if (!webSocketSessionManager.hasSessionBySid(sid)) {
             return;
         }
 
         redisTemplate.execute(
                 terminateSessionScript,
                 List.of(WS_SESSION_TERMINATE_CHECK_ZSET, WS_SESSION_TERMINATE_STREAM),
-                clientId,
+                sid,
                 String.valueOf(System.currentTimeMillis())
         );
     }

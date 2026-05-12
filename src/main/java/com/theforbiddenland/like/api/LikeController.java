@@ -12,15 +12,15 @@ public class LikeController {
 
     private final LikeService likeService;
 
-    @PostMapping("/{clientId}/{itemId}")
-    public ResponseEntity<?> addLike(@PathVariable String clientId, @PathVariable String itemId) {
-        likeService.addLike(clientId, itemId);
+    @PostMapping("/{sid}/{itemId}")
+    public ResponseEntity<?> addLike(@PathVariable String sid, @PathVariable String itemId) {
+        likeService.addLike(sid, itemId);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{clientId}/{itemId}")
-    public ResponseEntity<?> deleteLike(@PathVariable String clientId, @PathVariable String itemId) {
-        likeService.deleteLike(clientId, itemId);
+    @DeleteMapping("/{sid}/{itemId}")
+    public ResponseEntity<?> deleteLike(@PathVariable String sid, @PathVariable String itemId) {
+        likeService.deleteLike(sid, itemId);
         return ResponseEntity.ok().build();
     }
 }

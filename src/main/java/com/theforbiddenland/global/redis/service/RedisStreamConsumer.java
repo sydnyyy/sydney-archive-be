@@ -24,7 +24,7 @@ import static com.theforbiddenland.global.redis.constant.RedisKeys.*;
 public class RedisStreamConsumer {
 
     public static final String STREAM_OTHER_EVENT = "other_event_stream";
-    public static final String FIELD_CLIENT_ID = "clientId";
+    public static final String SID_FIELD = "sid";
 
     private final WebSocketSessionManager webSocketSessionManager;
     private final UserAccessManager userAccessManager;
@@ -72,14 +72,14 @@ public class RedisStreamConsumer {
     }
 
     private void handleTerminate(MapRecord<String, Object, Object> msg) {
-        String clientId = msg.getValue().get(FIELD_CLIENT_ID).toString();
-        log.info("[RedisStream] stream=WS_SESSION_TERMINATE_STREAM clientId={}", clientId);
-        webSocketSessionManager.removeAllSessions(clientId);
+        String sid = msg.getValue().get(SID_FIELD).toString();
+        log.info("[RedisStream] stream=WS_SESSION_TERMINATE_STREAM sid={}", sid);
+        webSocketSessionManager.removeAllSessions(sid);
     }
 
     private void handleUserActivity(MapRecord<String, Object, Object> msg) {
-        String clientId = msg.getValue().get(FIELD_CLIENT_ID).toString();
-        log.info("[RedisStream] stream=USER_ACTIVITY_STREAM clientId={}", clientId);
-        userAccessManager.recordAccess(clientId);
+        String sid = msg.getValue().get(SID_FIELD).toString();
+        log.info("[RedisStream] stream=USER_ACTIVITY_STREAM sid={}", sid);
+        userAccessManager.recordAccess(sid);
     }
 }
