@@ -70,6 +70,8 @@ public class SecurityConfig {
             "/login",
 //            "/api/auth/login",
             "/oauth2/**",
-            "/api/public/**"
+            "/api/public/**",
+            "/api/chat/**",
+            "/ws/**"
     };
 }
