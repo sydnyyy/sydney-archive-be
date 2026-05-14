@@ -39,7 +39,7 @@ public class TerminateCheckScheduler {
         );
 
         if (processed != null && !processed.isEmpty()) {
-            log.info("[checkTerminateCandidates] processed clientIds: {}", processed);
+            log.info("[checkTerminateCandidates] processed sids: {}", processed);
         }
     }
 }

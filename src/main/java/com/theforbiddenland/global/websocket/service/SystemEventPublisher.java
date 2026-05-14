@@ -11,16 +11,16 @@ public class SystemEventPublisher {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    public void sendSessionTermination(String clientId, String sessionId, boolean shouldTerminate) {
+    public void sendSessionTermination(String sid, String sessionId, boolean shouldTerminate) {
         SystemEventDto event = SystemEventDto.builder()
                 .type("SESSION_EXPIRED")
-                .clientId(clientId)
+                .sid(sid)
                 .sessionId(sessionId)
                 .shouldTerminate(shouldTerminate)
                 .build();
 
         messagingTemplate.convertAndSendToUser(
-                clientId,
+                sid,
                 "/queue/system",
                 event
         );

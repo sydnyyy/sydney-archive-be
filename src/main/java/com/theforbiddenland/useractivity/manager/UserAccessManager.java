@@ -26,20 +26,20 @@ public class UserAccessManager {
     private final Map<String, Long> lastAccessTimeMap = new ConcurrentHashMap<>();
     private final Set<AccessEntry> accessSortedSet = new ConcurrentSkipListSet<>();
 
-    record AccessEntry(long timestamp, String uid) implements Comparable<AccessEntry> {
+    record AccessEntry(long timestamp, String sid) implements Comparable<AccessEntry> {
 
         @Override
             public int compareTo(@NotNull AccessEntry o) {
                 int cmp = Long.compare(this.timestamp, o.timestamp);
                 if (cmp != 0) return cmp;
-                return this.uid.compareTo(o.uid);
+                return this.sid.compareTo(o.sid);
             }
 
             @Override
             public boolean equals(Object o) {
                 if (this == o) return true;
-                if (!(o instanceof AccessEntry(long timestamp, String uid))) return false;
-                return this.timestamp == timestamp && this.uid.equals(uid);
+                if (!(o instanceof AccessEntry(long timestamp, String sid))) return false;
+                return this.timestamp == timestamp && this.sid.equals(sid);
             }
     }
 
@@ -56,37 +56,37 @@ public class UserAccessManager {
         void unlock() { lock.unlock(); }
     }
 
-    private LockWithIndex getLock(String uid) {
-        int index = uid.hashCode() & (STRIPE_COUNT - 1);
+    private LockWithIndex getLock(String sid) {
+        int index = sid.hashCode() & (STRIPE_COUNT - 1);
         return new LockWithIndex(locks[index], index);
     }
 
-    public void recordAccess(String uid) {
-        LockWithIndex lock = getLock(uid);
+    public void recordAccess(String sid) {
+        LockWithIndex lock = getLock(sid);
         lock.lock();
         try {
-            log.info("[recordAccess] uid='{}' acquired lock index={}", uid, lock.index);
+            log.info("[recordAccess] sid='{}' acquired lock index={}", sid, lock.index);
 
             long now = System.currentTimeMillis();
-            Long previousTimestamp = lastAccessTimeMap.get(uid);
+            Long previousTimestamp = lastAccessTimeMap.get(sid);
             if (previousTimestamp != null && previousTimestamp > now) {
                 return;
             }
 
             if (previousTimestamp != null) {
-                accessSortedSet.remove(new AccessEntry(previousTimestamp, uid));
+                accessSortedSet.remove(new AccessEntry(previousTimestamp, sid));
             }
 
-            lastAccessTimeMap.put(uid, now);
-            accessSortedSet.add(new AccessEntry(now, uid));
+            lastAccessTimeMap.put(sid, now);
+            accessSortedSet.add(new AccessEntry(now, sid));
         } finally {
             lock.unlock();
-            log.info("[recordAccess] uid='{}' released lock index={}", uid, lock.index);
+            log.info("[recordAccess] sid='{}' released lock index={}", sid, lock.index);
         }
     }
 
-    public List<String> removeExpiredUids(long cutoff) {
-        List<String> expiredUids = new ArrayList<>();
+    public List<String> removeExpiredSids(long cutoff) {
+        List<String> expiredSids = new ArrayList<>();
         Iterator<AccessEntry> iterator = accessSortedSet.iterator();
         while (iterator.hasNext()) {
             AccessEntry entry = iterator.next();
@@ -94,17 +94,17 @@ public class UserAccessManager {
                 break;
             }
 
-            Long lastAccessTime = lastAccessTimeMap.get(entry.uid);
+            Long lastAccessTime = lastAccessTimeMap.get(entry.sid);
             if (lastAccessTime != null && Objects.equals(lastAccessTime, entry.timestamp)) {
                 iterator.remove();
-                lastAccessTimeMap.remove(entry.uid);
-                expiredUids.add(entry.uid);
+                lastAccessTimeMap.remove(entry.sid);
+                expiredSids.add(entry.sid);
             }
         }
-        return expiredUids;
+        return expiredSids;
     }
 
-    public boolean hasActiveUid(String uid) {
-        return lastAccessTimeMap.containsKey(uid);
+    public boolean hasActiveSid(String sid) {
+        return lastAccessTimeMap.containsKey(sid);
     }
 }

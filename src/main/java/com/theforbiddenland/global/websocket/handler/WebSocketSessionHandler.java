@@ -28,12 +28,12 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        String clientId = session.getAttributes().get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY).toString();
-        log.info("🟢 [afterConnectionEstablished] WebSocket 세션 연결 성공. clientId={}, sessionId={}", clientId, session.getId());
+        String sid = session.getAttributes().get(WebSocketHandshakeInterceptor.SID_KEY).toString();
+        log.info("🟢 [afterConnectionEstablished] WebSocket 세션 연결 성공. SId={}, sessionId={}", sid, session.getId());
 
         session.getAttributes().put(WS_LAST_HEARTBEAT_TIME, System.currentTimeMillis());
         webSocketSessionManager.addSession(session);
-        userAccessManager.recordAccess(clientId);
+        userAccessManager.recordAccess(sid);
         super.afterConnectionEstablished(session);
     }
 

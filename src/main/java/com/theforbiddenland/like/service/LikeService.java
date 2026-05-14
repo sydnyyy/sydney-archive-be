@@ -1,38 +1,26 @@
 package com.theforbiddenland.like.service;
 
-import com.mongodb.DuplicateKeyException;
-import com.theforbiddenland.like.entity.Like;
-import com.theforbiddenland.like.repository.LikeRepository;
+import com.theforbiddenland.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class LikeService {
 
-    private final LikeRepository likeRepository;
+    private final UserService userService;
 
-    public void addLike(String userId, String itemId) {
-        Like like = Like.of(userId, itemId);
-        try {
-            likeRepository.save(like);
-        } catch (DuplicateKeyException e) {
-            log.warn("Like already exists for userId={} itemId={}", userId, itemId);
-        }
+    public void addLike(String sid, String itemId) {
+        userService.addLike(sid, itemId);
     }
 
-    public void deleteLike(String userId, String itemId) {
-        likeRepository.deleteByUserIdAndItemId(userId, itemId);
+    public void deleteLike(String sid, String itemId) {
+        userService.deleteLike(sid, itemId);
     }
 
-    public Set<String> getLikedItemIds(String userId) {
-        return likeRepository.findByUserId(userId).stream()
-                .map(Like::getItemId)
-                .collect(Collectors.toSet());
+    public List<String> getLikedItemIds(String sid) {
+        return userService.getLikedItemIds(sid);
     }
 }

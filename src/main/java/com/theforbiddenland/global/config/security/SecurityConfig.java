@@ -1,4 +1,4 @@
-package com.theforbiddenland.auth.config;
+package com.theforbiddenland.global.config.security;
 
 import com.theforbiddenland.auth.service.CustomOAuth2UserService;
 import com.theforbiddenland.global.config.web.CorsProperties;
@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/sid").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/items").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -69,6 +70,8 @@ public class SecurityConfig {
             "/login",
 //            "/api/auth/login",
             "/oauth2/**",
-            "/api/public/**"
+            "/api/public/**",
+            "/api/chat/**",
+            "/ws/**"
     };
 }

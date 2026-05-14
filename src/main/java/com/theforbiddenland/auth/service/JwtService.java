@@ -21,17 +21,17 @@ public class JwtService {
 
     private final JwtProperties jwtProperties;
 
-    public String generateAccessToken(String clientId, Role role) {
-        return generateToken(clientId, role, ACCESS_TOKEN_VALIDITY_SECONDS);
+    public String generateAccessToken(String userId, Role role) {
+        return generateToken(userId, role, ACCESS_TOKEN_VALIDITY_SECONDS);
     }
 
-    public String generateRefreshToken(String clientId, Role role) {
-        return generateToken(clientId, role, REFRESH_TOKEN_VALIDITY_SECONDS);
+    public String generateRefreshToken(String userId, Role role) {
+        return generateToken(userId, role, REFRESH_TOKEN_VALIDITY_SECONDS);
     }
 
-    private String generateToken(String clientId, Role role, long validityInSeconds) {
-        if (clientId == null || clientId.isBlank()) {
-            throw new JwtCreationException("clientId is required");
+    private String generateToken(String userId, Role role, long validityInSeconds) {
+        if (userId == null || userId.isBlank()) {
+            throw new JwtCreationException("userId is required");
         }
 
         if (role == null) {
@@ -43,10 +43,10 @@ public class JwtService {
 
         return Jwts.builder()
                 .issuer(jwtProperties.getIssuer())
-                .subject(clientId)
+                .subject(userId)
                 .issuedAt(now)
                 .expiration(expiry)
-                .claim("clientId", clientId)
+                .claim("userId", userId)
                 .claim("role", role.name())
                 .signWith(getSigningKey())
                 .compact();

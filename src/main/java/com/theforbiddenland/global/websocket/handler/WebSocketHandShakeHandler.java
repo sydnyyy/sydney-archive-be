@@ -23,9 +23,9 @@ public class WebSocketHandShakeHandler extends DefaultHandshakeHandler {
                                       WebSocketHandler wsHandler,
                                       Map<String, Object> attributes) {
 
-        String clientId = (String) attributes.get(WebSocketHandshakeInterceptor.CLIENT_ID_KEY);
-        log.info("[determineUser] clientId={}", clientId);
+        String sid = (String) attributes.get(WebSocketHandshakeInterceptor.SID_KEY);
+        log.info("[determineUser] sid={}", sid);
 
-        return new StompPrincipal(clientId != null ? clientId : UUID.randomUUID().toString());
+        return new StompPrincipal(sid != null ? sid : UUID.randomUUID().toString());
     }
 }

@@ -11,6 +11,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Document(collection = "users")
 @Builder
@@ -23,7 +25,7 @@ public class User {
     private Role role;
 
     @Indexed(unique = true)
-    private String uid;
+    private String sid;
 
     private String realName;
 
@@ -47,17 +49,20 @@ public class User {
     @LastModifiedDate
     private Instant updatedAt;
 
-    public static User of(Role role, String uid) {
+    @Builder.Default
+    private Set<String> likedItemIds = new LinkedHashSet<>();
+
+    public static User of(Role role, String sid) {
         return User.builder()
                 .role(role)
-                .uid(uid)
+                .sid(sid)
                 .build();
     }
 
-    public static User of(OAuth2Profile oauth2Profile, String uid) {
+    public static User of(OAuth2Profile oauth2Profile, String sid) {
         return User.builder()
                 .role(oauth2Profile.role())
-                .uid(uid)
+                .sid(sid)
                 .realName(oauth2Profile.realName())
                 .provider(oauth2Profile.provider())
                 .providerId(oauth2Profile.providerId())
@@ -68,5 +73,18 @@ public class User {
 
     public void updateLastMessageAt(Instant lastMessageAt) {
         this.lastMessageAt = lastMessageAt;
+    }
+
+    public void addLikedItemId(String itemId) {
+        // 최신 설정
+        if (this.likedItemIds.contains(itemId)) {
+            this.likedItemIds.remove(itemId);
+        }
+
+        this.likedItemIds.add(itemId);
+    }
+
+    public void deleteLikeItemId(String itemId) {
+        this.likedItemIds.remove(itemId);
     }
 }

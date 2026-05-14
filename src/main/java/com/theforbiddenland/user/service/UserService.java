@@ -18,8 +18,9 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,15 +29,28 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public void saveGuest(String uid) {
-        boolean isExist = userRepository.existsByUid(uid);
+    public void saveGuest(String sid) {
+        boolean isExist = userRepository.existsBySid(sid);
         if (isExist) return;
 
         try {
-            User guest = User.of(Role.GUEST, uid);
+            User guest = User.of(Role.GUEST, sid);
             userRepository.save(guest);
         } catch (DuplicateKeyException e) {
-            log.warn("[saveGuest] GUEST 중복 삽입 시도 uid={}", uid);
+            log.warn("[saveGuest] GUEST 중복 삽입 시도 sid={}", sid);
+        }
+    }
+
+    public String saveGuest() {
+        String sid = NanoIdUtils.randomNanoId();
+
+        try {
+            User guest = User.of(Role.GUEST, sid);
+            userRepository.save(guest);
+            return sid;
+        } catch (DuplicateKeyException e) {
+            log.warn("[saveGuest] GUEST 중복 삽입 시도 sid={}", sid);
+            throw new UserException(ErrorCode.SID_CREATION_FAILED);
         }
     }
 
@@ -50,8 +64,8 @@ public class UserService {
                 oauth2Profile.provider(), oauth2Profile.providerId())
 //                .map(entity -> entity.update(OAuth2Profile))
                 .orElseGet(() -> {
-                    String uid = NanoIdUtils.randomNanoId();
-                    return User.of(oauth2Profile, uid);
+                    String sid = NanoIdUtils.randomNanoId();
+                    return User.of(oauth2Profile, sid);
                 });
 
         userRepository.save(user);
@@ -59,36 +73,18 @@ public class UserService {
 
     @Recover
     public void recover(DuplicateKeyException e, OAuth2Profile oAuth2Profile) {
-        log.error("[UserService] UID 생성 실패 (중복 지속 발생). oauth2Profile.provider={}", oAuth2Profile.provider());
-        throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR, "UID 생성 중복 오류");
+        log.error("[UserService] SID 생성 실패 (중복 지속 발생). oauth2Profile.provider={}", oAuth2Profile.provider());
+        throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR, "SID 생성 중복 오류");
     }
 
-    public String findUserIdByUid(String uid) {
-        Optional<User> userOptional = userRepository.findByUid(uid);
-        if (userOptional.isEmpty()) {
-            throw new UserException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        return userOptional.get().getId();
-    }
-
-    public String findUidByUserId(String userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            throw new UserException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        return userOptional.get().getUid();
-    }
-
-    public void updateLastMessageAt(String uid, Instant sendAt) {
-        userRepository.findByUid(uid).ifPresentOrElse(
+    public void updateLastMessageAt(String sid, Instant sendAt) {
+        userRepository.findBySid(sid).ifPresentOrElse(
                 user -> {
                     user.updateLastMessageAt(sendAt);
                     userRepository.save(user);
                 },
                 () -> {
-                    User guest = User.of(Role.GUEST, uid);
+                    User guest = User.of(Role.GUEST, sid);
                     guest.updateLastMessageAt(sendAt);
                     userRepository.save(guest);
                 }
@@ -102,11 +98,32 @@ public class UserService {
                 .toList();
     }
 
-    public UserSummaryResponse findUserSummaryByUid(String uid) {
-        return UserSummaryResponse.ofOrUnknown(userRepository.findByUid(uid));
+    public UserSummaryResponse findUserSummaryBySid(String sid) {
+        return UserSummaryResponse.ofOrUnknown(userRepository.findBySid(sid));
     }
 
-    public UserSummaryResponse findUserSummaryByUserId(String userId) {
-        return UserSummaryResponse.ofOrUnknown(userRepository.findById(userId));
+    public void addLike(String sid, String itemId) {
+        User user = userRepository.findBySid(sid)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+
+        user.addLikedItemId(itemId);
+        userRepository.save(user);
+    }
+
+    public void deleteLike(String sid, String itemId) {
+        User user = userRepository.findBySid(sid)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+
+        user.deleteLikeItemId(itemId);
+        userRepository.save(user);
+    }
+
+    public List<String> getLikedItemIds(String sid) {
+        User user = userRepository.findBySid(sid)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+
+        List<String> likedItemIds = new ArrayList<>(user.getLikedItemIds());
+        Collections.reverse(likedItemIds);
+        return likedItemIds;
     }
 }

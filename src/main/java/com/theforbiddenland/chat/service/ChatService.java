@@ -24,28 +24,25 @@ public class ChatService {
     private final UserService userService;
 
     public void processUserMessage(ChatMessageDto chatMessageDto) {
-        log.info("📩 UserUid[{}] → AdminUid[{}]: {}", chatMessageDto.senderUid(), chatMessageDto.receiverUid(), chatMessageDto.content());
+        log.info("📩 UserSid[{}] → AdminSid[{}]: {}", chatMessageDto.senderSid(), chatMessageDto.receiverSid(), chatMessageDto.content());
 
-        userService.saveGuest(chatMessageDto.senderUid());
-        userService.updateLastMessageAt(chatMessageDto.senderUid(), chatMessageDto.sendAt());
+        userService.saveGuest(chatMessageDto.senderSid());
+        userService.updateLastMessageAt(chatMessageDto.senderSid(), chatMessageDto.sendAt());
 
         chatMessageDto = saveChatMessage(chatMessageDto);
 
         String user = chatMessageDto.type() == ChatType.SYSTEM
-                ? chatMessageDto.receiverUid()
-                : chatMessageDto.senderUid();
+                ? chatMessageDto.receiverSid()
+                : chatMessageDto.senderSid();
 
         sendMessageToUser(user, chatMessageDto);
         sendMessageToAdmin(chatMessageDto);
     }
 
     private ChatMessageDto saveChatMessage(ChatMessageDto chatMessageDto) {
-        String senderUserId = userService.findUserIdByUid(chatMessageDto.senderUid());
-        String receiverUserId = userService.findUserIdByUid(chatMessageDto.receiverUid());
-
-        ChatMessageEntity chatMessage = ChatMessageEntity.of(chatMessageDto, senderUserId, receiverUserId);
+        ChatMessageEntity chatMessage = ChatMessageEntity.of(chatMessageDto, chatMessageDto.senderSid(), chatMessageDto.receiverSid());
         ChatMessageEntity chatMessageEntity = chatMessageRepository.save(chatMessage);
-        return ChatMessageDto.of(chatMessageEntity, chatMessageDto.senderUid(), chatMessageDto.receiverUid());
+        return ChatMessageDto.of(chatMessageEntity, chatMessageDto.senderSid(), chatMessageDto.receiverSid());
     }
 
     private void sendMessageToAdmin(ChatMessageDto chatMessageDto) {
@@ -57,23 +54,21 @@ public class ChatService {
     }
 
     public void processAdminMessage(ChatMessageDto chatMessageDto) {
-        log.info("👩‍💻 AdminUid[{}] → UserUid[{}]: {}", chatMessageDto.senderUid(), chatMessageDto.receiverUid(), chatMessageDto.content());
+        log.info("👩‍💻 AdminSid[{}] → UserSid[{}]: {}", chatMessageDto.senderSid(), chatMessageDto.receiverSid(), chatMessageDto.content());
 
         chatMessageDto = saveChatMessage(chatMessageDto);
 
         sendMessageToAdmin(chatMessageDto);
-        sendMessageToUser(chatMessageDto.receiverUid(), chatMessageDto);
+        sendMessageToUser(chatMessageDto.receiverSid(), chatMessageDto);
     }
 
-    public List<ChatMessageDto> getChatMessages(String userId, String cursorId, boolean isAdmin) {
+    public List<ChatMessageDto> getChatMessages(String sid, String cursorId, boolean isAdmin) {
         int limit = isAdmin ? 15 : 10;
         return chatMessageRepositoryImpl
-                .findByUserIdAndBeforeId(userId, cursorId, limit)
+                .findBySidAndBeforeId(sid, cursorId, limit)
                 .stream()
                 .map(chatMessage -> {
-                    String senderUid = userService.findUidByUserId(chatMessage.getSenderUserId());
-                    String receiverUid = userService.findUidByUserId(chatMessage.getReceiverUserId());
-                    return ChatMessageDto.of(chatMessage, senderUid, receiverUid);
+                    return ChatMessageDto.of(chatMessage, chatMessage.getSenderSid(), chatMessage.getReceiverSid());
                 })
                 .toList();
     }

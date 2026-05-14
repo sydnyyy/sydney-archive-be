@@ -20,11 +20,11 @@ public class ChatRestController {
 
     @GetMapping
     public ResponseEntity<List<ChatMessageDto>> getChatMessages(
-            @RequestParam String clientId,
+            @RequestParam String sid,
             @RequestParam(required = false) String cursorId,
             @RequestParam(defaultValue = "false") boolean isAdmin) {
 
-        List<ChatMessageDto> chatMessageDtos = chatService.getChatMessages(clientId, cursorId, isAdmin);
+        List<ChatMessageDto> chatMessageDtos = chatService.getChatMessages(sid, cursorId, isAdmin);
         return ResponseEntity.ok(chatMessageDtos);
     }
 }
