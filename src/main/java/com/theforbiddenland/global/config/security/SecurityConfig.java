@@ -1,4 +1,4 @@
-package com.theforbiddenland.auth.config;
+package com.theforbiddenland.global.config.security;
 
 import com.theforbiddenland.auth.service.CustomOAuth2UserService;
 import com.theforbiddenland.global.config.web.CorsProperties;
