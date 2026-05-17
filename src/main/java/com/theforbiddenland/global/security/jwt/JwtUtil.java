@@ -1,4 +1,4 @@
-package com.theforbiddenland.auth.service;
+package com.theforbiddenland.global.security.jwt;
 
 import com.theforbiddenland.global.config.auth.JwtProperties;
 import com.theforbiddenland.global.exception.JwtCreationException;
@@ -14,7 +14,7 @@ import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
-public class JwtService {
+public class JwtUtil {
 
     private static final long ACCESS_TOKEN_VALIDITY_SECONDS = 60 * 60 * 2;
     private static final long REFRESH_TOKEN_VALIDITY_SECONDS = 60 * 60 * 24 * 14;
