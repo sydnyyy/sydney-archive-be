@@ -3,6 +3,7 @@ package com.theforbiddenland.global.config.security;
 import com.theforbiddenland.auth.service.CustomOAuth2UserService;
 import com.theforbiddenland.global.config.web.CorsProperties;
 import com.theforbiddenland.global.security.handler.OAuth2AuthenticationFailureHandler;
+import com.theforbiddenland.global.security.handler.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final CorsProperties corsProperties;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
 
@@ -43,6 +45,7 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo ->
                                 userInfo.userService(customOAuth2UserService)
                         )
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
                         .failureHandler(oAuth2AuthenticationFailureHandler)
                 )
                 .build();

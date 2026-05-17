@@ -36,16 +36,10 @@ app:
   cors:
     allowed-origins: ${ALLOWED_ORIGINS}
   frontend-base-url: ${FE_URL}
-
-logging:
-  level:
-    org.springframework.messaging: DEBUG
-    org.springframework.web.socket: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.messaging.simp.SimpMessagingTemplate: DEBUG
-#    org.springframework.messaging.simp.stomp.StompSubProtocolHandler: DEBUG
-    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
-#    org.mongodb.driver: DEBUG
+  cookie:
+    secure: ${COOKIE_SECURE}
+    same-site: ${COOKIE_SAME_SITE}
+    path: ${COOKIE_PATH}
 
 jwt:
   issuer: ${JWT_ISSUER}
@@ -53,3 +47,13 @@ jwt:
 
 admin:
   email: ${ADMIN_EMAIL}
+
+logging:
+  level:
+    org.springframework.messaging: DEBUG
+    org.springframework.web.socket: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.messaging.simp.SimpMessagingTemplate: DEBUG
+    #    org.springframework.messaging.simp.stomp.StompSubProtocolHandler: DEBUG
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+#    org.mongodb.driver: DEBUG
