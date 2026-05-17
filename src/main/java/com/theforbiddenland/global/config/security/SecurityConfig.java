@@ -2,6 +2,7 @@ package com.theforbiddenland.global.config.security;
 
 import com.theforbiddenland.auth.service.CustomOAuth2UserService;
 import com.theforbiddenland.global.config.web.CorsProperties;
+import com.theforbiddenland.global.security.handler.OAuth2AuthenticationFailureHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,9 +25,11 @@ import java.util.List;
 public class SecurityConfig {
 
     private final CorsProperties corsProperties;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomOAuth2UserService customOAuth2UserService) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -37,12 +40,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
-                        .successHandler((request, response, authentication) -> {
-                            response.sendRedirect("/api/auth/oauth2/success");
-                        })
-                        .userInfoEndpoint(userInfoEndpointConfig ->
-                                userInfoEndpointConfig.userService(customOAuth2UserService)
+                        .userInfoEndpoint(userInfo ->
+                                userInfo.userService(customOAuth2UserService)
                         )
+                        .failureHandler(oAuth2AuthenticationFailureHandler)
                 )
                 .build();
     }
@@ -67,8 +68,6 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_ENDPOINTS = {
             "/",
-            "/login",
-//            "/api/auth/login",
             "/oauth2/**",
             "/api/public/**",
             "/api/chat/**",
