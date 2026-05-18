@@ -2,7 +2,6 @@ package com.theforbiddenland.item.dto.response;
 
 import com.theforbiddenland.item.enums.ItemType;
 import com.theforbiddenland.item.entity.Item;
-import com.theforbiddenland.user.dto.UserSummaryResponse;
 import lombok.Builder;
 
 import java.util.List;
@@ -17,13 +16,10 @@ public record ItemResponse(
         String description,
 
         List<String> imageUrls,
-        Integer thumbnailIndex,
-
-        String ownerDisplayName,
-        String ownerProfileImageUrl
+        Integer thumbnailIndex
 ) {
 
-    public static ItemResponse of(Item item, UserSummaryResponse userSummaryResponse) {
+    public static ItemResponse of(Item item) {
         return ItemResponse.builder()
                 .itemId(item.getId())
                 .itemType(item.getItemType())
@@ -31,8 +27,6 @@ public record ItemResponse(
                 .description(item.getDescription())
                 .imageUrls(item.getImageUrls())
                 .thumbnailIndex(item.getThumbnailIndex())
-                .ownerDisplayName(userSummaryResponse.displayName())
-                .ownerProfileImageUrl(userSummaryResponse.profileImageUrl())
                 .build();
     }
 }
