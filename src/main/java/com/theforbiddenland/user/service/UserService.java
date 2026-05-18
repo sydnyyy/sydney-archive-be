@@ -19,8 +19,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -99,30 +97,5 @@ public class UserService {
 
     public UserSummaryResponse findUserSummaryBySid(String sid) {
         return UserSummaryResponse.ofOrUnknown(userRepository.findBySid(sid));
-    }
-
-    public void addLike(String sid, String itemId) {
-        User user = userRepository.findBySid(sid)
-                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-
-        user.addLikedItemId(itemId);
-        userRepository.save(user);
-    }
-
-    public void deleteLike(String sid, String itemId) {
-        User user = userRepository.findBySid(sid)
-                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-
-        user.deleteLikeItemId(itemId);
-        userRepository.save(user);
-    }
-
-    public List<String> getLikedItemIds(String sid) {
-        User user = userRepository.findBySid(sid)
-                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-
-        List<String> likedItemIds = new ArrayList<>(user.getLikedItemIds());
-        Collections.reverse(likedItemIds);
-        return likedItemIds;
     }
 }
