@@ -29,7 +29,7 @@ public class User {
 
     private String realName;
 
-    private String displayName;
+    private String username;
 
     private String provider;
 
@@ -57,11 +57,12 @@ public class User {
                 .build();
     }
 
-    public static User of(CustomOAuth2User oauth2UserCustom, String sid) {
+    public static User of(CustomOAuth2User oauth2UserCustom, String sid, String username) {
         return User.builder()
                 .role(oauth2UserCustom.getRole())
                 .sid(sid)
                 .realName(oauth2UserCustom.getRealName())
+                .username(username)
                 .provider(oauth2UserCustom.getProvider())
                 .providerId(oauth2UserCustom.getProviderId())
                 .email(oauth2UserCustom.getEmail())

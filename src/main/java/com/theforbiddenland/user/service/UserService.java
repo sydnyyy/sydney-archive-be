@@ -3,6 +3,7 @@ package com.theforbiddenland.user.service;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.mongodb.DuplicateKeyException;
 import com.theforbiddenland.auth.dto.internal.CustomOAuth2User;
+import com.theforbiddenland.global.config.auth.AdminProperties;
 import com.theforbiddenland.global.exception.ErrorCode;
 import com.theforbiddenland.global.exception.UserException;
 import com.theforbiddenland.user.dto.UserResponse;
@@ -27,6 +28,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AdminProperties adminProperties;
 
     public void saveGuest(String sid) {
         boolean isExist = userRepository.existsBySid(sid);
@@ -62,7 +64,7 @@ public class UserService {
         User user = userRepository.findByProviderAndProviderId(customOAuth2User.getProvider(), customOAuth2User.getProviderId())
                 .orElseGet(() -> {
                     String sid = NanoIdUtils.randomNanoId();
-                    return userRepository.save(User.of(customOAuth2User, sid));
+                    return userRepository.save(User.of(customOAuth2User, sid, adminProperties.username()));
                 });
 
         return UserAuthContext.of(user);
