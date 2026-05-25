@@ -1,5 +1,6 @@
 package com.theforbiddenland.auth.service;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.theforbiddenland.global.cookie.CookieProvider;
 import com.theforbiddenland.global.security.jwt.JwtUtil;
 import com.theforbiddenland.user.enums.Role;
@@ -15,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 public class JwtService {
 
     private static final String REFRESH_TOKEN_REDIS_KEY_PREFIX = "RT:";
+    private static final String OAUTH_SUCCESS_SID_KEY_PREFIX = "OAUTH_SUCCESS_SID:";
+    private static final long OAUTH_SUCCESS_SID_EXPIRATION_SEC = 60 * 3;
 
     private final JwtUtil jwtUtil;
     private final StringRedisTemplate redisTemplate;
@@ -34,5 +37,18 @@ public class JwtService {
                 JwtUtil.REFRESH_TOKEN_EXPIRATION_SEC,
                 TimeUnit.SECONDS
         );
+    }
+
+    public String generateOAuthSuccessSid(String userId) {
+        String oauthSuccessSid = NanoIdUtils.randomNanoId();
+        String key = OAUTH_SUCCESS_SID_KEY_PREFIX + userId;
+        redisTemplate.opsForValue().set(
+                key,
+                oauthSuccessSid,
+                OAUTH_SUCCESS_SID_EXPIRATION_SEC,
+                TimeUnit.SECONDS
+        );
+
+        return oauthSuccessSid;
     }
 }

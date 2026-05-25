@@ -38,7 +38,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         jwtService.issueRefreshTokenToCookie(
                 userAuthContext.userId(), userAuthContext.role(), response);
 
-        String redirectUrl = frontendBaseUrl + "/oauth/success";
+        String oauthSuccessSid = jwtService.generateOAuthSuccessSid(userAuthContext.userId());
+        String redirectUrl = frontendBaseUrl + "/admin/oauth/success?sid=" + oauthSuccessSid;
         response.sendRedirect(redirectUrl);
     }
 }
