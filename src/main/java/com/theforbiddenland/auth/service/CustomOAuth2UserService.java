@@ -28,13 +28,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        CustomOAuth2User adminUser = extractOAuth2Profile(registrationId, attributes);
-        if (!isAdmin(adminUser)) {
+        CustomOAuth2User admin = extractOAuth2Profile(registrationId, attributes);
+        if (!isAdmin(admin)) {
             throw new OAuth2AuthenticationException(
                     new OAuth2Error(ErrorCode.NOT_AN_ADMIN.getCode()));
         }
 
-        return adminUser;
+        return admin;
     }
 
     private CustomOAuth2User extractOAuth2Profile(String providerId, Map<String, Object> attributes) {
