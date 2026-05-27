@@ -7,8 +7,8 @@ import com.theforbiddenland.global.config.auth.AdminProperties;
 import com.theforbiddenland.global.exception.ErrorCode;
 import com.theforbiddenland.global.exception.UserException;
 import com.theforbiddenland.user.dto.UserResponse;
-import com.theforbiddenland.user.dto.UserSummaryResponse;
 import com.theforbiddenland.user.dto.internal.UserAuthContext;
+import com.theforbiddenland.user.dto.response.AdminResponse;
 import com.theforbiddenland.user.entity.User;
 import com.theforbiddenland.user.enums.Role;
 import com.theforbiddenland.user.repository.UserRepository;
@@ -97,7 +97,9 @@ public class UserService {
                 .toList();
     }
 
-    public UserSummaryResponse findUserSummaryBySid(String sid) {
-        return UserSummaryResponse.ofOrUnknown(userRepository.findBySid(sid));
+    public AdminResponse getAdmin(String userId) {
+        return userRepository.findById(userId)
+                .map(AdminResponse::of)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }
 }
