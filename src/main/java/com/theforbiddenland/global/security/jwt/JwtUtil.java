@@ -10,6 +10,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,9 @@ public class JwtUtil {
 
     private static final long ACCESS_TOKEN_EXPIRATION_SEC = 60 * 15;
     public static final long REFRESH_TOKEN_EXPIRATION_SEC = 60 * 60 * 24 * 14;
+
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String BEARER_TOKEN_PREFIX = "Bearer ";
 
     public static final String CLAIM_USER_ID = "userId";
     public static final String CLAIM_ROLE = "role";
@@ -96,5 +100,13 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(
                 jwtProperties.getSecretKey().getBytes(StandardCharsets.UTF_8)
         );
+    }
+
+    public String getAccessToken(HttpServletRequest request) {
+        String header = request.getHeader(AUTHORIZATION_HEADER);
+        if (header != null && header.startsWith(BEARER_TOKEN_PREFIX)) {
+            return header.split(" ", 2)[1];
+        }
+        return null;
     }
 }
