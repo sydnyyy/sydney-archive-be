@@ -1,7 +1,7 @@
 package com.theforbiddenland.global.security.handler;
 
 import com.theforbiddenland.auth.dto.internal.CustomOAuth2User;
-import com.theforbiddenland.auth.service.JwtService;
+import com.theforbiddenland.auth.service.TokenService;
 import com.theforbiddenland.user.dto.internal.UserAuthContext;
 import com.theforbiddenland.user.service.UserService;
 import jakarta.servlet.ServletException;
@@ -23,7 +23,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private String frontendBaseUrl;
 
     private final UserService userService;
-    private final JwtService jwtService;
+    private final TokenService tokenService;
 
     @Override
     public void onAuthenticationSuccess(
@@ -35,10 +35,10 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         CustomOAuth2User adminUser = (CustomOAuth2User) authentication.getPrincipal();
         UserAuthContext userAuthContext = userService.saveAdmin(adminUser);
 
-        jwtService.issueRefreshTokenToCookie(
+        tokenService.issueRefreshTokenToCookie(
                 userAuthContext.userId(), userAuthContext.role(), response);
 
-        String oauthSuccessSid = jwtService.generateOAuthSuccessSid(userAuthContext.userId());
+        String oauthSuccessSid = tokenService.generateOAuthSuccessSid(userAuthContext.userId());
         String redirectUrl = frontendBaseUrl + "/admin/oauth/success?sid=" + oauthSuccessSid;
         response.sendRedirect(redirectUrl);
     }

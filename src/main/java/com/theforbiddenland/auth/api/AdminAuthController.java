@@ -1,7 +1,8 @@
 package com.theforbiddenland.auth.api;
 
-import com.theforbiddenland.auth.service.JwtService;
+import com.theforbiddenland.auth.service.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +14,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminAuthController {
 
-    private final JwtService jwtService;
+    private final TokenService tokenService;
 
     @PostMapping("/token/issue")
     public ResponseEntity<?> issueAccessToken(
             @RequestParam String sid,
             HttpServletRequest request
     ) {
-        String accessToken = jwtService.issueAccessToken(sid, request);
+        String accessToken = tokenService.issueAccessToken(sid, request);
         return ResponseEntity.ok(Map.of("accessToken", accessToken));
     }
 }

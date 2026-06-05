@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
-public class JwtService {
+public class TokenService {
 
     private static final String REFRESH_TOKEN_REDIS_KEY_PREFIX = "RT:";
     private static final String OAUTH_SUCCESS_SID_KEY_PREFIX = "OAUTH_SUCCESS_SID:";
