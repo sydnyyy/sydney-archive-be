@@ -90,7 +90,7 @@ public class JwtUtil {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException e) {
-            throw e;
+            throw new JwtAuthException(ErrorCode.REFRESH_TOKEN_EXPIRED);
         } catch (JwtException | IllegalArgumentException e) {
             throw new JwtAuthException(ErrorCode.INVALID_TOKEN);
         }

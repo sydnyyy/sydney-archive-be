@@ -18,6 +18,7 @@ public enum ErrorCode {
     REFRESH_TOKEN_MISSING("JT004", HttpStatus.UNAUTHORIZED, "리프레시 토큰이 존재하지 않습니다."),
     JWT_CLAIM_MISSING("JT005", HttpStatus.BAD_REQUEST, "토큰 필수 정보가 누락되었습니다."),
     INVALID_TOKEN("JT006", HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    REFRESH_TOKEN_EXPIRED("JT007", HttpStatus.UNAUTHORIZED, "리프레시 토큰이 만료되었습니다."),
 
     // auth
     UNSUPPORTED_PROVIDER("AU001", HttpStatus.BAD_REQUEST, "지원하지 않는 소셜 로그인 공급자입니다."),
