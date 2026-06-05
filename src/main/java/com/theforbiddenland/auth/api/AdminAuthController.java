@@ -24,4 +24,10 @@ public class AdminAuthController {
         String accessToken = tokenService.issueAccessToken(sid, request);
         return ResponseEntity.ok(Map.of("accessToken", accessToken));
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        tokenService.logout(request, response);
+        return ResponseEntity.noContent().build();
+    }
 }

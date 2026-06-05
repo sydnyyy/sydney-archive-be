@@ -46,4 +46,16 @@ public class CookieUtil {
                 .findFirst()
                 .orElseThrow(() -> new JwtAuthException(ErrorCode.REFRESH_TOKEN_MISSING));
     }
+
+    public void expireRefreshTokenCookie(HttpServletResponse httpServletResponse) {
+        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, "")
+                .path(cookieProperties.path())
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(cookieProperties.secure())
+                .sameSite(cookieProperties.sameSite())
+                .build();
+
+        httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
 }
