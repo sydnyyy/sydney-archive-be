@@ -60,10 +60,12 @@ public class TokenService {
 
     public String issueAccessToken(
             String oauthSuccessSid,
-            HttpServletRequest request
+            HttpServletRequest request,
+            HttpServletResponse response
     ) {
+        String refreshToken = null;
         try {
-            String refreshToken = cookieUtil.getRefreshToken(request);
+            refreshToken = cookieUtil.getRefreshToken(request);
             String userId = jwtUtil.getClaimUserId(refreshToken);
             Role role = jwtUtil.getClaimRole(refreshToken);
 
@@ -71,6 +73,10 @@ public class TokenService {
 
             return jwtUtil.generateAccessToken(userId, role);
         } catch (JwtAuthException e) {
+            if (refreshToken != null) {
+                deleteRefreshTokenFromRedis(refreshToken);
+            }
+            cookieUtil.expireRefreshTokenCookie(response);
             throw e;
         }
     }
