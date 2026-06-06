@@ -2,11 +2,13 @@ package com.theforbiddenland.user.service;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.mongodb.DuplicateKeyException;
-import com.theforbiddenland.auth.dto.OAuth2Profile;
+import com.theforbiddenland.auth.dto.internal.CustomOAuth2User;
+import com.theforbiddenland.global.config.auth.AdminProperties;
 import com.theforbiddenland.global.exception.ErrorCode;
 import com.theforbiddenland.global.exception.UserException;
 import com.theforbiddenland.user.dto.UserResponse;
-import com.theforbiddenland.user.dto.UserSummaryResponse;
+import com.theforbiddenland.user.dto.internal.UserAuthContext;
+import com.theforbiddenland.user.dto.response.AdminResponse;
 import com.theforbiddenland.user.entity.User;
 import com.theforbiddenland.user.enums.Role;
 import com.theforbiddenland.user.repository.UserRepository;
@@ -18,8 +20,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -28,6 +28,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AdminProperties adminProperties;
 
     public void saveGuest(String sid) {
         boolean isExist = userRepository.existsBySid(sid);
@@ -59,21 +60,19 @@ public class UserService {
             maxAttempts = 3,
             backoff = @Backoff(delay = 100)
     )
-    public void saveOrUpdate(OAuth2Profile oauth2Profile) {
-        User user = userRepository.findByProviderAndProviderId(
-                oauth2Profile.provider(), oauth2Profile.providerId())
-//                .map(entity -> entity.update(OAuth2Profile))
+    public UserAuthContext saveAdmin(CustomOAuth2User customOAuth2User) {
+        User user = userRepository.findByProviderAndProviderId(customOAuth2User.getProvider(), customOAuth2User.getProviderId())
                 .orElseGet(() -> {
                     String sid = NanoIdUtils.randomNanoId();
-                    return User.of(oauth2Profile, sid);
+                    return userRepository.save(User.of(customOAuth2User, sid, adminProperties.username()));
                 });
 
-        userRepository.save(user);
+        return UserAuthContext.of(user);
     }
 
     @Recover
-    public void recover(DuplicateKeyException e, OAuth2Profile oAuth2Profile) {
-        log.error("[UserService] SID 생성 실패 (중복 지속 발생). oauth2Profile.provider={}", oAuth2Profile.provider());
+    public UserAuthContext recover(DuplicateKeyException e, CustomOAuth2User customOAuth2User) {
+        log.error("[UserService] SID 생성 실패 (중복 지속 발생). oauth2Profile.provider={}", customOAuth2User.getProvider());
         throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR, "SID 생성 중복 오류");
     }
 
@@ -98,32 +97,9 @@ public class UserService {
                 .toList();
     }
 
-    public UserSummaryResponse findUserSummaryBySid(String sid) {
-        return UserSummaryResponse.ofOrUnknown(userRepository.findBySid(sid));
-    }
-
-    public void addLike(String sid, String itemId) {
-        User user = userRepository.findBySid(sid)
+    public AdminResponse getAdmin(String userId) {
+        return userRepository.findById(userId)
+                .map(AdminResponse::of)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-
-        user.addLikedItemId(itemId);
-        userRepository.save(user);
-    }
-
-    public void deleteLike(String sid, String itemId) {
-        User user = userRepository.findBySid(sid)
-                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-
-        user.deleteLikeItemId(itemId);
-        userRepository.save(user);
-    }
-
-    public List<String> getLikedItemIds(String sid) {
-        User user = userRepository.findBySid(sid)
-                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-
-        List<String> likedItemIds = new ArrayList<>(user.getLikedItemIds());
-        Collections.reverse(likedItemIds);
-        return likedItemIds;
     }
 }

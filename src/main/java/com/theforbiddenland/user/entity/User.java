@@ -1,6 +1,6 @@
 package com.theforbiddenland.user.entity;
 
-import com.theforbiddenland.auth.dto.OAuth2Profile;
+import com.theforbiddenland.auth.dto.internal.CustomOAuth2User;
 import com.theforbiddenland.user.enums.Role;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,15 +29,13 @@ public class User {
 
     private String realName;
 
-    private String displayName;
+    private String username;
 
     private String provider;
 
     private String providerId;
 
     private String email;
-
-    private String mobileNumber;
 
     private String profileImageUrl;
 
@@ -59,15 +57,15 @@ public class User {
                 .build();
     }
 
-    public static User of(OAuth2Profile oauth2Profile, String sid) {
+    public static User of(CustomOAuth2User oauth2UserCustom, String sid, String username) {
         return User.builder()
-                .role(oauth2Profile.role())
+                .role(oauth2UserCustom.getRole())
                 .sid(sid)
-                .realName(oauth2Profile.realName())
-                .provider(oauth2Profile.provider())
-                .providerId(oauth2Profile.providerId())
-                .email(oauth2Profile.email())
-                .mobileNumber(oauth2Profile.mobileNumber())
+                .realName(oauth2UserCustom.getRealName())
+                .username(username)
+                .provider(oauth2UserCustom.getProvider())
+                .providerId(oauth2UserCustom.getProviderId())
+                .email(oauth2UserCustom.getEmail())
                 .build();
     }
 

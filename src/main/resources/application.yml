@@ -20,14 +20,10 @@ spring:
             client-secret: ${NAVER_CLIENT_SECRET}
             client-name: Naver
             authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/naver"
+            redirect-uri: "${BE_URL}/login/oauth2/code/naver"
             scope:
               - name
               - email
-              - birth
-              - birthyear
-              - age
-              - mobile
 
         provider:
           naver:
@@ -39,6 +35,19 @@ spring:
 app:
   cors:
     allowed-origins: ${ALLOWED_ORIGINS}
+  frontend-base-url: ${FE_URL}
+  cookie:
+    secure: ${COOKIE_SECURE}
+    same-site: ${COOKIE_SAME_SITE}
+    path: ${COOKIE_PATH}
+
+jwt:
+  issuer: ${JWT_ISSUER}
+  secret_key: ${JWT_SECRET_KEY}
+
+admin:
+  username: ${ADMIN_NAME}
+  email: ${ADMIN_EMAIL}
 
 logging:
   level:
@@ -46,10 +55,6 @@ logging:
     org.springframework.web.socket: DEBUG
     org.springframework.web: DEBUG
     org.springframework.messaging.simp.SimpMessagingTemplate: DEBUG
-#    org.springframework.messaging.simp.stomp.StompSubProtocolHandler: DEBUG
+    #    org.springframework.messaging.simp.stomp.StompSubProtocolHandler: DEBUG
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
 #    org.mongodb.driver: DEBUG
-
-jwt:
-  issuer: ${JWT_ISSUER}
-  secret_key: ${JWT_SECRET_KEY}

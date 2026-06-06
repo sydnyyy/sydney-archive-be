@@ -1,7 +1,7 @@
 package com.theforbiddenland.auth.security;
 
-import com.theforbiddenland.user.entity.User;
 import com.theforbiddenland.user.enums.Role;
+import lombok.Builder;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,16 +10,12 @@ import java.util.Collection;
 import java.util.List;
 
 @Getter
+@Builder
 public class UserPrincipal implements UserDetails {
 
     // 내부용 사용자 식별자 (DB PK)
     private final String userId;
     private final Role role;
-
-    public UserPrincipal(User user) {
-        this.userId = user.getId();
-        this.role = user.getRole();
-    }
 
     /**
      * Spring Security 에서 사용하는 권한 목록

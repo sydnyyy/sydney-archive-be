@@ -2,6 +2,10 @@ package com.theforbiddenland.global.config.security;
 
 import com.theforbiddenland.auth.service.CustomOAuth2UserService;
 import com.theforbiddenland.global.config.web.CorsProperties;
+import com.theforbiddenland.global.security.filter.JwtAuthenticationFilter;
+import com.theforbiddenland.global.security.handler.OAuth2AuthenticationEntryPoint;
+import com.theforbiddenland.global.security.handler.OAuth2AuthenticationFailureHandler;
+import com.theforbiddenland.global.security.handler.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,9 +13,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -24,25 +30,38 @@ import java.util.List;
 public class SecurityConfig {
 
     private final CorsProperties corsProperties;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    private final OAuth2AuthenticationEntryPoint oAuth2AuthenticationEntryPoint;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomOAuth2UserService customOAuth2UserService) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/sid").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/items").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/admin/auth/token/issue").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/admin/auth/logout").permitAll()
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth -> oauth
-                        .successHandler((request, response, authentication) -> {
-                            response.sendRedirect("/api/auth/oauth2/success");
-                        })
-                        .userInfoEndpoint(userInfoEndpointConfig ->
-                                userInfoEndpointConfig.userService(customOAuth2UserService)
+                        .userInfoEndpoint(userInfo ->
+                                userInfo.userService(customOAuth2UserService)
                         )
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .failureHandler(oAuth2AuthenticationFailureHandler)
+                )
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint(oAuth2AuthenticationEntryPoint)
                 )
                 .build();
     }
@@ -67,8 +86,6 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_ENDPOINTS = {
             "/",
-            "/login",
-//            "/api/auth/login",
             "/oauth2/**",
             "/api/public/**",
             "/api/chat/**",
