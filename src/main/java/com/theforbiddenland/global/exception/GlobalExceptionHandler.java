@@ -29,6 +29,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<ErrorResponse> handleBaseException(BaseException e) {
+        log.error("[BaseException] errorCode={}, message={}",
+                e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+
         ErrorCode code = e.getErrorCode();
 
         ErrorResponse response = ErrorResponse.builder()
@@ -44,6 +47,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        log.error("[Exception] message={}", e.getMessage());
+
         ErrorCode code = ErrorCode.INTERNAL_SERVER_ERROR;
 
         ErrorResponse response = ErrorResponse.builder()
