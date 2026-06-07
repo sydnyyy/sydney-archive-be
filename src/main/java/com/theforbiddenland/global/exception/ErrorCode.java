@@ -1,7 +1,9 @@
 package com.theforbiddenland.global.exception;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+@Getter
 public enum ErrorCode {
 
     // Common
@@ -46,7 +48,4 @@ public enum ErrorCode {
         this.message = message;
     }
 
-    public String getCode() { return code; }
-    public HttpStatus getStatus() { return status; }
-    public String getMessage() { return message; }
 }
