@@ -16,10 +16,12 @@ public record ItemResponse(
         String description,
 
         List<String> imageUrls,
-        Integer thumbnailIndex
+        Integer thumbnailIndex,
+
+        Permission permission
 ) {
 
-    public static ItemResponse of(Item item) {
+    public static ItemResponse of(Item item, boolean isAdmin) {
         return ItemResponse.builder()
                 .itemId(item.getId())
                 .itemType(item.getItemType())
@@ -27,6 +29,16 @@ public record ItemResponse(
                 .description(item.getDescription())
                 .imageUrls(item.getImageUrls())
                 .thumbnailIndex(item.getThumbnailIndex())
+                .permission(Permission.of(isAdmin))
                 .build();
+    }
+
+    private record Permission(
+            boolean canEdit,
+            boolean canDelete
+    ) {
+        private static Permission of(boolean isAdmin) {
+            return new Permission(isAdmin, isAdmin);
+        }
     }
 }
