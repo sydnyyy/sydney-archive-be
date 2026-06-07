@@ -1,6 +1,8 @@
 package com.theforbiddenland.item.api;
 
 import com.theforbiddenland.auth.security.UserPrincipal;
+import com.theforbiddenland.item.dto.request.ItemCreateRequest;
+import com.theforbiddenland.item.dto.request.ItemUpdateRequest;
 import com.theforbiddenland.item.dto.response.ItemResponse;
 import com.theforbiddenland.item.service.ItemService;
 import lombok.RequiredArgsConstructor;
@@ -24,4 +26,24 @@ public class ItemController {
         List<ItemResponse> responses = itemService.findItems(userPrincipal);
         return ResponseEntity.ok(responses);
     }
+
+    @PostMapping
+    public ResponseEntity<?> createItem(
+            @RequestBody ItemCreateRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        ItemResponse response = itemService.createItem(request, userPrincipal);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{itemId}")
+    public ResponseEntity<?> updateItem(
+            @PathVariable String itemId,
+            @RequestBody ItemUpdateRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        ItemResponse response = itemService.updateItem(itemId, request, userPrincipal);
+        return ResponseEntity.ok(response);
+    }
+
 }
