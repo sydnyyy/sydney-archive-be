@@ -46,4 +46,12 @@ public class ItemController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/{itemId}")
+    public ResponseEntity<?> deleteItem(
+            @PathVariable String itemId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        itemService.deleteItem(itemId, userPrincipal);
+        return ResponseEntity.ok().build();
+    }
 }

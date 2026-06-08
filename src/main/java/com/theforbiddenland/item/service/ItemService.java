@@ -55,6 +55,21 @@ public class ItemService {
         return ItemResponse.of(item, true);
     }
 
+    public void deleteItem(String itemId, UserPrincipal userPrincipal) {
+        if (!isAdmin(userPrincipal)) {
+            throw new ItemException(ErrorCode.ACCESS_DENIED);
+        }
+
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemException(ErrorCode.ITEM_NOT_FOUND));
+
+        if (!item.getAdminSid().equals(userPrincipal.getUserId())) {
+            throw new ItemException(ErrorCode.ACCESS_DENIED);
+        }
+
+        itemRepository.delete(item);
+    }
+
     private boolean isAdmin(UserPrincipal userPrincipal) {
         if (userPrincipal == null) return false;
 
