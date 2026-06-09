@@ -69,7 +69,7 @@ public class TokenService {
             String userId = jwtUtil.getClaimUserId(refreshToken);
             Role role = jwtUtil.getClaimRole(refreshToken);
 
-            validateOAuthSuccessSid(userId, oauthSuccessSid);
+//            validateOAuthSuccessSid(userId, oauthSuccessSid);
 
             return jwtUtil.generateAccessToken(userId, role);
         } catch (JwtAuthException e) {

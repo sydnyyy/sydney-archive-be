@@ -18,7 +18,7 @@ public class AdminAuthController {
 
     @PostMapping("/token/issue")
     public ResponseEntity<?> issueAccessToken(
-            @RequestParam String sid,
+            @RequestParam(required = false) String sid,
             HttpServletRequest request,
             HttpServletResponse response
     ) {
