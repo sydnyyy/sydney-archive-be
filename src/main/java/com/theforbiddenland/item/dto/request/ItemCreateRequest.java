@@ -1,14 +1,14 @@
 package com.theforbiddenland.item.dto.request;
 
-import com.theforbiddenland.item.enums.ItemType;
+import com.theforbiddenland.global.enums.VisibilityStatus;
 
 import java.util.List;
 
 public record ItemCreateRequest(
-        ItemType itemType,
         String title,
         String description,
         List<String> imageUrls,
-        Integer thumbnailIndex
+        Integer thumbnailIndex,
+        VisibilityStatus visibilityStatus
 ) {
 }

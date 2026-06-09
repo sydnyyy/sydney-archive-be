@@ -1,8 +1,8 @@
 package com.theforbiddenland.item.entity;
 
+import com.theforbiddenland.global.enums.VisibilityStatus;
 import com.theforbiddenland.item.dto.request.ItemCreateRequest;
 import com.theforbiddenland.item.dto.request.ItemUpdateRequest;
-import com.theforbiddenland.item.enums.ItemType;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
@@ -20,30 +20,28 @@ public class Item {
 
     private String adminSid;
 
-    private ItemType itemType;
     private String title;
     private String description;
 
     private List<String> imageUrls;
     private Integer thumbnailIndex;
 
+    private VisibilityStatus visibilityStatus;
+
     public static Item of(ItemCreateRequest request, String adminSid) {
         return Item.builder()
                 .adminSid(adminSid)
-                .itemType(request.itemType())
                 .title(request.title())
                 .description(request.description())
                 .imageUrls(request.imageUrls())
                 .thumbnailIndex(request.thumbnailIndex())
+                .visibilityStatus(request.visibilityStatus())
                 .build();
     }
 
     public boolean update(ItemUpdateRequest request) {
         boolean isUpdated = false;
-        if (request.itemType() != this.itemType) {
-            this.itemType = request.itemType();
-            isUpdated = true;
-        }
+
         if (request.title() != null) {
             this.title = request.title();
             isUpdated = true;
