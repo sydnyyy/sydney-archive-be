@@ -1,6 +1,6 @@
 package com.theforbiddenland.item.dto.response;
 
-import com.theforbiddenland.item.enums.ItemType;
+import com.theforbiddenland.global.enums.VisibilityStatus;
 import com.theforbiddenland.item.entity.Item;
 import lombok.Builder;
 
@@ -11,22 +11,34 @@ public record ItemResponse(
 
         String itemId,
 
-        ItemType itemType,
         String title,
         String description,
 
         List<String> imageUrls,
-        Integer thumbnailIndex
+        Integer thumbnailIndex,
+
+        Permission permission,
+        VisibilityStatus visibilityStatus
 ) {
 
-    public static ItemResponse of(Item item) {
+    public static ItemResponse of(Item item, boolean isAdmin) {
         return ItemResponse.builder()
                 .itemId(item.getId())
-                .itemType(item.getItemType())
                 .title(item.getTitle())
                 .description(item.getDescription())
                 .imageUrls(item.getImageUrls())
                 .thumbnailIndex(item.getThumbnailIndex())
+                .permission(Permission.of(isAdmin))
+                .visibilityStatus(item.getVisibilityStatus())
                 .build();
+    }
+
+    private record Permission(
+            boolean canEdit,
+            boolean canDelete
+    ) {
+        private static Permission of(boolean isAdmin) {
+            return new Permission(isAdmin, isAdmin);
+        }
     }
 }

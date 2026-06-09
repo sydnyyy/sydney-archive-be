@@ -1,7 +1,9 @@
 package com.theforbiddenland.global.exception;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+@Getter
 public enum ErrorCode {
 
     // Common
@@ -31,6 +33,9 @@ public enum ErrorCode {
     USER_NOT_FOUND("UR001", HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다"),
     SID_CREATION_FAILED("UR002", HttpStatus.INTERNAL_SERVER_ERROR, "SID 생성 중 오류가 발생했습니다."),
     INVALID_ROLE_VALUE("UR003", HttpStatus.BAD_REQUEST, "정의되지 않은 권한 유형입니다."),
+
+    // Item
+    ITEM_NOT_FOUND("IT001", HttpStatus.NOT_FOUND, "존재하지 않는 아이템입니다"),
     ;
 
     private final String code;
@@ -43,7 +48,4 @@ public enum ErrorCode {
         this.message = message;
     }
 
-    public String getCode() { return code; }
-    public HttpStatus getStatus() { return status; }
-    public String getMessage() { return message; }
 }
