@@ -9,7 +9,6 @@ import com.theforbiddenland.item.dto.response.ItemResponse;
 import com.theforbiddenland.item.entity.Item;
 import com.theforbiddenland.item.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +21,7 @@ public class ItemService {
 
     // TODO Pagination 적용
     public List<ItemResponse> findItems(UserPrincipal userPrincipal) {
-        boolean isAdmin = isAdmin(userPrincipal);
+        boolean isAdmin = userPrincipal != null && userPrincipal.isAdmin();
 
         return itemRepository.findAll()
                 .stream()
@@ -31,7 +30,7 @@ public class ItemService {
     }
 
     public ItemResponse createItem(ItemCreateRequest request, UserPrincipal userPrincipal) {
-        if (!isAdmin(userPrincipal)) {
+        if (userPrincipal == null || !userPrincipal.isAdmin()) {
             throw new ItemException(ErrorCode.ACCESS_DENIED);
         }
 
@@ -40,7 +39,7 @@ public class ItemService {
     }
 
     public ItemResponse updateItem(String itemId, ItemUpdateRequest request, UserPrincipal userPrincipal) {
-        if (!isAdmin(userPrincipal)) {
+        if (userPrincipal == null || !userPrincipal.isAdmin()) {
             throw new ItemException(ErrorCode.ACCESS_DENIED);
         }
 
@@ -56,7 +55,7 @@ public class ItemService {
     }
 
     public void deleteItem(String itemId, UserPrincipal userPrincipal) {
-        if (!isAdmin(userPrincipal)) {
+        if (userPrincipal == null || !userPrincipal.isAdmin()) {
             throw new ItemException(ErrorCode.ACCESS_DENIED);
         }
 
@@ -68,13 +67,5 @@ public class ItemService {
         }
 
         itemRepository.delete(item);
-    }
-
-    private boolean isAdmin(UserPrincipal userPrincipal) {
-        if (userPrincipal == null) return false;
-
-        return userPrincipal.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch(auth -> auth.equals("ROLE_ADMIN"));
     }
 }
