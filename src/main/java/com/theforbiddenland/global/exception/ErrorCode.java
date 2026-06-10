@@ -36,6 +36,9 @@ public enum ErrorCode {
 
     // Item
     ITEM_NOT_FOUND("IT001", HttpStatus.NOT_FOUND, "존재하지 않는 아이템입니다"),
+
+    // DevLog
+    DEVLOG_NOT_FOUND("DV001", HttpStatus.NOT_FOUND, "존재하지 않는 개발 로그입니다"),
     ;
 
     private final String code;
