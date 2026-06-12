@@ -40,6 +40,10 @@ app:
     secure: ${COOKIE_SECURE}
     same-site: ${COOKIE_SAME_SITE}
     path: ${COOKIE_PATH}
+  auth-session:
+    auth-session-timeout-sec: 300
+  system:
+    buffer-time-sec: 15
 
 jwt:
   issuer: ${JWT_ISSUER}

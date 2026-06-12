@@ -1,5 +1,6 @@
 package com.theforbiddenland.global.cookie;
 
+import com.theforbiddenland.global.config.auth.AuthSessionProperties;
 import com.theforbiddenland.global.config.cookie.CookieProperties;
 import com.theforbiddenland.global.exception.ErrorCode;
 import com.theforbiddenland.global.exception.JwtAuthException;
@@ -18,9 +19,23 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class CookieUtil {
 
+    public static final String AUTH_CODE_COOKIE_NAME = "TFLASAC";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "TFLRT";
 
     private final CookieProperties cookieProperties;
+    private final AuthSessionProperties authSessionProperties;
+
+    public void setAuthCodeCookie(HttpServletResponse httpServletResponse, String authCode) {
+        ResponseCookie cookie = ResponseCookie.from(AUTH_CODE_COOKIE_NAME, authCode)
+                .path(cookieProperties.path())
+                .maxAge(authSessionProperties.getAuthSessionTimeoutSec())
+                .httpOnly(true)
+                .secure(cookieProperties.secure())
+                .sameSite(cookieProperties.sameSite())
+                .build();
+
+        httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
 
     public void setRefreshTokenCookie(String refreshToken, HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
