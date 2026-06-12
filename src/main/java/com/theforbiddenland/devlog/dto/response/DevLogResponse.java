@@ -7,6 +7,8 @@ import lombok.Builder;
 
 @Builder
 public record DevLogResponse(
+        String id,
+
         String title,
         String description,
 
@@ -16,6 +18,7 @@ public record DevLogResponse(
 
     public static DevLogResponse of(DevLog devLog, boolean isAdmin) {
         return DevLogResponse.builder()
+                .id(devLog.getId())
                 .title(devLog.getTitle())
                 .description(devLog.getDescription())
                 .visibilityStatus(devLog.getVisibilityStatus())
