@@ -26,7 +26,7 @@ public class AdminAuthController {
     public ResponseEntity<?> getAuthSession(HttpServletResponse httpServletResponse) {
         AuthSessionContext authSessionContext = authSessionService.generateAuthSession();
 
-        if (authSessionContext.qrCodeBase64() != null) {
+        if (authSessionContext.authCode() != null) {
             cookieUtil.setAuthCodeCookie(httpServletResponse, authSessionContext.authCode());
         }
         return ResponseEntity.ok(AuthSessionResponse.of(authSessionContext));

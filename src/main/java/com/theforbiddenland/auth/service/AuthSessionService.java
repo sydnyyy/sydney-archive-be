@@ -32,16 +32,14 @@ public class AuthSessionService {
     public AuthSessionContext generateAuthSession() {
         String sid = UUID.randomUUID().toString();
         String authCode = UUID.randomUUID().toString();
+        authSessionRedisService.saveAuthSession(sid, authCode);
 
         String qrCodeBase64 = generateQrCodeBase64(sid);
-        if (qrCodeBase64 == null) {
-            return AuthSessionContext.failed();
-        }
 
-        authSessionRedisService.saveAuthSession(sid, authCode);
         long expiredAt = Instant.now()
                 .plusSeconds(authSessionProperties.getAuthSessionTimeoutSec())
                 .toEpochMilli();
+
         return AuthSessionContext.of(qrCodeBase64, sid, authCode, expiredAt);
     }
 

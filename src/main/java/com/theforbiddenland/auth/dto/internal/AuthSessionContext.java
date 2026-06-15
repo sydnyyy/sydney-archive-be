@@ -18,8 +18,4 @@ public record AuthSessionContext(
                 .expiredAt(expiredAt)
                 .build();
     }
-
-    public static AuthSessionContext failed() {
-        return new AuthSessionContext(null, null, null, 0L);
-    }
 }
