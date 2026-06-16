@@ -11,9 +11,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(JwtAuthException.class)
-    public ResponseEntity<ErrorResponse> handleJwtAuthException(JwtAuthException e) {
-        log.error("[JwtAuthException] errorCode={}, message={}",
+    @ExceptionHandler({AuthSessionException.class, JwtAuthException.class})
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(BaseException e) {
+        log.error("[{}] errorCode={}, message={}",
+                e.getClass().getSimpleName(),
                 e.getErrorCode().getCode(), e.getErrorCode().getMessage());
 
         ErrorResponse response = ErrorResponse.builder()
