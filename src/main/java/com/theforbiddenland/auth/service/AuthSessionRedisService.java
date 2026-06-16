@@ -15,8 +15,11 @@ import java.util.Map;
 public class AuthSessionRedisService {
 
     private static final String AUTH_SESSION_KEY_PREFIX = "auth:session:";
+
     private static final String AUTH_SESSION_AUTH_CODE_FIELD_NAME = "authCode";
     private static final String AUTH_SESSION_STATUS_FIELD_NAME = "status";
+    private static final String AUTH_SESSION_VERSION_FIELD_NAME = "version";
+    private static final Integer AUTH_SESSION_VERSION_DEFAULT = 0;
 
     private final StringRedisTemplate redisTemplate;
     private final AuthSessionProperties authSessionProperties;
@@ -26,7 +29,8 @@ public class AuthSessionRedisService {
         String key = getAuthSessionKey(sid);
         Map<String, String> map = Map.of(
                 AUTH_SESSION_AUTH_CODE_FIELD_NAME, authCode,
-                AUTH_SESSION_STATUS_FIELD_NAME, AuthSessionStatus.PENDING.name()
+                AUTH_SESSION_STATUS_FIELD_NAME, AuthSessionStatus.PENDING.name(),
+                AUTH_SESSION_VERSION_FIELD_NAME, AUTH_SESSION_VERSION_DEFAULT.toString()
         );
 
         redisTemplate.opsForHash().putAll(key, map);
