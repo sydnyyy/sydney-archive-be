@@ -6,6 +6,7 @@ import com.theforbiddenland.global.security.filter.JwtAuthenticationFilter;
 import com.theforbiddenland.global.security.handler.OAuth2AuthenticationEntryPoint;
 import com.theforbiddenland.global.security.handler.OAuth2AuthenticationFailureHandler;
 import com.theforbiddenland.global.security.handler.OAuth2AuthenticationSuccessHandler;
+import com.theforbiddenland.global.security.resolver.AuthSessionStateAssignmentOAuth2AuthorizationRequestResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,7 @@ public class SecurityConfig {
     private final OAuth2AuthenticationEntryPoint oAuth2AuthenticationEntryPoint;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final AuthSessionStateAssignmentOAuth2AuthorizationRequestResolver authSessionStateAssignmentOAuth2AuthorizationRequestResolver;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -54,6 +56,8 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth -> oauth
+                        .authorizationEndpoint(authorizationEndpointConfig
+                                -> authorizationEndpointConfig.authorizationRequestResolver(authSessionStateAssignmentOAuth2AuthorizationRequestResolver))
                         .userInfoEndpoint(userInfo ->
                                 userInfo.userService(customOAuth2UserService)
                         )
