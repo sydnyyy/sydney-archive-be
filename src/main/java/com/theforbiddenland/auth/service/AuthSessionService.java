@@ -67,4 +67,15 @@ public class AuthSessionService {
     public boolean bindStateToAuthSession(String sid, String state) {
         return authSessionRedisService.bindStateToAuthSession(sid, state);
     }
+
+    public boolean assignUserIdToAuthSession(String state, String userId) {
+        if (state == null || userId == null) return false;
+
+        boolean isAssigned = authSessionRedisService.assignUserIdToAuthSession(state, userId);
+        if (!isAssigned) {
+            log.warn("Failed to assign userId to auth session: no session mapping found for state. state={}", state);
+        }
+
+        return isAssigned;
+    }
 }

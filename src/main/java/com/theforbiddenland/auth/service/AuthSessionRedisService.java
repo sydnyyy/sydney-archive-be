@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 @Service
@@ -22,6 +23,7 @@ public class AuthSessionRedisService {
     private static final String AUTH_SESSION_VERSION_FIELD_NAME = "version";
     private static final Integer AUTH_SESSION_VERSION_DEFAULT = 0;
     private static final String AUTH_SESSION_STATE_FIELD_NAME = "state";
+    private static final String AUTH_SESSION_USER_ID_FIELD_NAME = "userId";
 
     private final StringRedisTemplate redisTemplate;
     private final AuthSessionProperties authSessionProperties;
@@ -63,6 +65,32 @@ public class AuthSessionRedisService {
                 AUTH_SESSION_STATE_FIELD_NAME,
                 state,
                 sid
+        );
+
+        return result == 1L;
+    }
+
+    public boolean assignUserIdToAuthSession(String state, String userId) {
+        String stateKey = getAuthStateKey(state);
+
+        String script = """
+            local sid = redis.call('GET', KEYS[1])
+            
+            if sid then
+                local sessionKey = ARGV[1] .. sid
+                redis.call('HSET', sessionKey, ARGV[2], ARGV[3])
+                return 1
+            else
+                return 0
+            end
+            """;
+
+        Long result = redisTemplate.execute(
+                new DefaultRedisScript<>(script, Long.class),
+                Collections.singletonList(stateKey),
+                AUTH_SESSION_KEY_PREFIX,
+                AUTH_SESSION_USER_ID_FIELD_NAME,
+                userId
         );
 
         return result == 1L;

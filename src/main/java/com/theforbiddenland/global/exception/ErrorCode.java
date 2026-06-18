@@ -28,6 +28,7 @@ public enum ErrorCode {
     COOKIE_NOT_FOUND("AU003", HttpStatus.UNAUTHORIZED, "인증 쿠키가 존재하지 않습니다."),
     LOGIN_SESSION_ID_EXPIRED("AU004", HttpStatus.UNAUTHORIZED, "로그인 인증 세션이 만료되었습니다."),
     ACCESS_DENIED("AU005", HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+    AUTH_PROCESSING_FAILED("AU006", HttpStatus.UNAUTHORIZED, "인증 처리 중 오류가 발생했습니다."),
 
     // User
     USER_NOT_FOUND("UR001", HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다"),
