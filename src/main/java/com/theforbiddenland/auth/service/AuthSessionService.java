@@ -64,7 +64,7 @@ public class AuthSessionService {
         }
     }
 
-    public boolean assignStateToAuthSession(String sid, String state) {
-        return authSessionRedisService.assignStateToAuthSession(sid, state);
+    public boolean bindStateToAuthSession(String sid, String state) {
+        return authSessionRedisService.bindStateToAuthSession(sid, state);
     }
 }

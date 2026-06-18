@@ -44,7 +44,7 @@ public class AuthSessionStateAssignmentOAuth2AuthorizationRequestResolver implem
         if (sid == null) return null;
 
         String authRequestState = authRequest.getState();
-        boolean isAssigned = authSessionService.assignStateToAuthSession(sid, authRequestState);
+        boolean isAssigned = authSessionService.bindStateToAuthSession(sid, authRequestState);
         if (!isAssigned) return null;
 
         return OAuth2AuthorizationRequest.from(authRequest)

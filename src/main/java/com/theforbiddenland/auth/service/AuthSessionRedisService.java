@@ -8,7 +8,7 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Map;
 
 @Service
@@ -16,6 +16,7 @@ import java.util.Map;
 public class AuthSessionRedisService {
 
     private static final String AUTH_SESSION_KEY_PREFIX = "auth:session:";
+    private static final String AUTH_STATE_KEY_PREFIX = "auth:state:";
 
     private static final String AUTH_SESSION_AUTH_CODE_FIELD_NAME = "authCode";
     private static final String AUTH_SESSION_VERSION_FIELD_NAME = "version";
@@ -40,14 +41,16 @@ public class AuthSessionRedisService {
         ));
     }
 
-    public boolean assignStateToAuthSession(String sid, String state) {
-        String key = getAuthSessionKey(sid);
+    public boolean bindStateToAuthSession(String sid, String state) {
+        String sessionKey = getAuthSessionKey(sid);
+        String stateKey = getAuthStateKey(state);
 
         String script = """
                 local currentState = redis.call('HGET', KEYS[1], ARGV[1])
                 
                 if not currentState then
                     redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])
+                    redis.call('SET', KEYS[2], ARGV[3])
                     return 1
                 else
                     return 0
@@ -56,9 +59,10 @@ public class AuthSessionRedisService {
 
         Long result = redisTemplate.execute(
                 new DefaultRedisScript<>(script, Long.class),
-                Collections.singletonList(key),
+                Arrays.asList(sessionKey, stateKey),
                 AUTH_SESSION_STATE_FIELD_NAME,
-                state
+                state,
+                sid
         );
 
         return result == 1L;
@@ -66,5 +70,9 @@ public class AuthSessionRedisService {
 
     private String getAuthSessionKey(String sid) {
         return AUTH_SESSION_KEY_PREFIX + sid;
+    }
+
+    private String getAuthStateKey(String state) {
+        return AUTH_STATE_KEY_PREFIX + state;
     }
 }

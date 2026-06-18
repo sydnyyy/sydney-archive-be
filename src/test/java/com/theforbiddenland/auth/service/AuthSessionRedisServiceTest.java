@@ -21,11 +21,11 @@ class AuthSessionRedisServiceTest extends IntegrationTestSupport {
         authSessionRedisService.saveAuthSession(sid, authCode);
 
         String state1 = UUID.randomUUID().toString();
-        Assertions.assertThat(authSessionRedisService.assignStateToAuthSession(sid, state1))
+        Assertions.assertThat(authSessionRedisService.bindStateToAuthSession(sid, state1))
                 .isTrue();
 
         String state2 = UUID.randomUUID().toString();
-        Assertions.assertThat(authSessionRedisService.assignStateToAuthSession(sid, state2))
+        Assertions.assertThat(authSessionRedisService.bindStateToAuthSession(sid, state2))
                 .isFalse();
     }
 }
