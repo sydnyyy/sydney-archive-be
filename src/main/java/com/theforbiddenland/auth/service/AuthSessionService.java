@@ -6,7 +6,13 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.theforbiddenland.auth.dto.internal.AuthSessionContext;
+import com.theforbiddenland.auth.dto.request.AuthSessionCompleteRequest;
 import com.theforbiddenland.global.config.auth.AuthSessionProperties;
+import com.theforbiddenland.global.exception.AuthSessionException;
+import com.theforbiddenland.global.exception.UserException;
+import com.theforbiddenland.user.dto.internal.UserAuthContext;
+import com.theforbiddenland.user.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +34,8 @@ public class AuthSessionService {
 
     private final AuthSessionRedisService authSessionRedisService;
     private final AuthSessionProperties authSessionProperties;
+    private final UserService userService;
+    private final TokenService tokenService;
 
     public AuthSessionContext generateAuthSession() {
         String sid = UUID.randomUUID().toString();
@@ -77,5 +85,22 @@ public class AuthSessionService {
         }
 
         return isAssigned;
+    }
+
+    public void verifyAuthSessionAndIssueRefreshToken(
+            AuthSessionCompleteRequest authSessionCompleteRequest,
+            String authCode,
+            HttpServletResponse httpServletResponse
+    ) {
+        String userId = authSessionRedisService.verifySessionAndGetUserId(
+                authSessionCompleteRequest.sid(), authSessionCompleteRequest.version(), authCode);
+
+        try {
+            UserAuthContext userAuthContext = userService.getUserContext(userId);
+            tokenService.issueRefreshTokenToCookie(userAuthContext.userId(), userAuthContext.role(), httpServletResponse);
+        } catch (UserException e) {
+            log.error("[Data Consistency Error] Redis session exists but User not found in DB (userId={})", userId);
+            throw new AuthSessionException(e.getErrorCode());
+        }
     }
 }

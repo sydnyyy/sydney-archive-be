@@ -102,4 +102,10 @@ public class UserService {
                 .map(AdminResponse::of)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }
+
+    public UserAuthContext getUserContext(String userId) {
+        return userRepository.findById(userId)
+                .map(UserAuthContext::of)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+    }
 }

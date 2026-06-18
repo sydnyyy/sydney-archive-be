@@ -2,6 +2,8 @@ package com.theforbiddenland.auth.service;
 
 import com.theforbiddenland.global.config.auth.AuthSessionProperties;
 import com.theforbiddenland.global.config.system.SystemProperties;
+import com.theforbiddenland.global.exception.AuthSessionException;
+import com.theforbiddenland.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -94,6 +96,54 @@ public class AuthSessionRedisService {
         );
 
         return result == 1L;
+    }
+
+    public String verifySessionAndGetUserId(String sid, int version, String authCode) {
+        String key = getAuthSessionKey(sid);
+
+        String script = """
+            local current_version = redis.call('HGET', KEYS[1], ARGV[1]);
+            local current_authcode = redis.call('HGET', KEYS[1], ARGV[3]);
+        
+            if not current_version or not current_authcode then
+                return "SESSION_NOT_FOUND"
+            end
+
+            if tonumber(current_version) ~= tonumber(ARGV[2]) then
+                return "VERSION_MISMATCH"
+            end
+        
+            if current_authcode ~= ARGV[4] then
+                return "AUTH_CODE_MISMATCH"
+            end
+        
+            local user_id = redis.call('HGET', KEYS[1], ARGV[5])
+        
+            if not user_id then
+                return "USER_ID_NOT_FOUND"
+            end
+        
+            return user_id
+            """;
+
+        String result = redisTemplate.execute(
+                new DefaultRedisScript<>(script, String.class),
+                Collections.singletonList(key),
+                AUTH_SESSION_VERSION_FIELD_NAME,
+                String.valueOf(version),
+                AUTH_SESSION_AUTH_CODE_FIELD_NAME,
+                authCode,
+                AUTH_SESSION_USER_ID_FIELD_NAME
+        );
+
+        switch (result) {
+            case "SESSION_NOT_FOUND" -> throw new AuthSessionException(ErrorCode.AUTH_SESSION_EXPIRED);
+            case "VERSION_MISMATCH" -> throw new AuthSessionException(ErrorCode.AUTH_VERSION_MISMATCH);
+            case "AUTH_CODE_MISMATCH" -> throw new AuthSessionException(ErrorCode.AUTH_CODE_MISMATCH);
+            case "USER_ID_NOT_FOUND" -> throw new AuthSessionException(ErrorCode.USER_ID_MISSING);
+        }
+
+        return result;
     }
 
     private String getAuthSessionKey(String sid) {

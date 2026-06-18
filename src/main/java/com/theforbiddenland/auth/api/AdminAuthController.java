@@ -1,6 +1,7 @@
 package com.theforbiddenland.auth.api;
 
 import com.theforbiddenland.auth.dto.internal.AuthSessionContext;
+import com.theforbiddenland.auth.dto.request.AuthSessionCompleteRequest;
 import com.theforbiddenland.auth.dto.response.AuthSessionResponse;
 import com.theforbiddenland.auth.service.AuthSessionService;
 import com.theforbiddenland.auth.service.TokenService;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+
+import static com.theforbiddenland.global.cookie.CookieUtil.AUTH_CODE_COOKIE_NAME;
 
 @RestController
 @RequestMapping("/api/admin/auth")
@@ -30,6 +33,18 @@ public class AdminAuthController {
             cookieUtil.setAuthCodeCookie(httpServletResponse, authSessionContext.authCode());
         }
         return ResponseEntity.ok(AuthSessionResponse.of(authSessionContext));
+    }
+
+    @PostMapping("/sessions/complete")
+    public ResponseEntity<?> verifyAuthSessionAndIssueRefreshToken(
+            @RequestBody AuthSessionCompleteRequest authSessionCompleteRequest,
+            @CookieValue(name = AUTH_CODE_COOKIE_NAME) String authCode,
+            HttpServletResponse httpServletResponse
+    ) {
+        authSessionService.verifyAuthSessionAndIssueRefreshToken(
+                authSessionCompleteRequest, authCode, httpServletResponse);
+
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/token/issue")
