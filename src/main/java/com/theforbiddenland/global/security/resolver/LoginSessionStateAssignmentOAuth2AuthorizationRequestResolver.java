@@ -1,6 +1,6 @@
 package com.theforbiddenland.global.security.resolver;
 
-import com.theforbiddenland.auth.service.AuthSessionService;
+import com.theforbiddenland.auth.service.LoginSessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
@@ -9,17 +9,17 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 import org.springframework.stereotype.Component;
 
 @Component
-public class AuthSessionStateAssignmentOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
+public class LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 
     private final OAuth2AuthorizationRequestResolver defaultResolver;
-    private final AuthSessionService authSessionService;
+    private final LoginSessionService loginSessionService;
 
-    public AuthSessionStateAssignmentOAuth2AuthorizationRequestResolver(
+    public LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver(
             ClientRegistrationRepository repository,
-            AuthSessionService authSessionService
+            LoginSessionService loginSessionService
     ) {
         this.defaultResolver = new DefaultOAuth2AuthorizationRequestResolver(repository, "/oauth2/authorization");
-        this.authSessionService = authSessionService;
+        this.loginSessionService = loginSessionService;
     }
 
     @Override
@@ -44,7 +44,7 @@ public class AuthSessionStateAssignmentOAuth2AuthorizationRequestResolver implem
         if (sid == null) return null;
 
         String authRequestState = authRequest.getState();
-        boolean isAssigned = authSessionService.bindStateToAuthSession(sid, authRequestState);
+        boolean isAssigned = loginSessionService.bindStateToLoginSession(sid, authRequestState);
         if (!isAssigned) return null;
 
         return OAuth2AuthorizationRequest.from(authRequest)

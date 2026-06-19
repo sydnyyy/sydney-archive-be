@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({AuthSessionException.class, JwtAuthException.class})
+    @ExceptionHandler({LoginSessionException.class, JwtAuthException.class})
     public ResponseEntity<ErrorResponse> handleAuthenticationException(BaseException e) {
         log.error("[{}] errorCode={}, message={}",
                 e.getClass().getSimpleName(),

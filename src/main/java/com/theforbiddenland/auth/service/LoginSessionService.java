@@ -5,10 +5,10 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
-import com.theforbiddenland.auth.dto.internal.AuthSessionContext;
-import com.theforbiddenland.auth.dto.request.AuthSessionCompleteRequest;
-import com.theforbiddenland.global.config.auth.AuthSessionProperties;
-import com.theforbiddenland.global.exception.AuthSessionException;
+import com.theforbiddenland.auth.dto.internal.LoginSessionContext;
+import com.theforbiddenland.auth.dto.request.LoginSessionCompleteRequest;
+import com.theforbiddenland.global.config.auth.LoginSessionProperties;
+import com.theforbiddenland.global.exception.LoginSessionException;
 import com.theforbiddenland.global.exception.UserException;
 import com.theforbiddenland.user.dto.internal.UserAuthContext;
 import com.theforbiddenland.user.service.UserService;
@@ -27,28 +27,28 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AuthSessionService {
+public class LoginSessionService {
 
     @Value("${app.frontend-base-url}")
     private String frontendBaseUrl;
 
-    private final AuthSessionRedisService authSessionRedisService;
-    private final AuthSessionProperties authSessionProperties;
+    private final LoginSessionRedisService loginSessionRedisService;
+    private final LoginSessionProperties loginSessionProperties;
     private final UserService userService;
     private final TokenService tokenService;
 
-    public AuthSessionContext generateAuthSession() {
+    public LoginSessionContext generateLoginSession() {
         String sid = UUID.randomUUID().toString();
         String authCode = UUID.randomUUID().toString();
-        authSessionRedisService.saveAuthSession(sid, authCode);
+        loginSessionRedisService.saveLoginSession(sid, authCode);
 
         String qrCodeBase64 = generateQrCodeBase64(sid);
 
         long expiredAt = Instant.now()
-                .plusSeconds(authSessionProperties.getAuthSessionTimeoutSec())
+                .plusSeconds(loginSessionProperties.getLoginSessionTimeoutSec())
                 .toEpochMilli();
 
-        return AuthSessionContext.of(qrCodeBase64, sid, authCode, expiredAt);
+        return LoginSessionContext.of(qrCodeBase64, sid, authCode, expiredAt);
     }
 
     private String generateQrCodeBase64(String sid) {
@@ -72,14 +72,14 @@ public class AuthSessionService {
         }
     }
 
-    public boolean bindStateToAuthSession(String sid, String state) {
-        return authSessionRedisService.bindStateToAuthSession(sid, state);
+    public boolean bindStateToLoginSession(String sid, String state) {
+        return loginSessionRedisService.bindStateToLoginSession(sid, state);
     }
 
-    public boolean assignUserIdToAuthSession(String state, String userId) {
+    public boolean assignUserIdToLoginSession(String state, String userId) {
         if (state == null || userId == null) return false;
 
-        boolean isAssigned = authSessionRedisService.assignUserIdToAuthSession(state, userId);
+        boolean isAssigned = loginSessionRedisService.assignUserIdToLoginSession(state, userId);
         if (!isAssigned) {
             log.warn("Failed to assign userId to auth session: no session mapping found for state. state={}", state);
         }
@@ -87,20 +87,20 @@ public class AuthSessionService {
         return isAssigned;
     }
 
-    public void verifyAuthSessionAndIssueRefreshToken(
-            AuthSessionCompleteRequest authSessionCompleteRequest,
+    public void verifyLoginSessionAndIssueRefreshToken(
+            LoginSessionCompleteRequest loginSessionCompleteRequest,
             String authCode,
             HttpServletResponse httpServletResponse
     ) {
-        String userId = authSessionRedisService.verifySessionAndGetUserId(
-                authSessionCompleteRequest.sid(), authSessionCompleteRequest.version(), authCode);
+        String userId = loginSessionRedisService.verifySessionAndGetUserId(
+                loginSessionCompleteRequest.sid(), loginSessionCompleteRequest.version(), authCode);
 
         try {
             UserAuthContext userAuthContext = userService.getUserContext(userId);
             tokenService.issueRefreshTokenToCookie(userAuthContext.userId(), userAuthContext.role(), httpServletResponse);
         } catch (UserException e) {
             log.error("[Data Consistency Error] Redis session exists but User not found in DB (userId={})", userId);
-            throw new AuthSessionException(e.getErrorCode());
+            throw new LoginSessionException(e.getErrorCode());
         }
     }
 }

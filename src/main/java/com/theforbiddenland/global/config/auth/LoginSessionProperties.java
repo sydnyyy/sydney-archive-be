@@ -6,10 +6,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "app.auth-session")
+@ConfigurationProperties(prefix = "app.login-session")
 @Setter
 @Getter
-public class AuthSessionProperties {
+public class LoginSessionProperties {
 
-    private int authSessionTimeoutSec;
+    private int loginSessionTimeoutSec;
 }

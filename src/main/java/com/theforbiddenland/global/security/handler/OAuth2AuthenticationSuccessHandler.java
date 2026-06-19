@@ -1,7 +1,7 @@
 package com.theforbiddenland.global.security.handler;
 
 import com.theforbiddenland.auth.dto.internal.CustomOAuth2User;
-import com.theforbiddenland.auth.service.AuthSessionService;
+import com.theforbiddenland.auth.service.LoginSessionService;
 import com.theforbiddenland.auth.service.TokenService;
 import com.theforbiddenland.global.exception.ErrorCode;
 import com.theforbiddenland.user.dto.internal.UserAuthContext;
@@ -27,7 +27,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private String frontendBaseUrl;
 
     private final UserService userService;
-    private final AuthSessionService authSessionService;
+    private final LoginSessionService loginSessionService;
     private final TokenService tokenService;
 
     @Override
@@ -40,15 +40,15 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         String state = request.getParameter("state");
         if (state == null) {
             log.warn("OAuth2 callback missing state parameter.");
-            redirectToErrorPage(response, ErrorCode.AUTH_PROCESSING_FAILED);
+            redirectToErrorPage(response, ErrorCode.LOGIN_PROCESSING_FAILED);
             return;
         }
 
         CustomOAuth2User admin = (CustomOAuth2User) authentication.getPrincipal();
         UserAuthContext userAuthContext = userService.saveAdmin(admin);
-        boolean isAssigned = authSessionService.assignUserIdToAuthSession(state, userAuthContext.userId());
+        boolean isAssigned = loginSessionService.assignUserIdToLoginSession(state, userAuthContext.userId());
         if (!isAssigned) {
-            redirectToErrorPage(response, ErrorCode.AUTH_PROCESSING_FAILED);
+            redirectToErrorPage(response, ErrorCode.LOGIN_PROCESSING_FAILED);
             return;
         }
 

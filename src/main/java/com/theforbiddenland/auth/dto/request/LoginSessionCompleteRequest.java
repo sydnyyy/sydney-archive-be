@@ -1,6 +1,6 @@
 package com.theforbiddenland.auth.dto.request;
 
-public record AuthSessionCompleteRequest(
+public record LoginSessionCompleteRequest(
         String sid,
         int version
 ) {

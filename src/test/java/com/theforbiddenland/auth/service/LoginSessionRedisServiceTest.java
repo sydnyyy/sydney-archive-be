@@ -1,6 +1,6 @@
 package com.theforbiddenland.auth.service;
 
-import com.theforbiddenland.global.exception.AuthSessionException;
+import com.theforbiddenland.global.exception.LoginSessionException;
 import com.theforbiddenland.global.exception.ErrorCode;
 import com.theforbiddenland.support.IntegrationTestSupport;
 import org.assertj.core.api.Assertions;
@@ -12,24 +12,24 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class AuthSessionRedisServiceTest extends IntegrationTestSupport {
+class LoginSessionRedisServiceTest extends IntegrationTestSupport {
 
     @Autowired
-    private AuthSessionRedisService authSessionRedisService;
+    private LoginSessionRedisService loginSessionRedisService;
 
     @Test
     @DisplayName("인증 세션에 state가 할당되어있다면, 수정 작업 없이 false 리턴")
     void should_return_false_when_state_assigned() {
         String sid = UUID.randomUUID().toString();
         String authCode = UUID.randomUUID().toString();
-        authSessionRedisService.saveAuthSession(sid, authCode);
+        loginSessionRedisService.saveLoginSession(sid, authCode);
 
         String state1 = UUID.randomUUID().toString();
-        Assertions.assertThat(authSessionRedisService.bindStateToAuthSession(sid, state1))
+        Assertions.assertThat(loginSessionRedisService.bindStateToLoginSession(sid, state1))
                 .isTrue();
 
         String state2 = UUID.randomUUID().toString();
-        Assertions.assertThat(authSessionRedisService.bindStateToAuthSession(sid, state2))
+        Assertions.assertThat(loginSessionRedisService.bindStateToLoginSession(sid, state2))
                 .isFalse();
     }
 
@@ -38,14 +38,14 @@ class AuthSessionRedisServiceTest extends IntegrationTestSupport {
     void should_throwException_when_sessionVersionMismatches() {
         String sid = UUID.randomUUID().toString();
         String authCode = UUID.randomUUID().toString();
-        authSessionRedisService.saveAuthSession(sid, authCode);
+        loginSessionRedisService.saveLoginSession(sid, authCode);
 
         // version default 설정: 0
         int wrongVersion = 3;
 
-        assertThatThrownBy(() -> authSessionRedisService.verifySessionAndGetUserId(sid, wrongVersion, authCode))
-                .isInstanceOf(AuthSessionException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.AUTH_VERSION_MISMATCH);
+        assertThatThrownBy(() -> loginSessionRedisService.verifySessionAndGetUserId(sid, wrongVersion, authCode))
+                .isInstanceOf(LoginSessionException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.LOGIN_VERSION_MISMATCH);
     }
 
     @Test
@@ -53,11 +53,11 @@ class AuthSessionRedisServiceTest extends IntegrationTestSupport {
     void should_throwException_when_authCodeMismatches() {
         String sid = UUID.randomUUID().toString();
         String authCode = UUID.randomUUID().toString();
-        authSessionRedisService.saveAuthSession(sid, authCode);
+        loginSessionRedisService.saveLoginSession(sid, authCode);
 
         String wrongAuthCode = authCode + "_invalid";
-        assertThatThrownBy(() -> authSessionRedisService.verifySessionAndGetUserId(sid, 0, wrongAuthCode))
-                .isInstanceOf(AuthSessionException.class)
+        assertThatThrownBy(() -> loginSessionRedisService.verifySessionAndGetUserId(sid, 0, wrongAuthCode))
+                .isInstanceOf(LoginSessionException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.AUTH_CODE_MISMATCH);
     }
 
@@ -66,10 +66,10 @@ class AuthSessionRedisServiceTest extends IntegrationTestSupport {
     void should_throwException_when_userIdIsNull() {
         String sid = UUID.randomUUID().toString();
         String authCode = UUID.randomUUID().toString();
-        authSessionRedisService.saveAuthSession(sid, authCode);  // userId 할당하지 않은 상태
+        loginSessionRedisService.saveLoginSession(sid, authCode);  // userId 할당하지 않은 상태
 
-        assertThatThrownBy(() -> authSessionRedisService.verifySessionAndGetUserId(sid, 0, authCode))
-                .isInstanceOf(AuthSessionException.class)
+        assertThatThrownBy(() -> loginSessionRedisService.verifySessionAndGetUserId(sid, 0, authCode))
+                .isInstanceOf(LoginSessionException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_ID_MISSING);
     }
 }
