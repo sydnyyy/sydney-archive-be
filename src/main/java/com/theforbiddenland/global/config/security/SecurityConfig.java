@@ -50,6 +50,8 @@ public class SecurityConfig {
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/sid").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/items").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/admin/login/sessions").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/admin/login/sessions/complete").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/auth/token/issue").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/auth/logout").permitAll()
                         .anyRequest().authenticated()
