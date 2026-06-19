@@ -72,6 +72,10 @@ public class LoginSessionService {
         }
     }
 
+    public boolean isAvailableLoginSession(String sid) {
+        return loginSessionRedisService.isAvailableLoginSession(sid);
+    }
+
     public boolean bindStateToLoginSession(String sid, String state) {
         return loginSessionRedisService.bindStateToLoginSession(sid, state);
     }

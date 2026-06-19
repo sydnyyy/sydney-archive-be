@@ -10,17 +10,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 import static com.theforbiddenland.global.cookie.CookieUtil.AUTH_CODE_COOKIE_NAME;
 
 @RestController
-@RequestMapping("/api/admin/login")
+@RequestMapping("/api/admin/login/sessions")
 @RequiredArgsConstructor
 public class AdminLoginController {
 
     private final LoginSessionService loginSessionService;
     private final CookieUtil cookieUtil;
 
-    @PostMapping("/sessions")
+    @PostMapping
     public ResponseEntity<?> getLoginSession(HttpServletResponse httpServletResponse) {
         LoginSessionContext loginSessionContext = loginSessionService.generateLoginSession();
 
@@ -30,7 +32,13 @@ public class AdminLoginController {
         return ResponseEntity.ok(LoginSessionResponse.of(loginSessionContext));
     }
 
-    @PostMapping("/sessions/complete")
+    @GetMapping("/status")
+    public ResponseEntity<?> isAvailableLoginSession(@RequestParam String sid) {
+        boolean isAvailable = loginSessionService.isAvailableLoginSession(sid);
+        return ResponseEntity.ok(Map.of("available", isAvailable));
+    }
+
+    @PostMapping("/complete")
     public ResponseEntity<?> verifyLoginSessionAndIssueRefreshToken(
             @RequestBody LoginSessionCompleteRequest loginSessionCompleteRequest,
             @CookieValue(name = AUTH_CODE_COOKIE_NAME) String authCode,

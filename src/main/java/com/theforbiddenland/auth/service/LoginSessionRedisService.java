@@ -45,6 +45,31 @@ public class LoginSessionRedisService {
         ));
     }
 
+    public boolean isAvailableLoginSession(String sid) {
+        String key = getLoginSessionKey(sid);
+
+        String script = """
+                if redis.call('exists', KEYS[1]) == 0 then
+                    return 0
+                end
+                
+                local state = redis.call('HGET', KEYS[1], ARGV[1])
+                if not state or string.len(string.gsub(state, '^%s*(.-)%s*$', '%1')) == 0 then
+                    return 1
+                end
+                
+                return 0
+                """;
+
+        Long result = redisTemplate.execute(
+                new DefaultRedisScript<>(script, Long.class),
+                Collections.singletonList(key),
+                LOGIN_SESSION_STATE_FIELD_NAME
+        );
+
+        return result == 1;
+    }
+
     public boolean bindStateToLoginSession(String sid, String state) {
         String sessionKey = getLoginSessionKey(sid);
         String stateKey = getLoginStateKey(state);
