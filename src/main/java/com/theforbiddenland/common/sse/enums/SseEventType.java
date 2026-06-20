@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum SseEventType {
 
     CONNECTED("SSE connected"),
+    LOGIN_SUCCEEDED("Login succeeded"),
     ;
 
     private final String message;

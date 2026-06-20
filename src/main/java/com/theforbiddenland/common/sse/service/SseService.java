@@ -60,4 +60,24 @@ public class SseService {
 
         return emitter;
     }
+
+    public void sendEvent(String sid, SseEventType eventType, Object data) {
+        SseEmitter emitter = emitters.get(sid);
+        if (emitter == null) {
+            log.warn("[SSE] Failed to send event '{}': No active emitter found for SID: {}",
+                    eventType, sid);
+            return;
+        }
+
+        try {
+            emitter.send(SseEmitter.event()
+                    .name(eventType.name())
+                    .data(data)
+            );
+        } catch (IOException e) {
+            log.warn("SSE connection closed while sending event. sid={}", sid);
+            emitter.complete();
+        }
+    }
+
 }

@@ -3,6 +3,8 @@ package com.theforbiddenland.global.security.handler;
 import com.theforbiddenland.auth.dto.internal.CustomOAuth2User;
 import com.theforbiddenland.auth.service.LoginSessionService;
 import com.theforbiddenland.auth.service.TokenService;
+import com.theforbiddenland.common.sse.enums.SseEventType;
+import com.theforbiddenland.common.sse.service.SseService;
 import com.theforbiddenland.global.exception.ErrorCode;
 import com.theforbiddenland.user.dto.internal.UserAuthContext;
 import com.theforbiddenland.user.service.UserService;
@@ -17,6 +19,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final UserService userService;
     private final LoginSessionService loginSessionService;
     private final TokenService tokenService;
+    private final SseService sseService;
 
     @Override
     public void onAuthenticationSuccess(
@@ -44,11 +48,17 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             return;
         }
 
+        String loginSessionSid = loginSessionService.getLoginSessionSid(state);
+        if (loginSessionSid == null) {
+            redirectToErrorPage(response, ErrorCode.LOGIN_PROCESSING_FAILED);
+        }
+
         CustomOAuth2User admin = (CustomOAuth2User) authentication.getPrincipal();
         UserAuthContext userAuthContext = userService.saveAdmin(admin);
         boolean isAssigned = loginSessionService.assignUserIdToLoginSession(state, userAuthContext.userId());
         if (!isAssigned) {
             redirectToErrorPage(response, ErrorCode.LOGIN_PROCESSING_FAILED);
+            // TODO 사용자 정보 제거
             return;
         }
 
@@ -58,6 +68,16 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         String oauthSuccessSid = tokenService.generateOAuthSuccessSid(userAuthContext.userId());
         String redirectUrl = frontendBaseUrl + "/admin/oauth/success?sid=" + oauthSuccessSid;
         response.sendRedirect(redirectUrl);
+
+        Long loginSessionVersion = loginSessionService.getLoginSessionVersion(loginSessionSid);
+        sseService.sendEvent(
+                loginSessionSid,
+                SseEventType.LOGIN_SUCCEEDED,
+                Map.of(
+                        "message", SseEventType.LOGIN_SUCCEEDED.getMessage(),
+                        "version", loginSessionVersion
+                )
+        );
     }
 
     private void redirectToErrorPage(HttpServletResponse response, ErrorCode errorCode) throws IOException {

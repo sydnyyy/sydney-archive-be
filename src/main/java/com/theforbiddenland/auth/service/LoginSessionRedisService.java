@@ -197,6 +197,10 @@ public class LoginSessionRedisService {
         );
     }
 
+    public String getLoginSessionSid(String state) {
+        return redisTemplate.opsForValue().get(getLoginStateKey(state));
+    }
+
     private String getLoginSessionKey(String sid) {
         return LOGIN_SESSION_KEY_PREFIX + sid;
     }

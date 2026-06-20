@@ -112,4 +112,8 @@ public class LoginSessionService {
         return loginSessionRedisService.getLoginSessionVersion(sid);
     }
 
+    public String getLoginSessionSid(String state) {
+        return loginSessionRedisService.getLoginSessionSid(state);
+    }
+
 }
