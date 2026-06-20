@@ -171,6 +171,32 @@ public class LoginSessionRedisService {
         return result;
     }
 
+    public Long getLoginSessionVersion(String sid) {
+        String key = getLoginSessionKey(sid);
+
+        String script = """
+                if redis.call('exists', KEYS[1]) == 0 then
+                    return -1
+                end
+                
+                local current_version = redis.call('hget', KEYS[1], ARGV[1])
+                
+                if not current_version then
+                    redis.call('hset', KEYS[1], ARGV[1], ARGV[2])
+                    return tonumber(ARGV[2])
+                else
+                    return redis.call('hincrby', KEYS[1], ARGV[1], 1)
+                end
+                """;
+
+        return redisTemplate.execute(
+                new DefaultRedisScript<>(script, Long.class),
+                Collections.singletonList(key),
+                LOGIN_SESSION_VERSION_FIELD_NAME,
+                String.valueOf(LOGIN_SESSION_VERSION_DEFAULT)
+        );
+    }
+
     private String getLoginSessionKey(String sid) {
         return LOGIN_SESSION_KEY_PREFIX + sid;
     }

@@ -107,4 +107,9 @@ public class LoginSessionService {
             throw new LoginSessionException(e.getErrorCode());
         }
     }
+
+    public Long getLoginSessionVersion(String sid) {
+        return loginSessionRedisService.getLoginSessionVersion(sid);
+    }
+
 }

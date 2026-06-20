@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/admin/login/sessions/complete").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/auth/token/issue").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/sse/connect").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
