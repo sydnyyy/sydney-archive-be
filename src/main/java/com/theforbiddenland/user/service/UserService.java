@@ -56,7 +56,7 @@ public class UserService {
     }
 
     @Retryable(
-            retryFor = DuplicateKeyException.class,
+            retryFor = org.springframework.dao.DuplicateKeyException.class,
             maxAttempts = 3,
             backoff = @Backoff(delay = 100)
     )
