@@ -35,6 +35,7 @@ public class User {
 
     private String providerId;
 
+    @Indexed(unique = true)
     private String email;
 
     private String profileImageUrl;
