@@ -1,6 +1,6 @@
 package com.theforbiddenland.item.dto.response;
 
-import com.theforbiddenland.global.enums.VisibilityStatus;
+import com.theforbiddenland.common.enums.VisibilityStatus;
 import com.theforbiddenland.item.entity.Item;
 import lombok.Builder;
 

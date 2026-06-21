@@ -1,6 +1,6 @@
 package com.theforbiddenland.item.dto.request;
 
-import com.theforbiddenland.global.enums.VisibilityStatus;
+import com.theforbiddenland.common.enums.VisibilityStatus;
 
 import java.util.List;
 
