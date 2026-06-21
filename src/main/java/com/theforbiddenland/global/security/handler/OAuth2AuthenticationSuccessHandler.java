@@ -6,6 +6,7 @@ import com.theforbiddenland.auth.service.TokenService;
 import com.theforbiddenland.common.sse.enums.SseEventType;
 import com.theforbiddenland.common.sse.service.SseService;
 import com.theforbiddenland.global.exception.ErrorCode;
+import com.theforbiddenland.global.exception.UserException;
 import com.theforbiddenland.user.dto.internal.UserAuthContext;
 import com.theforbiddenland.user.service.UserService;
 import jakarta.servlet.ServletException;
@@ -50,15 +51,26 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
         String loginSessionSid = loginSessionService.getLoginSessionSid(state);
         if (loginSessionSid == null) {
-            redirectToErrorPage(response, ErrorCode.LOGIN_PROCESSING_FAILED);
+            redirectToErrorPage(response, ErrorCode.LOGIN_SESSION_EXPIRED);
+            return;
         }
 
         CustomOAuth2User admin = (CustomOAuth2User) authentication.getPrincipal();
-        UserAuthContext userAuthContext = userService.saveAdmin(admin);
+        UserAuthContext userAuthContext;
+        try {
+            userAuthContext = userService.saveAdmin(admin);
+        } catch (UserException e) {
+            log.error("Failed to save admin", e);
+            redirectToErrorPage(response, ErrorCode.LOGIN_PROCESSING_FAILED);
+            return;
+        }
+
         boolean isAssigned = loginSessionService.assignUserIdToLoginSession(state, userAuthContext.userId());
         if (!isAssigned) {
-            redirectToErrorPage(response, ErrorCode.LOGIN_PROCESSING_FAILED);
-            // TODO 사용자 정보 제거
+            if (userAuthContext.created()) {
+                userService.deleteAdmin(userAuthContext.userId());
+            }
+            redirectToErrorPage(response, ErrorCode.LOGIN_SESSION_EXPIRED);
             return;
         }
 

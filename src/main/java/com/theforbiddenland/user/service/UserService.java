@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -61,19 +62,27 @@ public class UserService {
             backoff = @Backoff(delay = 100)
     )
     public UserAuthContext saveAdmin(CustomOAuth2User customOAuth2User) {
-        User user = userRepository.findByProviderAndProviderId(customOAuth2User.getProvider(), customOAuth2User.getProviderId())
-                .orElseGet(() -> {
-                    String sid = NanoIdUtils.randomNanoId();
-                    return userRepository.save(User.of(customOAuth2User, sid, adminProperties.username()));
-                });
+        Optional<User> userOptional = userRepository.findByProviderAndProviderId(customOAuth2User.getProvider(), customOAuth2User.getProviderId());
 
-        return UserAuthContext.of(user);
+        if (userOptional.isPresent()) {
+            return UserAuthContext.of(userOptional.get(), false);
+        }
+
+        String sid = NanoIdUtils.randomNanoId();
+        User user = User.of(customOAuth2User, sid, adminProperties.username());
+        userRepository.save(user);
+
+        return UserAuthContext.of(user, true);
     }
 
     @Recover
     public UserAuthContext recover(DuplicateKeyException e, CustomOAuth2User customOAuth2User) {
         log.error("[UserService] SID 생성 실패 (중복 지속 발생). oauth2Profile.provider={}", customOAuth2User.getProvider());
         throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR, "SID 생성 중복 오류");
+    }
+
+    public void deleteAdmin(String userId) {
+        userRepository.deleteById(userId);
     }
 
     public void updateLastMessageAt(String sid, Instant sendAt) {
@@ -105,7 +114,7 @@ public class UserService {
 
     public UserAuthContext getUserContext(String userId) {
         return userRepository.findById(userId)
-                .map(UserAuthContext::of)
+                .map(u -> UserAuthContext.of(u, false))
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }
 }
