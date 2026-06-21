@@ -7,6 +7,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.theforbiddenland.auth.dto.internal.LoginSessionContext;
 import com.theforbiddenland.auth.dto.request.LoginSessionCompleteRequest;
+import com.theforbiddenland.auth.enums.Platform;
 import com.theforbiddenland.global.config.auth.LoginSessionProperties;
 import com.theforbiddenland.global.exception.LoginSessionException;
 import com.theforbiddenland.global.exception.UserException;
@@ -76,8 +77,8 @@ public class LoginSessionService {
         return loginSessionRedisService.isAvailableLoginSession(sid);
     }
 
-    public boolean bindStateToLoginSession(String sid, String state) {
-        return loginSessionRedisService.bindStateToLoginSession(sid, state);
+    public boolean bindStateAndPlatformToLoginSession(String sid, String state, Platform platform) {
+        return loginSessionRedisService.bindStateAndPlatformToLoginSession(sid, state, platform);
     }
 
     public boolean assignUserIdToLoginSession(String state, String userId) {

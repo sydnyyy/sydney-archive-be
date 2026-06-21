@@ -1,5 +1,6 @@
 package com.theforbiddenland.global.security.resolver;
 
+import com.theforbiddenland.auth.enums.Platform;
 import com.theforbiddenland.auth.service.LoginSessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -44,7 +45,8 @@ public class LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver imple
         if (sid == null) return null;
 
         String authRequestState = authRequest.getState();
-        boolean isAssigned = loginSessionService.bindStateToLoginSession(sid, authRequestState);
+        Platform platform = Platform.fromString(request.getParameter("platform"));
+        boolean isAssigned = loginSessionService.bindStateAndPlatformToLoginSession(sid, authRequestState, platform);
         if (!isAssigned) return null;
 
         return OAuth2AuthorizationRequest.from(authRequest)

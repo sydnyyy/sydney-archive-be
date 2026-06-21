@@ -1,5 +1,6 @@
 package com.theforbiddenland.auth.service;
 
+import com.theforbiddenland.auth.enums.Platform;
 import com.theforbiddenland.global.config.auth.LoginSessionProperties;
 import com.theforbiddenland.global.config.system.SystemProperties;
 import com.theforbiddenland.global.exception.LoginSessionException;
@@ -26,6 +27,7 @@ public class LoginSessionRedisService {
     private static final Integer LOGIN_SESSION_VERSION_DEFAULT = 0;
     private static final String LOGIN_SESSION_STATE_FIELD_NAME = "state";
     private static final String LOGIN_SESSION_USER_ID_FIELD_NAME = "userId";
+    private static final String LOGIN_SESSION_PLATFORM_FIELD_NAME = "platform";
 
     private final StringRedisTemplate redisTemplate;
     private final LoginSessionProperties loginSessionProperties;
@@ -70,16 +72,21 @@ public class LoginSessionRedisService {
         return result == 1;
     }
 
-    public boolean bindStateToLoginSession(String sid, String state) {
+    public boolean bindStateAndPlatformToLoginSession(String sid, String state, Platform platform) {
         String sessionKey = getLoginSessionKey(sid);
         String stateKey = getLoginStateKey(state);
 
         String script = """
+                if redis.call('exists', KEYS[1]) == 0 then
+                    return 0
+                end
+                
                 local currentState = redis.call('HGET', KEYS[1], ARGV[1])
                 
                 if not currentState then
                     redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])
                     redis.call('SET', KEYS[2], ARGV[3])
+                    redis.call('hset', KEYS[1], ARGV[4], ARGV[5])
                     return 1
                 else
                     return 0
@@ -91,7 +98,9 @@ public class LoginSessionRedisService {
                 Arrays.asList(sessionKey, stateKey),
                 LOGIN_SESSION_STATE_FIELD_NAME,
                 state,
-                sid
+                sid,
+                LOGIN_SESSION_PLATFORM_FIELD_NAME,
+                platform.toString()
         );
 
         return result == 1L;
