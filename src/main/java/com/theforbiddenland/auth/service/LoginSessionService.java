@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -113,8 +114,13 @@ public class LoginSessionService {
         return loginSessionRedisService.getLoginSessionVersion(sid);
     }
 
-    public String getLoginSessionSid(String state) {
-        return loginSessionRedisService.getLoginSessionSid(state);
+    public LoginSessionContext getLoginSessionContext(String state) {
+        try {
+            Map<String, Object> entries = loginSessionRedisService.getLoginSessionEntries(state);
+            return LoginSessionContext.of(entries);
+        } catch (LoginSessionException e) {
+            log.warn("Failed to retrieve login session context for state={}", state, e);
+            throw e;
+        }
     }
-
 }

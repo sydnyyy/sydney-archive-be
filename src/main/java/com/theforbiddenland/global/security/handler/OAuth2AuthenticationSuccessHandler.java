@@ -1,11 +1,14 @@
 package com.theforbiddenland.global.security.handler;
 
 import com.theforbiddenland.auth.dto.internal.CustomOAuth2User;
+import com.theforbiddenland.auth.dto.internal.LoginSessionContext;
+import com.theforbiddenland.auth.enums.Platform;
 import com.theforbiddenland.auth.service.LoginSessionService;
 import com.theforbiddenland.auth.service.TokenService;
 import com.theforbiddenland.common.sse.enums.SseEventType;
 import com.theforbiddenland.common.sse.service.SseService;
 import com.theforbiddenland.global.exception.ErrorCode;
+import com.theforbiddenland.global.exception.LoginSessionException;
 import com.theforbiddenland.global.exception.UserException;
 import com.theforbiddenland.user.dto.internal.UserAuthContext;
 import com.theforbiddenland.user.service.UserService;
@@ -49,8 +52,10 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             return;
         }
 
-        String loginSessionSid = loginSessionService.getLoginSessionSid(state);
-        if (loginSessionSid == null) {
+        LoginSessionContext loginSessionContext;
+        try {
+            loginSessionContext = loginSessionService.getLoginSessionContext(state);
+        } catch (LoginSessionException e) {
             redirectToErrorPage(response, ErrorCode.LOGIN_SESSION_EXPIRED);
             return;
         }
@@ -74,22 +79,28 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             return;
         }
 
-        tokenService.issueRefreshTokenToCookie(
-                userAuthContext.userId(), userAuthContext.role(), response);
+        if (loginSessionContext.platform() == Platform.WEB) {
+            tokenService.issueRefreshTokenToCookie(
+                    userAuthContext.userId(), userAuthContext.role(), response);
 
-        String oauthSuccessSid = tokenService.generateOAuthSuccessSid(userAuthContext.userId());
-        String redirectUrl = frontendBaseUrl + "/admin/oauth/success?sid=" + oauthSuccessSid;
-        response.sendRedirect(redirectUrl);
+            String oauthSuccessSid = tokenService.generateOAuthSuccessSid(userAuthContext.userId());
+            String redirectUrl = frontendBaseUrl + "/admin/oauth/success?sid=" + oauthSuccessSid;
+            response.sendRedirect(redirectUrl);
+            return;
+        }
 
-        Long loginSessionVersion = loginSessionService.getLoginSessionVersion(loginSessionSid);
+        Long loginSessionVersion = loginSessionService.getLoginSessionVersion(loginSessionContext.sid());
         sseService.sendEvent(
-                loginSessionSid,
+                loginSessionContext.sid(),
                 SseEventType.LOGIN_SUCCEEDED,
                 Map.of(
                         "message", SseEventType.LOGIN_SUCCEEDED.getMessage(),
                         "version", loginSessionVersion
                 )
         );
+
+        String redirectUrl = frontendBaseUrl + "/admin/oauth/success?sid=exit";
+        response.sendRedirect(redirectUrl);
     }
 
     private void redirectToErrorPage(HttpServletResponse response, ErrorCode errorCode) throws IOException {

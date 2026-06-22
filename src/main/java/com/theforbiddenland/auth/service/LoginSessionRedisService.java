@@ -11,9 +11,8 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +21,12 @@ public class LoginSessionRedisService {
     private static final String LOGIN_SESSION_KEY_PREFIX = "login:session:";
     private static final String LOGIN_STATE_KEY_PREFIX = "login:state:";
 
-    private static final String LOGIN_SESSION_AUTH_CODE_FIELD_NAME = "authCode";
-    private static final String LOGIN_SESSION_VERSION_FIELD_NAME = "version";
+    public static final String LOGIN_SESSION_AUTH_CODE_FIELD_NAME = "authCode";
+    public static final String LOGIN_SESSION_VERSION_FIELD_NAME = "version";
     private static final Integer LOGIN_SESSION_VERSION_DEFAULT = 0;
-    private static final String LOGIN_SESSION_STATE_FIELD_NAME = "state";
-    private static final String LOGIN_SESSION_USER_ID_FIELD_NAME = "userId";
-    private static final String LOGIN_SESSION_PLATFORM_FIELD_NAME = "platform";
+    public static final String LOGIN_SESSION_STATE_FIELD_NAME = "state";
+    public static final String LOGIN_SESSION_USER_ID_FIELD_NAME = "userId";
+    public static final String LOGIN_SESSION_PLATFORM_FIELD_NAME = "platform";
 
     private final StringRedisTemplate redisTemplate;
     private final LoginSessionProperties loginSessionProperties;
@@ -206,8 +205,26 @@ public class LoginSessionRedisService {
         );
     }
 
-    public String getLoginSessionSid(String state) {
-        return redisTemplate.opsForValue().get(getLoginStateKey(state));
+    public Map<String, Object> getLoginSessionEntries(String state) {
+        String sid = redisTemplate.opsForValue().get(getLoginStateKey(state));
+        if (sid == null) {
+            throw new LoginSessionException(ErrorCode.LOGIN_SESSION_EXPIRED);
+        }
+
+        Map<Object, Object> entries = redisTemplate.opsForHash().entries(getLoginSessionKey(sid));
+        if (entries.isEmpty()) {
+            throw new LoginSessionException(ErrorCode.LOGIN_SESSION_EXPIRED);
+        }
+
+        Map<String, Object> result = entries.entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        entry -> String.valueOf(entry.getKey()),
+                        Map.Entry::getValue
+                ));
+
+        result.put("sid", sid);
+        return result;
     }
 
     private String getLoginSessionKey(String sid) {
