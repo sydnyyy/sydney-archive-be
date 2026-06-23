@@ -1,8 +1,6 @@
 package com.theforbiddenland.auth.service;
 
-import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.theforbiddenland.global.cookie.CookieUtil;
-import com.theforbiddenland.global.exception.ErrorCode;
 import com.theforbiddenland.global.exception.JwtAuthException;
 import com.theforbiddenland.global.security.jwt.JwtUtil;
 import com.theforbiddenland.user.enums.Role;
@@ -13,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -22,8 +19,6 @@ import java.util.concurrent.TimeUnit;
 public class TokenService {
 
     private static final String REFRESH_TOKEN_REDIS_KEY_PREFIX = "RT:";
-    private static final String OAUTH_SUCCESS_SID_KEY_PREFIX = "OAUTH_SUCCESS_SID:";
-    private static final long OAUTH_SUCCESS_SID_EXPIRATION_SEC = 60 * 3;
 
     private final JwtUtil jwtUtil;
     private final StringRedisTemplate redisTemplate;
@@ -45,21 +40,7 @@ public class TokenService {
         );
     }
 
-    public String generateOAuthSuccessSid(String userId) {
-        String oauthSuccessSid = NanoIdUtils.randomNanoId();
-        String key = OAUTH_SUCCESS_SID_KEY_PREFIX + userId;
-        redisTemplate.opsForValue().set(
-                key,
-                oauthSuccessSid,
-                OAUTH_SUCCESS_SID_EXPIRATION_SEC,
-                TimeUnit.SECONDS
-        );
-
-        return oauthSuccessSid;
-    }
-
     public String issueAccessToken(
-            String oauthSuccessSid,
             HttpServletRequest request,
             HttpServletResponse response
     ) {
@@ -69,8 +50,6 @@ public class TokenService {
             String userId = jwtUtil.getClaimUserId(refreshToken);
             Role role = jwtUtil.getClaimRole(refreshToken);
 
-//            validateOAuthSuccessSid(userId, oauthSuccessSid);
-
             return jwtUtil.generateAccessToken(userId, role);
         } catch (JwtAuthException e) {
             if (refreshToken != null) {
@@ -78,18 +57,6 @@ public class TokenService {
             }
             cookieUtil.expireRefreshTokenCookie(response);
             throw e;
-        }
-    }
-
-    private void validateOAuthSuccessSid(String userId, String oauthSuccessSid) {
-        String key = OAUTH_SUCCESS_SID_KEY_PREFIX + userId;
-        String savedSid = redisTemplate.opsForValue().get(key);
-        if (savedSid == null) {
-            throw new JwtAuthException(ErrorCode.LOGIN_SESSION_ID_EXPIRED);
-        }
-
-        if (!Objects.equals(savedSid, oauthSuccessSid)) {
-            throw new JwtAuthException(ErrorCode.ACCESS_DENIED);
         }
     }
 

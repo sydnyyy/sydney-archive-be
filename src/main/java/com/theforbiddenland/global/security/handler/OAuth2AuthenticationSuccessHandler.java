@@ -79,13 +79,12 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             return;
         }
 
+        String redirectUrl = frontendBaseUrl + "/login/success?platform=" + loginSessionContext.platform().toString().toLowerCase();
+        response.sendRedirect(redirectUrl);
+
         if (loginSessionContext.platform() == Platform.WEB) {
             tokenService.issueRefreshTokenToCookie(
                     userAuthContext.userId(), userAuthContext.role(), response);
-
-            String oauthSuccessSid = tokenService.generateOAuthSuccessSid(userAuthContext.userId());
-            String redirectUrl = frontendBaseUrl + "/admin/oauth/success?sid=" + oauthSuccessSid;
-            response.sendRedirect(redirectUrl);
             return;
         }
 
@@ -98,9 +97,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                         "version", loginSessionVersion
                 )
         );
-
-        String redirectUrl = frontendBaseUrl + "/admin/oauth/success?sid=exit";
-        response.sendRedirect(redirectUrl);
     }
 
     private void redirectToErrorPage(HttpServletResponse response, ErrorCode errorCode) throws IOException {

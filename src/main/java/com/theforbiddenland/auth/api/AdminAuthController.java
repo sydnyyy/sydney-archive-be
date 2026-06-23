@@ -18,11 +18,10 @@ public class AdminAuthController {
 
     @PostMapping("/token/issue")
     public ResponseEntity<?> issueAccessToken(
-            @RequestParam(required = false) String sid,
             HttpServletRequest request,
             HttpServletResponse response
     ) {
-        String accessToken = tokenService.issueAccessToken(sid, request, response);
+        String accessToken = tokenService.issueAccessToken(request, response);
         return ResponseEntity.ok(Map.of("accessToken", accessToken));
     }
 
