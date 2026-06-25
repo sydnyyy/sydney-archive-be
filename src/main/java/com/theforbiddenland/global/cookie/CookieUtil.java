@@ -19,8 +19,8 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class CookieUtil {
 
-    public static final String AUTH_CODE_COOKIE_NAME = "TFLASAC";
-    private static final String REFRESH_TOKEN_COOKIE_NAME = "TFLRT";
+    public static final String AUTH_CODE_COOKIE_NAME = "FLLSAC";
+    private static final String REFRESH_TOKEN_COOKIE_NAME = "FLRT";
 
     private final CookieProperties cookieProperties;
     private final LoginSessionProperties loginSessionProperties;
