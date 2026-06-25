@@ -86,6 +86,7 @@ public class LoginSessionRedisService {
                     redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])
                     redis.call('SET', KEYS[2], ARGV[3])
                     redis.call('hset', KEYS[1], ARGV[4], ARGV[5])
+                    redis.call('hincrby', KEYS[1], ARGV[6], 1)
                     return 1
                 else
                     return 0
@@ -99,7 +100,8 @@ public class LoginSessionRedisService {
                 state,
                 sid,
                 LOGIN_SESSION_PLATFORM_FIELD_NAME,
-                platform.toString()
+                platform.toString(),
+                LOGIN_SESSION_VERSION_FIELD_NAME
         );
 
         return result == 1L;
@@ -114,6 +116,7 @@ public class LoginSessionRedisService {
             if sid then
                 local sessionKey = ARGV[1] .. sid
                 redis.call('HSET', sessionKey, ARGV[2], ARGV[3])
+                redis.call('hincrby', sessionKey, ARGV[4], 1)
                 return 1
             else
                 return 0
@@ -125,14 +128,15 @@ public class LoginSessionRedisService {
                 Collections.singletonList(stateKey),
                 LOGIN_SESSION_KEY_PREFIX,
                 LOGIN_SESSION_USER_ID_FIELD_NAME,
-                userId
+                userId,
+                LOGIN_SESSION_VERSION_FIELD_NAME
         );
 
         return result == 1L;
     }
 
     public String verifySessionAndGetUserId(String sid, int version, String authCode) {
-        String key = getLoginSessionKey(sid);
+        String sessionKey = getLoginSessionKey(sid);
 
         String script = """
             local current_version = redis.call('HGET', KEYS[1], ARGV[1]);
@@ -156,12 +160,13 @@ public class LoginSessionRedisService {
                 return "USER_ID_NOT_FOUND"
             end
         
+            redis.call('hincrby', KEYS[1], ARGV[1], 1)
             return user_id
             """;
 
         String result = redisTemplate.execute(
                 new DefaultRedisScript<>(script, String.class),
-                Collections.singletonList(key),
+                Collections.singletonList(sessionKey),
                 LOGIN_SESSION_VERSION_FIELD_NAME,
                 String.valueOf(version),
                 LOGIN_SESSION_AUTH_CODE_FIELD_NAME,
@@ -192,8 +197,14 @@ public class LoginSessionRedisService {
                 if not current_version then
                     redis.call('hset', KEYS[1], ARGV[1], ARGV[2])
                     return tonumber(ARGV[2])
-                else
+                end
+                
+                current_version = tonumber(current_version)
+                
+                if current_version >= 1 then
                     return redis.call('hincrby', KEYS[1], ARGV[1], 1)
+                else
+                    return current_version;
                 end
                 """;
 
