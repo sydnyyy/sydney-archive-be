@@ -1,5 +1,6 @@
 package com.theforbiddenland.auth.service;
 
+import com.theforbiddenland.auth.enums.Platform;
 import com.theforbiddenland.global.exception.LoginSessionException;
 import com.theforbiddenland.global.exception.ErrorCode;
 import com.theforbiddenland.support.IntegrationTestSupport;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class LoginSessionRedisServiceTest extends IntegrationTestSupport {
@@ -25,11 +27,13 @@ class LoginSessionRedisServiceTest extends IntegrationTestSupport {
         loginSessionRedisService.saveLoginSession(sid, authCode);
 
         String state1 = UUID.randomUUID().toString();
-        Assertions.assertThat(loginSessionRedisService.bindStateToLoginSession(sid, state1))
+        Assertions
+                .assertThat(loginSessionRedisService.bindStateAndPlatformToLoginSession(sid, state1, Platform.NONE))
                 .isTrue();
 
         String state2 = UUID.randomUUID().toString();
-        Assertions.assertThat(loginSessionRedisService.bindStateToLoginSession(sid, state2))
+        Assertions
+                .assertThat(loginSessionRedisService.bindStateAndPlatformToLoginSession(sid, state2, Platform.NONE))
                 .isFalse();
     }
 
@@ -71,5 +75,36 @@ class LoginSessionRedisServiceTest extends IntegrationTestSupport {
         assertThatThrownBy(() -> loginSessionRedisService.verifySessionAndGetUserId(sid, 0, authCode))
                 .isInstanceOf(LoginSessionException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_ID_MISSING);
+    }
+
+    @Test
+    @DisplayName("LoginSession에 Binding 작업이 발생하지 않았다면 버전 조회 시 0 리턴")
+    void should_return_0_when_only_query() {
+        String sid = UUID.randomUUID().toString();
+        String authCode = UUID.randomUUID().toString();
+        loginSessionRedisService.saveLoginSession(sid, authCode);
+
+        assertThat(loginSessionRedisService.getLoginSessionVersion(sid)).isEqualTo(0);
+        assertThat(loginSessionRedisService.getLoginSessionVersion(sid)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("LoginSession에 Binding 작업이 발생했으면 버전 조회 시 1 이상 리턴")
+    void should_return_positive_value_when_binding_occurs() {
+        String sid = UUID.randomUUID().toString();
+        String authCode = UUID.randomUUID().toString();
+        loginSessionRedisService.saveLoginSession(sid, authCode);
+
+        assertThat(loginSessionRedisService.getLoginSessionVersion(sid)).isEqualTo(0);
+
+        String state = UUID.randomUUID().toString();
+        boolean isAssigned = loginSessionRedisService.bindStateAndPlatformToLoginSession(sid, state, Platform.NONE);
+        if (isAssigned)
+            assertThat(loginSessionRedisService.getLoginSessionVersion(sid)).isGreaterThan(0);
+
+        String userId = UUID.randomUUID().toString();
+        isAssigned = loginSessionRedisService.assignUserIdToLoginSession(state, userId);
+        if (isAssigned)
+            assertThat(loginSessionRedisService.getLoginSessionVersion(sid)).isGreaterThan(0);
     }
 }
