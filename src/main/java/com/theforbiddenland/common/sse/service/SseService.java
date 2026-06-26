@@ -2,8 +2,12 @@ package com.theforbiddenland.common.sse.service;
 
 import com.theforbiddenland.auth.service.LoginSessionService;
 import com.theforbiddenland.common.sse.enums.SseEventType;
+import com.theforbiddenland.global.config.sse.SseProperties;
+import com.theforbiddenland.global.config.system.SystemProperties;
 import com.theforbiddenland.global.exception.ErrorCode;
 import com.theforbiddenland.global.exception.SseException;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -12,6 +16,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +26,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SseService {
 
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final SseProperties sseProperties;
+    private final SystemProperties systemProperties;
+
     private final LoginSessionService loginSessionService;
 
     public SseEmitter connect(String sid) {
@@ -27,7 +38,10 @@ public class SseService {
             throw new SseException(ErrorCode.LOGIN_SESSION_EXPIRED);
         }
 
-        SseEmitter emitter = new SseEmitter();
+        SseEmitter emitter = new SseEmitter(
+                sseProperties.sseTimeoutSec() * 1000L
+                + systemProperties.bufferTimeSec() * 1000L
+        );
         emitters.put(sid, emitter);
 
         emitter.onCompletion(() -> {
@@ -64,8 +78,7 @@ public class SseService {
     public void sendEvent(String sid, SseEventType eventType, Object data) {
         SseEmitter emitter = emitters.get(sid);
         if (emitter == null) {
-            log.warn("[SSE] Failed to send event '{}': No active emitter found for SID: {}",
-                    eventType, sid);
+            log.warn("[SSE] Failed to send event '{}': No active emitter found for SID: {}", eventType, sid);
             return;
         }
 
@@ -80,4 +93,37 @@ public class SseService {
         }
     }
 
+    @PostConstruct
+    private void startHeartBeat() {
+        scheduler.scheduleAtFixedRate(() -> {
+            for (Map.Entry<String, SseEmitter> entry : emitters.entrySet()) {
+                String sid = entry.getKey();
+                SseEmitter emitter = entry.getValue();
+
+                try {
+                    emitter.send(SseEmitter.event().comment("ping"));
+                    log.error("[SSE] heartbeat sent - SID: {}", sid);
+                } catch (IOException e) {
+                    log.error("[SSE] heartbeat failed - SID: {}", sid);
+                    emitter.complete();
+                }
+            }},
+                sseProperties.sseHeartbeatInitialDelaySec(),
+                sseProperties.sseHeartbeatIntervalSec(),
+                TimeUnit.SECONDS
+        );
+    }
+
+    @PreDestroy
+    public void stopHeartBeat() {
+        log.info("[SSE] Shutting down scheduler...");
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+        }
+    }
 }

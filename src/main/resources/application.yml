@@ -44,6 +44,10 @@ app:
     login-session-timeout-sec: 300
   system:
     buffer-time-sec: 15
+  sse:
+    sse-timeout-sec: 300
+    sse-heartbeat-interval-sec: 20
+    sse-heartbeat-initial-delay-sec: 15
 
 jwt:
   issuer: ${JWT_ISSUER}
