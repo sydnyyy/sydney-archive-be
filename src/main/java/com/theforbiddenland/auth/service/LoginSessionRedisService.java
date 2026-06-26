@@ -42,7 +42,7 @@ public class LoginSessionRedisService {
         redisTemplate.opsForHash().putAll(key, map);
         redisTemplate.expire(key, Duration.ofSeconds(
                 loginSessionProperties.getLoginSessionTimeoutSec()
-                        + systemProperties.getBufferTimeSec()
+                        + systemProperties.bufferTimeSec()
         ));
     }
 
