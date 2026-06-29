@@ -3,6 +3,7 @@ package com.theforbiddenland.global.exception;
 import com.theforbiddenland.global.exception.dto.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -26,6 +27,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
 
@@ -44,6 +46,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(code.getStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
 
@@ -70,6 +73,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(code.getStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
 }
