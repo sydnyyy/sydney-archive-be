@@ -1,5 +1,7 @@
 package com.forbiddenland.auth.api;
 
+import com.forbiddenland.auth.dto.request.AccessTokenIssueRequest;
+import com.forbiddenland.auth.service.LoginSessionService;
 import com.forbiddenland.auth.service.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,12 +17,18 @@ import java.util.Map;
 public class AdminAuthController {
 
     private final TokenService tokenService;
+    private final LoginSessionService loginSessionService;
 
     @PostMapping("/token/issue")
     public ResponseEntity<?> issueAccessToken(
+            @RequestBody(required = false) AccessTokenIssueRequest accessTokenIssueRequest,
             HttpServletRequest request,
             HttpServletResponse response
     ) {
+        if (accessTokenIssueRequest != null && accessTokenIssueRequest.loginSessionSid() != null) {
+            loginSessionService.terminateLoginSession(accessTokenIssueRequest.loginSessionSid());
+        }
+
         String accessToken = tokenService.issueAccessToken(request, response);
         return ResponseEntity.ok(Map.of("accessToken", accessToken));
     }
