@@ -245,4 +245,29 @@ public class LoginSessionRedisService {
     private String getLoginStateKey(String state) {
         return LOGIN_STATE_KEY_PREFIX + state;
     }
+
+    public void deleteLoingSession(String sid) {
+        String sessionKey = getLoginSessionKey(sid);
+
+        String script = """
+                if redis.call('exists', KEYS[1]) == 0 then
+                    return
+                end
+                
+                local current_state = redis.call('HGET', KEYS[1], ARGV[1])
+                if current_state then
+                    local stateKey = ARGV[2] .. current_state
+                    redis.call('del', stateKey)
+                end
+                
+                redis.call('del', KEYS[1])
+                """;
+
+        redisTemplate.execute(
+                new DefaultRedisScript<>(script),
+                Collections.singletonList(sessionKey),
+                LOGIN_SESSION_STATE_FIELD_NAME,
+                LOGIN_STATE_KEY_PREFIX
+        );
+    }
 }

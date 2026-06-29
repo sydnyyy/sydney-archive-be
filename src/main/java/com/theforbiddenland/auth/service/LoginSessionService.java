@@ -8,6 +8,9 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.theforbiddenland.auth.dto.internal.LoginSessionContext;
 import com.theforbiddenland.auth.dto.request.LoginSessionCompleteRequest;
 import com.theforbiddenland.auth.enums.Platform;
+import com.theforbiddenland.common.applicationevent.dto.internal.LoginSessionTask;
+import com.theforbiddenland.common.applicationevent.enums.EventType;
+import com.theforbiddenland.common.applicationevent.service.ApplicationEventProducer;
 import com.theforbiddenland.global.config.auth.LoginSessionProperties;
 import com.theforbiddenland.global.exception.LoginSessionException;
 import com.theforbiddenland.global.exception.UserException;
@@ -38,6 +41,7 @@ public class LoginSessionService {
     private final LoginSessionProperties loginSessionProperties;
     private final UserService userService;
     private final TokenService tokenService;
+    private final ApplicationEventProducer applicationEventProducer;
 
     public LoginSessionContext generateLoginSession() {
         String sid = UUID.randomUUID().toString();
@@ -122,5 +126,14 @@ public class LoginSessionService {
             log.warn("Failed to retrieve login session context for state={}", state, e);
             throw e;
         }
+    }
+
+    public void terminateLoginSession(String sid) {
+        applicationEventProducer.publishEvent(
+                LoginSessionTask.of(EventType.LOGIN_SESSION_DELETE, sid));
+    }
+
+    public void deleteLoginSession(String sid) {
+        loginSessionRedisService.deleteLoingSession(sid);
     }
 }

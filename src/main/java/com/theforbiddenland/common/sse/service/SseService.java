@@ -93,6 +93,16 @@ public class SseService {
         }
     }
 
+    public void terminateSseEmitter(String sid) {
+        SseEmitter emitter = emitters.get(sid);
+        if (emitter == null) {
+            // TODO PUB/SUB event
+            return;
+        }
+
+        emitter.complete();
+    }
+
     @PostConstruct
     private void startHeartBeat() {
         scheduler.scheduleAtFixedRate(() -> {
@@ -102,9 +112,9 @@ public class SseService {
 
                 try {
                     emitter.send(SseEmitter.event().comment("ping"));
-                    log.error("[SSE] heartbeat sent - SID: {}", sid);
+                    log.info("[SSE] heartbeat sent - SID: {}", sid);
                 } catch (IOException e) {
-                    log.error("[SSE] heartbeat failed - SID: {}", sid);
+                    log.info("[SSE] heartbeat failed - SID: {}", sid);
                     emitter.complete();
                 }
             }},

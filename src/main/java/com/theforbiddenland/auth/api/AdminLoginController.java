@@ -2,6 +2,7 @@ package com.theforbiddenland.auth.api;
 
 import com.theforbiddenland.auth.dto.internal.LoginSessionContext;
 import com.theforbiddenland.auth.dto.request.LoginSessionCompleteRequest;
+import com.theforbiddenland.auth.dto.request.LoginSessionRequest;
 import com.theforbiddenland.auth.dto.response.LoginSessionResponse;
 import com.theforbiddenland.auth.service.LoginSessionService;
 import com.theforbiddenland.global.cookie.CookieUtil;
@@ -23,7 +24,14 @@ public class AdminLoginController {
     private final CookieUtil cookieUtil;
 
     @PostMapping
-    public ResponseEntity<?> getLoginSession(HttpServletResponse httpServletResponse) {
+    public ResponseEntity<?> getLoginSession(
+            @RequestBody(required = false) LoginSessionRequest loginSessionRequest,
+            HttpServletResponse httpServletResponse) {
+
+        if (loginSessionRequest != null && loginSessionRequest.previousSid() != null) {
+            loginSessionService.terminateLoginSession(loginSessionRequest.previousSid());
+        }
+
         LoginSessionContext loginSessionContext = loginSessionService.generateLoginSession();
 
         if (loginSessionContext.authCode() != null) {
