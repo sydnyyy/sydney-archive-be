@@ -31,23 +31,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final AdminProperties adminProperties;
 
-    public void saveGuest(String sid) {
-        boolean isExist = userRepository.existsBySid(sid);
-        if (isExist) return;
-
-        try {
-            User guest = User.of(Role.GUEST, sid);
-            userRepository.save(guest);
-        } catch (DuplicateKeyException e) {
-            log.warn("[saveGuest] GUEST 중복 삽입 시도 sid={}", sid);
-        }
-    }
-
     public String saveGuest() {
         String sid = NanoIdUtils.randomNanoId();
 
         try {
-            User guest = User.of(Role.GUEST, sid);
+            User guest = User.createGuest(sid);
             userRepository.save(guest);
             return sid;
         } catch (DuplicateKeyException e) {
@@ -69,7 +57,7 @@ public class UserService {
         }
 
         String sid = NanoIdUtils.randomNanoId();
-        User user = User.of(customOAuth2User, sid, adminProperties.username());
+        User user = User.createAdmin(customOAuth2User, sid, adminProperties.username());
         userRepository.save(user);
 
         return UserAuthContext.of(user, true);
@@ -92,7 +80,7 @@ public class UserService {
                     userRepository.save(user);
                 },
                 () -> {
-                    User guest = User.of(Role.GUEST, sid);
+                    User guest = User.createGuest(sid);
                     guest.updateLastMessageAt(sendAt);
                     userRepository.save(guest);
                 }

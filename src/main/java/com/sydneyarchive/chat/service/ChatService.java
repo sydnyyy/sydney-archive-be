@@ -26,7 +26,6 @@ public class ChatService {
     public void processUserMessage(ChatMessageDto chatMessageDto) {
         log.info("📩 UserSid[{}] → AdminSid[{}]: {}", chatMessageDto.senderSid(), chatMessageDto.receiverSid(), chatMessageDto.content());
 
-        userService.saveGuest(chatMessageDto.senderSid());
         userService.updateLastMessageAt(chatMessageDto.senderSid(), chatMessageDto.sendAt());
 
         chatMessageDto = saveChatMessage(chatMessageDto);
