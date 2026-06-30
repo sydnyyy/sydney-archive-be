@@ -1,0 +1,55 @@
+package com.sydneyarchive.global.websocket.service;
+
+import com.sydneyarchive.global.websocket.dto.SystemEventDto;
+import com.sydneyarchive.global.websocket.manager.WebSocketSessionManager;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+import static com.sydneyarchive.global.redis.constant.RedisKeys.*;
+
+@Service
+@RequiredArgsConstructor
+public class SessionLifecycleService {
+
+    private final StringRedisTemplate redisTemplate;
+    private final DefaultRedisScript<Long> maintainSessionScript;
+    private final DefaultRedisScript<Long> terminateSessionScript;
+    private final WebSocketSessionManager webSocketSessionManager;
+
+    public void processMaintain(SystemEventDto systemEvent) {
+        String sid = systemEvent.sid();
+        if (!webSocketSessionManager.hasSessionBySid(sid)) {
+            return;
+        }
+
+        String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + sid;
+        String mainKey = WS_SESSION_MAIN_KEY_PREFIX + sid;
+
+        redisTemplate.execute(
+                maintainSessionScript,
+                List.of(WS_SESSION_TERMINATE_CHECK_ZSET, terminateSignalKey, mainKey),
+                sid,
+                WebSocketSessionManager.TERMINATE_SIGNAL_KEY_DUMMY_VALUE,
+                String.valueOf(WebSocketSessionManager.TERMINATE_SIGNAL_KEY_TTL.toSeconds()),
+                String.valueOf(WebSocketSessionManager.MAIN_KEY_TTL.toSeconds())
+        );
+    }
+
+    public void processTerminate(SystemEventDto systemEvent) {
+        String sid = systemEvent.sid();
+        if (!webSocketSessionManager.hasSessionBySid(sid)) {
+            return;
+        }
+
+        redisTemplate.execute(
+                terminateSessionScript,
+                List.of(WS_SESSION_TERMINATE_CHECK_ZSET, WS_SESSION_TERMINATE_STREAM),
+                sid,
+                String.valueOf(System.currentTimeMillis())
+        );
+    }
+}

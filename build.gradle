@@ -6,7 +6,7 @@ plugins {
 
 group = 'com'
 version = '0.0.1-SNAPSHOT'
-description = 'wishlist-be'
+description = 'fl-be'
 
 java {
     toolchain {
@@ -38,6 +38,10 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
+    // QR Code
+    implementation 'com.google.zxing:core:3.5.3'
+    implementation 'com.google.zxing:javase:3.5.3'
+
     // websocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
@@ -56,6 +60,10 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:5.6.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.6.0'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.21.4')
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:mongodb'
 }
 
 tasks.named('test') {
