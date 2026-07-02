@@ -100,8 +100,15 @@ public class UserService {
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }
 
-    public UserAuthContext getUserContext(String userId) {
+    // only admin
+    public UserAuthContext getUserContextById(String userId) {
         return userRepository.findById(userId)
+                .map(u -> UserAuthContext.of(u, false))
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public UserAuthContext getUserContextBySid(String sid) {
+        return userRepository.findBySid(sid)
                 .map(u -> UserAuthContext.of(u, false))
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }

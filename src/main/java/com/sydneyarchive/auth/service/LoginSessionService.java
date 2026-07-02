@@ -106,7 +106,7 @@ public class LoginSessionService {
                 loginSessionCompleteRequest.sid(), loginSessionCompleteRequest.version(), authCode);
 
         try {
-            UserAuthContext userAuthContext = userService.getUserContext(userId);
+            UserAuthContext userAuthContext = userService.getUserContextById(userId);
             tokenService.issueRefreshTokenToCookie(userAuthContext.userId(), userAuthContext.role(), httpServletResponse);
         } catch (UserException e) {
             log.error("[Data Consistency Error] Redis session exists but User not found in DB (userId={})", userId);

@@ -1,10 +1,10 @@
 package com.sydneyarchive.global.websocket.handler;
 
 import com.sydneyarchive.global.websocket.dto.WebSocketSessionInfo;
-import com.sydneyarchive.global.websocket.interceptor.WebSocketHandshakeInterceptor;
 import com.sydneyarchive.global.websocket.manager.WebSocketSessionManager;
 import com.sydneyarchive.useractivity.manager.UserAccessManager;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 
@@ -27,34 +27,34 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        String sid = session.getAttributes().get(WebSocketHandshakeInterceptor.SID_KEY).toString();
-        log.info("🟢 [afterConnectionEstablished] WebSocket 세션 연결 성공. SId={}, sessionId={}", sid, session.getId());
+    public void afterConnectionEstablished(@NotNull WebSocketSession session) throws Exception {
+        WebSocketSessionInfo info = WebSocketSessionInfo.of(session);
+        log.info("[WS afterConnectionEstablished] WebSocket 세션 연결 성공. {}", info);
 
         session.getAttributes().put(WS_LAST_HEARTBEAT_TIME, System.currentTimeMillis());
         webSocketSessionManager.addSession(session);
-        userAccessManager.recordAccess(sid);
+        userAccessManager.recordAccess(info.sid());
         super.afterConnectionEstablished(session);
     }
 
     @Override
-    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+    public void handleTransportError(@NotNull WebSocketSession session, @NotNull Throwable exception) throws Exception {
         WebSocketSessionInfo info = WebSocketSessionInfo.of(session);
         if (isClosedChannelException(exception)) {
-            log.warn("🔴 [handleTransportError] 비정상적인 채널 닫힘 감지(ClosedChannelException). {}", info);
+            log.warn("[WS handleTransportError] 비정상적인 채널 닫힘 감지(ClosedChannelException). {}", info);
         } else {
-            log.error("🔴 [handleTransportError] WebSocket 전송 오류 발생. {}", info, exception);
+            log.error("[WS handleTransportError] WebSocket 전송 오류 발생. {}", info, exception);
         }
         super.handleTransportError(session, exception);
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
+    public void afterConnectionClosed(@NotNull WebSocketSession session, CloseStatus closeStatus) throws Exception {
         WebSocketSessionInfo info = WebSocketSessionInfo.of(session);
         if (closeStatus.getCode() != CloseStatus.NORMAL.getCode()) {
-            log.warn("🔴 [afterConnectionClosed] 비정상적인 WebSocket 연결 종료. {}, closeStatus={}", info, closeStatus);
+            log.warn("[WS afterConnectionClosed] 비정상적인 WebSocket 연결 종료. {}, closeStatus={}", info, closeStatus);
         } else {
-            log.info("🟢 [afterConnectionClosed] WebSocket 연결 정상 종료. {}", info);
+            log.info("[WS afterConnectionClosed] WebSocket 연결 정상 종료. {}", info);
         }
 
         webSocketSessionManager.removeSession(session);
@@ -62,8 +62,8 @@ public class WebSocketSessionHandler extends WebSocketHandlerDecorator {
     }
 
     @Override
-    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-        if (message instanceof PongMessage pongMessage) {
+    public void handleMessage(@NotNull WebSocketSession session, @NotNull WebSocketMessage<?> message) throws Exception {
+        if (message instanceof PongMessage) {
             log.info("[PONG 수신 완료] sessionId={}", session.getId());
             session.getAttributes().put(WS_LAST_HEARTBEAT_TIME, System.currentTimeMillis());
             return;

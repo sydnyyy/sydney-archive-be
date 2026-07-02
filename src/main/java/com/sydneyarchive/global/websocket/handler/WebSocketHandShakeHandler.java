@@ -4,6 +4,7 @@ import com.sydneyarchive.global.websocket.dto.StompPrincipal;
 import com.sydneyarchive.global.websocket.interceptor.WebSocketHandshakeInterceptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
@@ -11,7 +12,6 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
 import java.security.Principal;
 import java.util.Map;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -19,13 +19,16 @@ import java.util.UUID;
 public class WebSocketHandShakeHandler extends DefaultHandshakeHandler {
 
     @Override
-    protected Principal determineUser(ServerHttpRequest request,
-                                      WebSocketHandler wsHandler,
-                                      Map<String, Object> attributes) {
+    protected Principal determineUser(
+            @NotNull ServerHttpRequest request,
+            @NotNull WebSocketHandler wsHandler,
+            Map<String, Object> attributes
+    ) {
 
-        String sid = (String) attributes.get(WebSocketHandshakeInterceptor.SID_KEY);
-        log.info("[determineUser] sid={}", sid);
+        String sid = (String) attributes.get(WebSocketHandshakeInterceptor.WS_ATTRIBUTE_SID_KEY);
+        String role = (String) attributes.get(WebSocketHandshakeInterceptor.WS_ATTRIBUTE_ROLE_KEY);
+        log.info("[WS determineUser] sid={}, role={}", sid, role);
 
-        return new StompPrincipal(sid != null ? sid : UUID.randomUUID().toString());
+        return new StompPrincipal(sid);
     }
 }
