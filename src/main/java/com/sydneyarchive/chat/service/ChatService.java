@@ -2,6 +2,7 @@ package com.sydneyarchive.chat.service;
 
 import com.sydneyarchive.chat.dto.request.ChatMessageRequest;
 import com.sydneyarchive.chat.dto.response.ChatMessageResponse;
+import com.sydneyarchive.chat.dto.response.ChatRoomResponse;
 import com.sydneyarchive.chat.entity.ChatMessage;
 import com.sydneyarchive.chat.enums.ChatType;
 import com.sydneyarchive.chat.repository.ChatMessageRepository;
@@ -56,6 +57,13 @@ public class ChatService {
                 ? payload.senderSid() : payload.receiverSid();
 
         messagingTemplate.convertAndSendToUser(user, "/queue/chat.messages", payload);
+    }
+
+    public List<ChatRoomResponse> findAllChatRooms() {
+        return userService.findAllUsersHavingLastMessage()
+                .stream()
+                .map(ChatRoomResponse::of)
+                .toList();
     }
 
     public List<ChatMessageResponse> getChatMessages(String sid, String cursorId) {

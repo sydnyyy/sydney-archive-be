@@ -6,11 +6,10 @@ import com.sydneyarchive.auth.dto.internal.CustomOAuth2User;
 import com.sydneyarchive.global.config.auth.AdminProperties;
 import com.sydneyarchive.global.exception.ErrorCode;
 import com.sydneyarchive.global.exception.UserException;
-import com.sydneyarchive.user.dto.UserResponse;
 import com.sydneyarchive.user.dto.internal.UserAuthContext;
+import com.sydneyarchive.user.dto.internal.UserContext;
 import com.sydneyarchive.user.dto.response.AdminResponse;
 import com.sydneyarchive.user.entity.User;
-import com.sydneyarchive.user.enums.Role;
 import com.sydneyarchive.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -74,23 +73,18 @@ public class UserService {
     }
 
     public void updateLastMessageAt(String sid, Instant sendAt) {
-        userRepository.findBySid(sid).ifPresentOrElse(
+        userRepository.findBySid(sid).ifPresent(
                 user -> {
                     user.updateLastMessageAt(sendAt);
                     userRepository.save(user);
-                },
-                () -> {
-                    User guest = User.createGuest(sid);
-                    guest.updateLastMessageAt(sendAt);
-                    userRepository.save(guest);
                 }
         );
     }
 
-    public List<UserResponse> findRecentChatUsers() {
-        return userRepository.findAllByOrderByLastMessageAtDesc()
+    public List<UserContext> findAllUsersHavingLastMessage() {
+        return userRepository.findAllByLastMessageAtIsNotNullOrderByLastMessageAtDesc()
                 .stream()
-                .map(UserResponse::of)
+                .map(UserContext::of)
                 .toList();
     }
 
