@@ -6,11 +6,10 @@ import com.sydneyarchive.auth.dto.internal.CustomOAuth2User;
 import com.sydneyarchive.global.config.auth.AdminProperties;
 import com.sydneyarchive.global.exception.ErrorCode;
 import com.sydneyarchive.global.exception.UserException;
-import com.sydneyarchive.user.dto.UserResponse;
 import com.sydneyarchive.user.dto.internal.UserAuthContext;
+import com.sydneyarchive.user.dto.internal.UserContext;
 import com.sydneyarchive.user.dto.response.AdminResponse;
 import com.sydneyarchive.user.entity.User;
-import com.sydneyarchive.user.enums.Role;
 import com.sydneyarchive.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,23 +30,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final AdminProperties adminProperties;
 
-    public void saveGuest(String sid) {
-        boolean isExist = userRepository.existsBySid(sid);
-        if (isExist) return;
-
-        try {
-            User guest = User.of(Role.GUEST, sid);
-            userRepository.save(guest);
-        } catch (DuplicateKeyException e) {
-            log.warn("[saveGuest] GUEST 중복 삽입 시도 sid={}", sid);
-        }
-    }
-
     public String saveGuest() {
         String sid = NanoIdUtils.randomNanoId();
 
         try {
-            User guest = User.of(Role.GUEST, sid);
+            User guest = User.createGuest(sid);
             userRepository.save(guest);
             return sid;
         } catch (DuplicateKeyException e) {
@@ -69,7 +56,7 @@ public class UserService {
         }
 
         String sid = NanoIdUtils.randomNanoId();
-        User user = User.of(customOAuth2User, sid, adminProperties.username());
+        User user = User.createAdmin(customOAuth2User, sid, adminProperties.username());
         userRepository.save(user);
 
         return UserAuthContext.of(user, true);
@@ -86,23 +73,18 @@ public class UserService {
     }
 
     public void updateLastMessageAt(String sid, Instant sendAt) {
-        userRepository.findBySid(sid).ifPresentOrElse(
+        userRepository.findBySid(sid).ifPresent(
                 user -> {
                     user.updateLastMessageAt(sendAt);
                     userRepository.save(user);
-                },
-                () -> {
-                    User guest = User.of(Role.GUEST, sid);
-                    guest.updateLastMessageAt(sendAt);
-                    userRepository.save(guest);
                 }
         );
     }
 
-    public List<UserResponse> findRecentChatUsers() {
-        return userRepository.findAllByOrderByLastMessageAtDesc()
+    public List<UserContext> findAllUsersHavingLastMessage() {
+        return userRepository.findAllByLastMessageAtIsNotNullOrderByLastMessageAtDesc()
                 .stream()
-                .map(UserResponse::of)
+                .map(UserContext::of)
                 .toList();
     }
 
@@ -112,8 +94,15 @@ public class UserService {
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }
 
-    public UserAuthContext getUserContext(String userId) {
+    // only admin
+    public UserAuthContext getUserContextById(String userId) {
         return userRepository.findById(userId)
+                .map(u -> UserAuthContext.of(u, false))
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public UserAuthContext getUserContextBySid(String sid) {
+        return userRepository.findBySid(sid)
                 .map(u -> UserAuthContext.of(u, false))
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }

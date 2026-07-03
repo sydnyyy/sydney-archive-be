@@ -1,4 +1,4 @@
-package com.sydneyarchive.user.dto;
+package com.sydneyarchive.user.dto.internal;
 
 import com.sydneyarchive.user.entity.User;
 import lombok.Builder;
@@ -6,15 +6,15 @@ import lombok.Builder;
 import java.time.Instant;
 
 @Builder
-public record UserResponse (
+public record UserContext(
 
-        String sid,
+        String userSid,
         Instant lastMessageAt
 ) {
 
-    public static UserResponse of(User user) {
-        return UserResponse.builder()
-                .sid(user.getSid())
+    public static UserContext of(User user) {
+        return UserContext.builder()
+                .userSid(user.getSid())
                 .lastMessageAt(user.getLastMessageAt())
                 .build();
     }

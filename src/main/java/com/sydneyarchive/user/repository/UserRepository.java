@@ -9,7 +9,6 @@ import java.util.Optional;
 public interface UserRepository extends MongoRepository<User, String> {
 
     Optional<User> findBySid(String sid);
-    boolean existsBySid(String sid);
-    List<User> findAllByOrderByLastMessageAtDesc();
+    List<User> findAllByLastMessageAtIsNotNullOrderByLastMessageAtDesc();
     Optional<User> findByProviderAndProviderId(String provider, String providerId);
 }

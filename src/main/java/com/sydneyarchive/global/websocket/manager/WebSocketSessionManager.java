@@ -34,7 +34,7 @@ public class WebSocketSessionManager {
     private final Map<String, Set<WebSocketSession>> sessionsByUser = new ConcurrentHashMap<>();
 
     public void addSession(WebSocketSession session) {
-        String sid = session.getAttributes().get(WebSocketHandshakeInterceptor.SID_KEY).toString();
+        String sid = session.getAttributes().get(WebSocketHandshakeInterceptor.WS_ATTRIBUTE_SID_KEY).toString();
         String mainKey = WS_SESSION_MAIN_KEY_PREFIX + sid;
         String terminateSignalKey = WS_TERMINATE_SIGNAL_KEY_PREFIX + sid;
 
@@ -78,7 +78,7 @@ public class WebSocketSessionManager {
     public void removeSession(WebSocketSession session) {
         webSocketSessionCloser.closeSession(session, CloseStatus.NORMAL);
 
-        String sid = session.getAttributes().get(WebSocketHandshakeInterceptor.SID_KEY).toString();
+        String sid = session.getAttributes().get(WebSocketHandshakeInterceptor.WS_ATTRIBUTE_SID_KEY).toString();
         if (!sessionsByUser.containsKey(sid)) {
             return;
         }

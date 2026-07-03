@@ -1,7 +1,7 @@
 package com.sydneyarchive.chat.api;
 
-import com.sydneyarchive.user.dto.UserResponse;
-import com.sydneyarchive.user.service.UserService;
+import com.sydneyarchive.chat.dto.response.ChatRoomResponse;
+import com.sydneyarchive.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +15,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminChatRestController {
 
-    private final UserService userService;
+    private final ChatService chatService;
 
-    @GetMapping("/users")
-    public ResponseEntity<List<UserResponse>> getRecentChatUsers() {
-        return ResponseEntity.ok(userService.findRecentChatUsers());
+    @GetMapping("/rooms")
+    public ResponseEntity<?> getRecentChatRooms() {
+        List<ChatRoomResponse> response = chatService.findAllChatRooms();
+        return ResponseEntity.ok(response);
     }
 }

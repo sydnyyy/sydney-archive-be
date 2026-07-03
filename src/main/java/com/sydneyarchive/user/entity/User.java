@@ -51,14 +51,15 @@ public class User {
     @Builder.Default
     private Set<String> likedItemIds = new LinkedHashSet<>();
 
-    public static User of(Role role, String sid) {
+    public static User createGuest(String sid) {
         return User.builder()
-                .role(role)
+                .role(Role.GUEST)
                 .sid(sid)
+                .email(sid)
                 .build();
     }
 
-    public static User of(CustomOAuth2User oauth2UserCustom, String sid, String username) {
+    public static User createAdmin(CustomOAuth2User oauth2UserCustom, String sid, String username) {
         return User.builder()
                 .role(oauth2UserCustom.getRole())
                 .sid(sid)
