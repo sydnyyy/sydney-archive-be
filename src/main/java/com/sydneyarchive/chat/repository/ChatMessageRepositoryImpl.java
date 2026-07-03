@@ -1,6 +1,6 @@
 package com.sydneyarchive.chat.repository;
 
-import com.sydneyarchive.chat.entity.ChatMessageEntity;
+import com.sydneyarchive.chat.entity.ChatMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -18,18 +18,28 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepositoryCustom {
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public List<ChatMessageEntity> findBySidAndBeforeId(String sid, String lastId, int limit) {
+    public List<ChatMessage> findByChatRoomIdAndBeforeCursor(
+            String chatRoomId,
+            String cursorId,
+            int limit
+    ) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("sid").is(sid));
+        query.addCriteria(Criteria.where("chatRoomId").is(chatRoomId));
 
-        if (lastId != null && !lastId.isEmpty()) {
-            query.addCriteria(Criteria.where("_id").lt(lastId));
+        if (cursorId != null && !cursorId.isBlank()) {
+            ChatMessage cursor = mongoTemplate.findById(cursorId, ChatMessage.class);
+
+            if (cursor != null) {
+                query.addCriteria(
+                        Criteria.where("createdAt").lt(cursor.getCreatedAt())
+                );
+            }
         }
 
-        query.with(Sort.by(Sort.Direction.DESC, "_id"));
+        query.with(Sort.by(Sort.Direction.DESC, "createdAt"));
         query.limit(limit);
 
-        List<ChatMessageEntity> results = mongoTemplate.find(query, ChatMessageEntity.class);
+        List<ChatMessage> results = mongoTemplate.find(query, ChatMessage.class);
         Collections.reverse(results);
         return results;
     }
