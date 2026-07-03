@@ -1,6 +1,6 @@
 package com.sydneyarchive.chat.api;
 
-import com.sydneyarchive.chat.dto.ChatMessageDto;
+import com.sydneyarchive.chat.dto.response.ChatMessageResponse;
 import com.sydneyarchive.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +19,11 @@ public class ChatRestController {
     private final ChatService chatService;
 
     @GetMapping
-    public ResponseEntity<List<ChatMessageDto>> getChatMessages(
+    public ResponseEntity<?> getChatMessages(
             @RequestParam String sid,
-            @RequestParam(required = false) String cursorId,
-            @RequestParam(defaultValue = "false") boolean isAdmin) {
-
-        List<ChatMessageDto> chatMessageDtos = chatService.getChatMessages(sid, cursorId, isAdmin);
-        return ResponseEntity.ok(chatMessageDtos);
+            @RequestParam(required = false) String cursorId
+    ) {
+        List<ChatMessageResponse> response = chatService.getChatMessages(sid, cursorId);
+        return ResponseEntity.ok(response);
     }
 }
