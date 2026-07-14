@@ -58,6 +58,10 @@ public class Item {
             this.thumbnailIndex = request.thumbnailIndex();
             isUpdated = true;
         }
+        if (request.visibilityStatus() != null) {
+            this.visibilityStatus = request.visibilityStatus();
+            isUpdated = true;
+        }
 
         return isUpdated;
     }
