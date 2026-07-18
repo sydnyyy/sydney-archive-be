@@ -19,7 +19,7 @@ public enum ErrorCode {
     REFRESH_TOKEN_MISSING("JT003", HttpStatus.UNAUTHORIZED, "리프레시 토큰이 존재하지 않습니다."),
     JWT_CLAIM_MISSING("JT004", HttpStatus.BAD_REQUEST, "토큰 필수 정보가 누락되었습니다."),
     INVALID_TOKEN("JT005", HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
-    REFRESH_TOKEN_EXPIRED("JT006", HttpStatus.UNAUTHORIZED, "리프레시 토큰이 만료되었습니다."),
+    TOKEN_EXPIRED("JT006", HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
     USER_ID_REQUIRED("JT007", HttpStatus.UNAUTHORIZED, "JWT 생성 과정에서 userId 값은 필수입니다."),
     ROLE_REQUIRED("JT008", HttpStatus.UNAUTHORIZED, "JWT 생성 과정에서 ROLE 값은 필수입니다."),
 
