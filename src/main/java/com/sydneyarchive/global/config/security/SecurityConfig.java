@@ -2,7 +2,7 @@ package com.sydneyarchive.global.config.security;
 
 import com.sydneyarchive.auth.service.CustomOAuth2UserService;
 import com.sydneyarchive.global.config.web.CorsProperties;
-import com.sydneyarchive.global.security.filter.JwtAuthenticationFilter;
+import com.sydneyarchive.global.security.filter.TokenAuthenticationFilter;
 import com.sydneyarchive.global.security.handler.OAuth2AuthenticationEntryPoint;
 import com.sydneyarchive.global.security.handler.OAuth2AuthenticationFailureHandler;
 import com.sydneyarchive.global.security.handler.OAuth2AuthenticationSuccessHandler;
@@ -35,7 +35,7 @@ public class SecurityConfig {
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
     private final OAuth2AuthenticationEntryPoint oAuth2AuthenticationEntryPoint;
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final TokenAuthenticationFilter tokenAuthenticationFilter;
     private final LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver loginSessionStateAssignmentOAuth2AuthorizationRequestResolver;
 
     @Bean
@@ -58,7 +58,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/sse/connect").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth -> oauth
                         .authorizationEndpoint(authorizationEndpointConfig
                                 -> authorizationEndpointConfig.authorizationRequestResolver(loginSessionStateAssignmentOAuth2AuthorizationRequestResolver))
