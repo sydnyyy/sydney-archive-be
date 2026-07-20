@@ -59,6 +59,13 @@ public class ChatService {
         messagingTemplate.convertAndSendToUser(user, "/queue/chat.messages", payload);
     }
 
+    public void deleteChatRoom(String chatRoomId) {
+        chatMessageRepository.deleteByChatRoomId(chatRoomId);
+
+        String userSid = chatRoomId;
+        userService.updateLastMessageAt(userSid, null);
+    }
+
     public List<ChatRoomResponse> findAllChatRooms() {
         return userService.findAllUsersHavingLastMessage()
                 .stream()

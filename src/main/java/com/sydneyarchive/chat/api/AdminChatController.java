@@ -4,9 +4,7 @@ import com.sydneyarchive.chat.dto.response.ChatRoomResponse;
 import com.sydneyarchive.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,5 +19,11 @@ public class AdminChatController {
     public ResponseEntity<?> getRecentChatRooms() {
         List<ChatRoomResponse> response = chatService.findAllChatRooms();
         return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{sid}")
+    public ResponseEntity<?> deleteChatRoom(@PathVariable String sid) {
+        chatService.deleteChatRoom(sid);
+        return ResponseEntity.ok().build();
     }
 }
