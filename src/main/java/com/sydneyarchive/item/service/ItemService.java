@@ -1,6 +1,7 @@
 package com.sydneyarchive.item.service;
 
 import com.sydneyarchive.auth.security.UserPrincipal;
+import com.sydneyarchive.common.enums.VisibilityStatus;
 import com.sydneyarchive.global.exception.ErrorCode;
 import com.sydneyarchive.global.exception.ItemException;
 import com.sydneyarchive.item.dto.request.ItemCreateRequest;
@@ -24,9 +25,12 @@ public class ItemService {
     public List<ItemResponse> findItems(UserPrincipal userPrincipal) {
         boolean isAdmin = isAdmin(userPrincipal);
 
-        return itemRepository.findAll()
-                .stream()
-                .map(i -> ItemResponse.of(i, isAdmin))
+        List<Item> items = isAdmin
+                ? itemRepository.findAll()
+                : itemRepository.findByVisibilityStatus(VisibilityStatus.PUBLIC);
+
+        return items.stream()
+                .map(item -> ItemResponse.of(item, isAdmin))
                 .toList();
     }
 

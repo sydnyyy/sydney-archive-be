@@ -11,6 +11,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -19,6 +20,7 @@ import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class JwtUtil {
 
     private static final long ACCESS_TOKEN_EXPIRATION_SEC = 60 * 15;
@@ -54,9 +56,9 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .issuer(jwtProperties.getIssuer())
-                .subject(userId)
                 .issuedAt(now)
                 .expiration(expiry)
+                .subject(userId)
                 .claim(CLAIM_USER_ID, userId)
                 .claim(CLAIM_ROLE, role.name())
                 .signWith(getSigningKey())
@@ -89,8 +91,11 @@ public class JwtUtil {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException e) {
-            throw new JwtAuthException(ErrorCode.REFRESH_TOKEN_EXPIRED);
+            log.warn("JWT expired. message={}", e.getMessage());
+            throw new JwtAuthException(ErrorCode.TOKEN_EXPIRED);
+
         } catch (JwtException | IllegalArgumentException e) {
+            log.warn("Invalid JWT. message={}", e.getMessage());
             throw new JwtAuthException(ErrorCode.INVALID_TOKEN);
         }
     }
