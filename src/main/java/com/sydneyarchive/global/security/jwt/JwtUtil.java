@@ -91,11 +91,11 @@ public class JwtUtil {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException e) {
-            log.warn("JWT expired", e);
+            log.warn("JWT expired. message={}", e.getMessage());
             throw new JwtAuthException(ErrorCode.TOKEN_EXPIRED);
 
         } catch (JwtException | IllegalArgumentException e) {
-            log.warn("Invalid JWT", e);
+            log.warn("Invalid JWT. message={}", e.getMessage());
             throw new JwtAuthException(ErrorCode.INVALID_TOKEN);
         }
     }
