@@ -1,7 +1,5 @@
 package com.sydneyarchive.global.security.handler;
 
-import com.sydneyarchive.global.exception.CustomAuthenticationException;
-import com.sydneyarchive.global.exception.ErrorCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,13 +21,9 @@ public class OAuth2AuthenticationEntryPoint implements AuthenticationEntryPoint 
             AuthenticationException authException
     ) throws IOException, ServletException {
 
-        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
-        if (authException instanceof CustomAuthenticationException customAuthenticationException) {
-            errorCode = customAuthenticationException.getErrorCode();
-        }
-
-        log.error("[AuthenticationEntryPoint] Authentication failed. request={} {}, errorCode={}",
-                request.getMethod(), request.getRequestURI(), errorCode.getCode()
+        log.error("[AuthenticationEntryPoint] Authentication failed. request={} {} message={}",
+                request.getMethod(), request.getRequestURI(),
+                authException.getMessage()
         );
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

@@ -1,8 +1,5 @@
 package com.sydneyarchive.global.security.filter;
 
-import com.sydneyarchive.global.exception.CustomAuthenticationException;
-import com.sydneyarchive.global.exception.JwtAuthException;
-import com.sydneyarchive.global.security.handler.OAuth2AuthenticationEntryPoint;
 import com.sydneyarchive.global.security.jwt.JwtAuthenticationConverter;
 import com.sydneyarchive.global.security.jwt.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -25,7 +22,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
-    private final OAuth2AuthenticationEntryPoint oAuth2AuthenticationEntryPoint;
 
     private final SecurityContextHolderStrategy securityContextHolderStrategy
             = SecurityContextHolder.getContextHolderStrategy();
@@ -51,12 +47,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             securityContext.setAuthentication(authentication);
             securityContextHolderStrategy.setContext(securityContext);
 
-            filterChain.doFilter(request, response);
-        } catch (JwtAuthException e) {
-            oAuth2AuthenticationEntryPoint.commence(
-                    request, response,
-                    new CustomAuthenticationException(e.getErrorCode())
-            );
-        }
+        } catch (Exception ignored) {}
+
+        filterChain.doFilter(request, response);
     }
 }
