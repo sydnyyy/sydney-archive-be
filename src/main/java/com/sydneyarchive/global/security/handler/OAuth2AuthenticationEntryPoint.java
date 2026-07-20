@@ -6,7 +6,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -16,9 +15,6 @@ import java.io.IOException;
 @Component
 @Slf4j
 public class OAuth2AuthenticationEntryPoint implements AuthenticationEntryPoint {
-
-    @Value("${app.frontend-base-url}")
-    private String frontendBaseUrl;
 
     @Override
     public void commence(
@@ -32,8 +28,20 @@ public class OAuth2AuthenticationEntryPoint implements AuthenticationEntryPoint 
             errorCode = customAuthenticationException.getErrorCode();
         }
 
-        log.error("[OAuth2AuthenticationEntryPoint] errorCode={}", errorCode.getCode());
+        log.error("[AuthenticationEntryPoint] Authentication failed. request={} {}, errorCode={}",
+                request.getMethod(), request.getRequestURI(), errorCode.getCode()
+        );
 
-        response.sendRedirect(frontendBaseUrl + "/error?code=" + errorCode.getCode().toLowerCase());
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        response.getWriter().write("""
+        {
+            "code": "UNAUTHORIZED",
+            "message": "Authentication failed",
+            "status": 401
+        }
+        """);
     }
 }
