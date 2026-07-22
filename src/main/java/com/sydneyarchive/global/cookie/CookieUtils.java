@@ -2,9 +2,8 @@ package com.sydneyarchive.global.cookie;
 
 import com.sydneyarchive.global.config.auth.LoginSessionProperties;
 import com.sydneyarchive.global.config.cookie.CookieProperties;
+import com.sydneyarchive.global.exception.CookieException;
 import com.sydneyarchive.global.exception.ErrorCode;
-import com.sydneyarchive.global.exception.JwtAuthException;
-import com.sydneyarchive.global.security.jwt.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,30 +16,19 @@ import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
-public class CookieUtil {
+public class CookieUtils {
 
-    public static final String AUTH_CODE_COOKIE_NAME = "FLLSAC";
-    private static final String REFRESH_TOKEN_COOKIE_NAME = "FLRT";
+    public static final String AUTH_CODE_COOKIE_NAME = "SAAC";
+    public static final String REFRESH_TOKEN_COOKIE_NAME = "SART";
+    public static final String OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "OAR";
 
     private final CookieProperties cookieProperties;
     private final LoginSessionProperties loginSessionProperties;
 
-    public void setAuthCodeCookie(HttpServletResponse httpServletResponse, String authCode) {
-        ResponseCookie cookie = ResponseCookie.from(AUTH_CODE_COOKIE_NAME, authCode)
+    public void setCookie(String cookieName, String value, HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from(cookieName, value)
                 .path(cookieProperties.path())
                 .maxAge(loginSessionProperties.getLoginSessionTimeoutSec())
-                .httpOnly(true)
-                .secure(cookieProperties.secure())
-                .sameSite(cookieProperties.sameSite())
-                .build();
-
-        httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-    }
-
-    public void setRefreshTokenCookie(String refreshToken, HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
-                .path(cookieProperties.path())
-                .maxAge(JwtUtil.REFRESH_TOKEN_EXPIRATION_SEC)
                 .httpOnly(true)
                 .secure(cookieProperties.secure())
                 .sameSite(cookieProperties.sameSite())
@@ -49,21 +37,21 @@ public class CookieUtil {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    public String getRefreshToken(HttpServletRequest request) {
+    public String getCookie(String cookieName, HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            throw new JwtAuthException(ErrorCode.COOKIE_NOT_FOUND);
+            throw new CookieException(ErrorCode.COOKIE_NOT_FOUND);
         }
 
         return Arrays.stream(cookies)
-                .filter(cookie -> REFRESH_TOKEN_COOKIE_NAME.equals(cookie.getName()))
+                .filter(cookie -> cookieName.equals(cookie.getName()))
                 .map(Cookie::getValue)
                 .findFirst()
-                .orElseThrow(() -> new JwtAuthException(ErrorCode.REFRESH_TOKEN_MISSING));
+                .orElseThrow(() -> new CookieException(ErrorCode.COOKIE_NOT_FOUND));
     }
 
-    public void expireRefreshTokenCookie(HttpServletResponse httpServletResponse) {
-        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, "")
+    public void removeCookie(String cookieName, HttpServletResponse httpServletResponse) {
+        ResponseCookie cookie = ResponseCookie.from(cookieName, "")
                 .path(cookieProperties.path())
                 .maxAge(0)
                 .httpOnly(true)

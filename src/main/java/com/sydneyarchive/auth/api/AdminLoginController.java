@@ -5,7 +5,7 @@ import com.sydneyarchive.auth.dto.request.LoginSessionCompleteRequest;
 import com.sydneyarchive.auth.dto.request.LoginSessionRequest;
 import com.sydneyarchive.auth.dto.response.LoginSessionResponse;
 import com.sydneyarchive.auth.service.LoginSessionService;
-import com.sydneyarchive.global.cookie.CookieUtil;
+import com.sydneyarchive.global.cookie.CookieUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-import static com.sydneyarchive.global.cookie.CookieUtil.AUTH_CODE_COOKIE_NAME;
+import static com.sydneyarchive.global.cookie.CookieUtils.AUTH_CODE_COOKIE_NAME;
 
 @RestController
 @RequestMapping("/api/admin/login/sessions")
@@ -21,7 +21,7 @@ import static com.sydneyarchive.global.cookie.CookieUtil.AUTH_CODE_COOKIE_NAME;
 public class AdminLoginController {
 
     private final LoginSessionService loginSessionService;
-    private final CookieUtil cookieUtil;
+    private final CookieUtils cookieUtils;
 
     @PostMapping
     public ResponseEntity<?> getLoginSession(
@@ -35,7 +35,10 @@ public class AdminLoginController {
         LoginSessionContext loginSessionContext = loginSessionService.generateLoginSession();
 
         if (loginSessionContext.authCode() != null) {
-            cookieUtil.setAuthCodeCookie(httpServletResponse, loginSessionContext.authCode());
+            cookieUtils.setCookie(
+                    AUTH_CODE_COOKIE_NAME, loginSessionContext.authCode(),
+                    httpServletResponse
+            );
         }
         return ResponseEntity.ok(LoginSessionResponse.of(loginSessionContext));
     }
