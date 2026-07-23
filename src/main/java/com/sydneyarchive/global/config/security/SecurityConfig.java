@@ -43,9 +43,10 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement(management
+                        -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/sid").permitAll()
@@ -56,20 +57,23 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/admin/auth/token/issue").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/sse/connect").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/access").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/error").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth -> oauth
-                        .authorizationEndpoint(authorizationEndpointConfig
-                                -> authorizationEndpointConfig.authorizationRequestResolver(loginSessionStateAssignmentOAuth2AuthorizationRequestResolver))
-                        .userInfoEndpoint(userInfo ->
-                                userInfo.userService(customOAuth2UserService)
+                        .authorizationEndpoint(authorizationEndpoint
+                                -> authorizationEndpoint
+                                .authorizationRequestResolver(loginSessionStateAssignmentOAuth2AuthorizationRequestResolver)
+                        )
+                        .userInfoEndpoint(userInfoEndPoint
+                                -> userInfoEndPoint.userService(customOAuth2UserService)
                         )
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         .failureHandler(oAuth2AuthenticationFailureHandler)
                 )
-                .exceptionHandling(e -> e
-                        .authenticationEntryPoint(oAuth2AuthenticationEntryPoint)
+                .exceptionHandling(ex
+                        -> ex.authenticationEntryPoint(oAuth2AuthenticationEntryPoint)
                 )
                 .build();
     }
