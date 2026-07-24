@@ -18,8 +18,6 @@ public class Item {
     @Id
     private String id;
 
-    private String adminSid;
-
     private String title;
     private String description;
 
@@ -28,9 +26,8 @@ public class Item {
 
     private VisibilityStatus visibilityStatus;
 
-    public static Item of(ItemCreateRequest request, String adminSid) {
+    public static Item of(ItemCreateRequest request) {
         return Item.builder()
-                .adminSid(adminSid)
                 .title(request.title())
                 .description(request.description())
                 .imageUrls(request.imageUrls())

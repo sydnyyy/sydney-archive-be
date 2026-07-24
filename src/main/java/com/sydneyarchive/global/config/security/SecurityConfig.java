@@ -4,6 +4,7 @@ import com.sydneyarchive.auth.service.CustomOAuth2UserService;
 import com.sydneyarchive.global.config.web.CorsProperties;
 import com.sydneyarchive.global.security.cookie.OAuth2AuthorizationRequestRepository;
 import com.sydneyarchive.global.security.filter.TokenAuthenticationFilter;
+import com.sydneyarchive.global.security.handler.CustomAccessDeniedHandler;
 import com.sydneyarchive.global.security.handler.OAuth2AuthenticationEntryPoint;
 import com.sydneyarchive.global.security.handler.OAuth2AuthenticationFailureHandler;
 import com.sydneyarchive.global.security.handler.OAuth2AuthenticationSuccessHandler;
@@ -35,6 +36,7 @@ public class SecurityConfig {
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
     private final OAuth2AuthenticationEntryPoint oAuth2AuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
     private final LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver loginSessionStateAssignmentOAuth2AuthorizationRequestResolver;
@@ -50,6 +52,11 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/api/chat/rooms").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/chat/rooms/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/items").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/items/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/items/**").hasRole("ADMIN")
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/sid").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/items").permitAll()
@@ -60,7 +67,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/admin/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/sse/connect").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/access").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
@@ -76,7 +82,9 @@ public class SecurityConfig {
                         .failureHandler(oAuth2AuthenticationFailureHandler)
                 )
                 .exceptionHandling(ex
-                        -> ex.authenticationEntryPoint(oAuth2AuthenticationEntryPoint)
+                        -> ex
+                        .authenticationEntryPoint(oAuth2AuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .build();
     }
@@ -103,7 +111,7 @@ public class SecurityConfig {
             "/",
             "/oauth2/**",
             "/api/public/**",
-            "/api/chat/**",
-            "/ws/**"
+            "/ws/**",
+            "/error"
     };
 }
