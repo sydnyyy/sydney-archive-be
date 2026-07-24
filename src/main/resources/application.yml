@@ -33,6 +33,8 @@ spring:
             user-name-attribute: response
 
 app:
+  crypto:
+    aes-key: ${AES_KEY}
   cors:
     allowed-origins: ${ALLOWED_ORIGINS}
   frontend-base-url: ${FE_URL}
@@ -59,6 +61,7 @@ admin:
 
 logging:
   level:
+    org.springframework.security: TRACE
     org.springframework.messaging: DEBUG
     org.springframework.web.socket: DEBUG
     org.springframework.web: DEBUG

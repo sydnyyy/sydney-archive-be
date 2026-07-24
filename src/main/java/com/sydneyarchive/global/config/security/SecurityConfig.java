@@ -2,6 +2,7 @@ package com.sydneyarchive.global.config.security;
 
 import com.sydneyarchive.auth.service.CustomOAuth2UserService;
 import com.sydneyarchive.global.config.web.CorsProperties;
+import com.sydneyarchive.global.security.cookie.OAuth2AuthorizationRequestRepository;
 import com.sydneyarchive.global.security.filter.TokenAuthenticationFilter;
 import com.sydneyarchive.global.security.handler.OAuth2AuthenticationEntryPoint;
 import com.sydneyarchive.global.security.handler.OAuth2AuthenticationFailureHandler;
@@ -37,6 +38,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
     private final LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver loginSessionStateAssignmentOAuth2AuthorizationRequestResolver;
+    private final OAuth2AuthorizationRequestRepository oAuth2AuthorizationRequestRepository;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -65,6 +67,7 @@ public class SecurityConfig {
                         .authorizationEndpoint(authorizationEndpoint
                                 -> authorizationEndpoint
                                 .authorizationRequestResolver(loginSessionStateAssignmentOAuth2AuthorizationRequestResolver)
+                                .authorizationRequestRepository(oAuth2AuthorizationRequestRepository)
                         )
                         .userInfoEndpoint(userInfoEndPoint
                                 -> userInfoEndPoint.userService(customOAuth2UserService)
