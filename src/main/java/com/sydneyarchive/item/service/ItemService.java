@@ -54,9 +54,6 @@ public class ItemService {
     }
 
     public void deleteItem(String itemId) {
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new ItemException(ErrorCode.ITEM_NOT_FOUND));
-
-        itemRepository.delete(item);
+        itemRepository.findById(itemId).ifPresent(itemRepository::delete);
     }
 }

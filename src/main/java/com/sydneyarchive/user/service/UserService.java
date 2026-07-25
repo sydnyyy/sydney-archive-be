@@ -68,10 +68,6 @@ public class UserService {
         throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR, "SID 생성 중복 오류");
     }
 
-    public void deleteAdmin(String userId) {
-        userRepository.deleteById(userId);
-    }
-
     public void updateLastMessageAt(String sid, Instant sendAt) {
         userRepository.findBySid(sid).ifPresent(
                 user -> {
@@ -105,5 +101,9 @@ public class UserService {
         return userRepository.findBySid(sid)
                 .map(u -> UserAuthContext.of(u, false))
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public void deleteAdmin(String userId) {
+        userRepository.deleteById(userId);
     }
 }
