@@ -34,7 +34,7 @@ public class JwtAuthenticationConverter {
                     .build();
 
             Set<SimpleGrantedAuthority> authorities = getAuthoritiesFromRole(role);
-            return new UsernamePasswordAuthenticationToken(userPrincipal, accessToken, authorities);
+            return new UsernamePasswordAuthenticationToken(userPrincipal, null, authorities);
         } catch (Exception e) {
             throw new JwtAuthException(ErrorCode.ACCESS_TOKEN_EXPIRED);
         }
