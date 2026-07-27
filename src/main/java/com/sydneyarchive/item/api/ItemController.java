@@ -6,6 +6,7 @@ import com.sydneyarchive.item.dto.response.ItemResponse;
 import com.sydneyarchive.item.service.ItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,8 +19,13 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public ResponseEntity<?> findAllItems() {
-        List<ItemResponse> responses = itemService.findItems();
+    public ResponseEntity<?> findAllItems(Authentication authentication) {
+        boolean isAdmin = authentication != null
+                && authentication.getAuthorities()
+                .stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+
+        List<ItemResponse> responses = itemService.findItems(isAdmin);
         return ResponseEntity.ok(responses);
     }
 
