@@ -9,6 +9,7 @@ import com.sydneyarchive.item.dto.response.ItemResponse;
 import com.sydneyarchive.item.entity.Item;
 import com.sydneyarchive.item.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -22,9 +23,9 @@ public class ItemService {
 
     // TODO Pagination 적용
     public List<ItemResponse> findItems() {
-        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
-                .getAuthorities()
-                .stream()
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication != null
+                && authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
 
         List<Item> items = isAdmin
