@@ -3,9 +3,8 @@ package com.sydneyarchive.global.config.security;
 import com.sydneyarchive.auth.service.CustomOAuth2UserService;
 import com.sydneyarchive.global.config.web.CorsProperties;
 import com.sydneyarchive.global.security.cookie.OAuth2AuthorizationRequestRepository;
-import com.sydneyarchive.global.security.filter.TokenAuthenticationFilter;
 import com.sydneyarchive.global.security.handler.CustomAccessDeniedHandler;
-import com.sydneyarchive.global.security.handler.OAuth2AuthenticationEntryPoint;
+import com.sydneyarchive.global.security.handler.CustomAuthenticationEntryPoint;
 import com.sydneyarchive.global.security.handler.OAuth2AuthenticationFailureHandler;
 import com.sydneyarchive.global.security.handler.OAuth2AuthenticationSuccessHandler;
 import com.sydneyarchive.global.security.resolver.LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver;
@@ -35,7 +34,7 @@ public class SecurityConfig {
     private final CorsProperties corsProperties;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
-    private final OAuth2AuthenticationEntryPoint oAuth2AuthenticationEntryPoint;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
@@ -83,7 +82,7 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(ex
                         -> ex
-                        .authenticationEntryPoint(oAuth2AuthenticationEntryPoint)
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .build();

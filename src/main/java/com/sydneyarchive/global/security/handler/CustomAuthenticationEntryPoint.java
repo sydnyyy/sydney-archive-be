@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 @Slf4j
-public class OAuth2AuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(
