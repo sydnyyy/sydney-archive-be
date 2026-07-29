@@ -1,12 +1,14 @@
 package com.sydneyarchive.global.security.jwt;
 
 import com.sydneyarchive.auth.security.UserPrincipal;
+import com.sydneyarchive.global.exception.CustomAuthenticationException;
 import com.sydneyarchive.global.exception.ErrorCode;
-import com.sydneyarchive.global.exception.JwtAuthException;
+import com.sydneyarchive.global.security.dto.JwtAuthenticationToken;
 import com.sydneyarchive.user.enums.Role;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -15,13 +17,16 @@ import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationConverter {
+public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     private final JwtUtil jwtUtil;
 
-    public Authentication getAuthentication(String accessToken) {
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        String accessToken = (String) authentication.getCredentials();
+
         if (accessToken == null || accessToken.isEmpty()) {
-            throw new JwtAuthException(ErrorCode.ACCESS_TOKEN_MISSING);
+            throw new CustomAuthenticationException(ErrorCode.ACCESS_TOKEN_MISSING);
         }
 
         try {
@@ -34,9 +39,9 @@ public class JwtAuthenticationConverter {
                     .build();
 
             Set<SimpleGrantedAuthority> authorities = getAuthoritiesFromRole(role);
-            return new UsernamePasswordAuthenticationToken(userPrincipal, null, authorities);
+            return new JwtAuthenticationToken(userPrincipal, authorities);
         } catch (Exception e) {
-            throw new JwtAuthException(ErrorCode.ACCESS_TOKEN_EXPIRED);
+            throw new CustomAuthenticationException(ErrorCode.ACCESS_TOKEN_EXPIRED);
         }
     }
 
@@ -48,5 +53,10 @@ public class JwtAuthenticationConverter {
             return Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
         }
         return Collections.singleton(new SimpleGrantedAuthority("ROLE_GUEST"));
+    }
+
+    @Override
+    public boolean supports(Class<?> authentication) {
+        return JwtAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }
