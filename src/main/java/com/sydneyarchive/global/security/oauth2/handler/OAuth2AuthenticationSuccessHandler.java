@@ -1,4 +1,4 @@
-package com.sydneyarchive.global.security.handler;
+package com.sydneyarchive.global.security.oauth2.handler;
 
 import com.sydneyarchive.auth.dto.internal.CustomOAuth2User;
 import com.sydneyarchive.auth.dto.internal.LoginSessionContext;

@@ -1,16 +1,16 @@
 package com.sydneyarchive.global.config.security;
 
-import com.sydneyarchive.auth.service.CustomOAuth2UserService;
+import com.sydneyarchive.global.security.oauth2.service.CustomOAuth2UserService;
 import com.sydneyarchive.global.config.web.CorsProperties;
-import com.sydneyarchive.global.security.cookie.OAuth2AuthorizationRequestRepository;
+import com.sydneyarchive.global.security.oauth2.repository.OAuth2AuthorizationRequestRepository;
 import com.sydneyarchive.global.security.filter.JwtAuthenticationFilter;
 import com.sydneyarchive.global.security.handler.CustomAccessDeniedHandler;
 import com.sydneyarchive.global.security.handler.CustomAuthenticationEntryPoint;
-import com.sydneyarchive.global.security.handler.OAuth2AuthenticationFailureHandler;
-import com.sydneyarchive.global.security.handler.OAuth2AuthenticationSuccessHandler;
-import com.sydneyarchive.global.security.jwt.JwtAuthenticationProvider;
+import com.sydneyarchive.global.security.oauth2.handler.OAuth2AuthenticationFailureHandler;
+import com.sydneyarchive.global.security.oauth2.handler.OAuth2AuthenticationSuccessHandler;
+import com.sydneyarchive.global.security.provider.JwtAuthenticationProvider;
 import com.sydneyarchive.global.security.jwt.JwtUtil;
-import com.sydneyarchive.global.security.resolver.LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver;
+import com.sydneyarchive.global.security.oauth2.resolver.LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

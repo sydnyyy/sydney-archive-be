@@ -1,4 +1,4 @@
-package com.sydneyarchive.global.security.util;
+package com.sydneyarchive.global.security.oauth2.util;
 
 import com.sydneyarchive.global.config.crypto.CryptoProperties;
 import org.springframework.stereotype.Component;

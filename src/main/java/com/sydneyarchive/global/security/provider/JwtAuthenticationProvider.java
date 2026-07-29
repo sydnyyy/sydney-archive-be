@@ -1,9 +1,10 @@
-package com.sydneyarchive.global.security.jwt;
+package com.sydneyarchive.global.security.provider;
 
 import com.sydneyarchive.auth.security.UserPrincipal;
 import com.sydneyarchive.global.exception.CustomAuthenticationException;
 import com.sydneyarchive.global.exception.ErrorCode;
-import com.sydneyarchive.global.security.dto.JwtAuthenticationToken;
+import com.sydneyarchive.global.security.jwt.JwtUtil;
+import com.sydneyarchive.global.security.jwt.JwtAuthenticationToken;
 import com.sydneyarchive.user.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;

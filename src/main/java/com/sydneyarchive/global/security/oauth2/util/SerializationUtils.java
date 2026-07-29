@@ -1,4 +1,4 @@
-package com.sydneyarchive.global.security.util;
+package com.sydneyarchive.global.security.oauth2.util;
 
 import java.io.*;
 

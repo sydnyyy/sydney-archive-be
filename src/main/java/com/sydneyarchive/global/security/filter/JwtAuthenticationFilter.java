@@ -1,6 +1,6 @@
 package com.sydneyarchive.global.security.filter;
 
-import com.sydneyarchive.global.security.dto.JwtAuthenticationToken;
+import com.sydneyarchive.global.security.jwt.JwtAuthenticationToken;
 import com.sydneyarchive.global.security.handler.CustomAuthenticationEntryPoint;
 import com.sydneyarchive.global.security.jwt.JwtUtil;
 import jakarta.servlet.FilterChain;

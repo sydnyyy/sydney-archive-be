@@ -1,10 +1,10 @@
-package com.sydneyarchive.global.security.cookie;
+package com.sydneyarchive.global.security.oauth2.repository;
 
 import com.sydneyarchive.global.cookie.CookieUtils;
 import com.sydneyarchive.global.exception.ErrorCode;
-import com.sydneyarchive.global.security.util.AesGcmUtils;
-import com.sydneyarchive.global.security.util.GzipUtils;
-import com.sydneyarchive.global.security.util.SerializationUtils;
+import com.sydneyarchive.global.security.oauth2.util.AesGcmUtils;
+import com.sydneyarchive.global.security.oauth2.util.GzipUtils;
+import com.sydneyarchive.global.security.oauth2.util.SerializationUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

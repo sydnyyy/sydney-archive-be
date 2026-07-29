@@ -1,4 +1,4 @@
-package com.sydneyarchive.global.security.dto;
+package com.sydneyarchive.global.security.jwt;
 
 import com.sydneyarchive.auth.security.UserPrincipal;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
