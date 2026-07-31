@@ -1,8 +1,8 @@
 package com.sydneyarchive.user.service;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
-import com.mongodb.DuplicateKeyException;
 import com.sydneyarchive.auth.dto.internal.CustomOAuth2User;
+import com.sydneyarchive.auth.dto.request.UserSidRequest;
 import com.sydneyarchive.global.config.auth.AdminProperties;
 import com.sydneyarchive.global.exception.ErrorCode;
 import com.sydneyarchive.global.exception.UserException;
@@ -10,6 +10,7 @@ import com.sydneyarchive.user.dto.internal.UserAuthContext;
 import com.sydneyarchive.user.dto.internal.UserContext;
 import com.sydneyarchive.user.dto.response.AdminResponse;
 import com.sydneyarchive.user.entity.User;
+import com.sydneyarchive.user.enums.Role;
 import com.sydneyarchive.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,21 +31,33 @@ public class UserService {
     private final UserRepository userRepository;
     private final AdminProperties adminProperties;
 
-    public String saveGuest() {
-        String sid = NanoIdUtils.randomNanoId();
-
-        try {
-            User guest = User.createGuest(sid);
-            userRepository.save(guest);
-            return sid;
-        } catch (DuplicateKeyException e) {
-            log.warn("[saveGuest] GUEST 중복 삽입 시도 sid={}", sid);
-            throw new UserException(ErrorCode.SID_CREATION_FAILED);
+    @Retryable(
+            retryFor = { org.springframework.dao.DuplicateKeyException.class, Exception.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100)
+    )
+    public String saveUser(UserSidRequest userSidRequest) {
+        if (userSidRequest != null) {
+            Optional<User> userOptional = userRepository.findBySid(userSidRequest.sid());
+            if (userOptional.isPresent() && !userOptional.get().getRole().equals(Role.ADMIN)) {
+                return userSidRequest.sid();
+            }
         }
+
+        String sid = NanoIdUtils.randomNanoId();
+        User guest = User.createGuest(sid);
+        userRepository.save(guest);
+        return sid;
+    }
+
+    @Recover
+    public String recover(Throwable t, UserSidRequest userSidRequest) {
+        log.error("[UserService] Duplicate key collision during GUEST SID generation. message={}", t.getMessage());
+        throw new UserException(ErrorCode.DUPLICATE_USER_SID);
     }
 
     @Retryable(
-            retryFor = org.springframework.dao.DuplicateKeyException.class,
+            retryFor = { org.springframework.dao.DuplicateKeyException.class, Exception.class },
             maxAttempts = 3,
             backoff = @Backoff(delay = 100)
     )
@@ -63,9 +76,9 @@ public class UserService {
     }
 
     @Recover
-    public UserAuthContext recover(DuplicateKeyException e, CustomOAuth2User customOAuth2User) {
-        log.error("[UserService] SID 생성 실패 (중복 지속 발생). oauth2Profile.provider={}", customOAuth2User.getProvider());
-        throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR, "SID 생성 중복 오류");
+    public UserAuthContext recover(Throwable t, CustomOAuth2User customOAuth2User) {
+        log.error("[UserService] Duplicate key collision during ADMIN SID generation. message={}", t.getMessage());
+        throw new UserException(ErrorCode.DUPLICATE_USER_SID);
     }
 
     public void updateLastMessageAt(String sid, Instant sendAt) {
