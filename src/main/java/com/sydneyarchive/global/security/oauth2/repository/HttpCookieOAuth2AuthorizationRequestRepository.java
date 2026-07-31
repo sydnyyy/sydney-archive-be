@@ -19,7 +19,7 @@ import static com.sydneyarchive.global.cookie.CookieUtils.OAUTH2_AUTHORIZATION_R
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class OAuth2AuthorizationRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
+public class HttpCookieOAuth2AuthorizationRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
     private final CookieUtils cookieUtils;
     private final AesGcmUtils aesGcmUtils;

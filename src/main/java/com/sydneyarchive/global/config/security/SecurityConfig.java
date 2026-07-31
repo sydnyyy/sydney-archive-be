@@ -2,7 +2,7 @@ package com.sydneyarchive.global.config.security;
 
 import com.sydneyarchive.global.security.oauth2.service.CustomOAuth2UserService;
 import com.sydneyarchive.global.config.web.CorsProperties;
-import com.sydneyarchive.global.security.oauth2.repository.OAuth2AuthorizationRequestRepository;
+import com.sydneyarchive.global.security.oauth2.repository.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.sydneyarchive.global.security.filter.JwtAuthenticationFilter;
 import com.sydneyarchive.global.security.handler.CustomAccessDeniedHandler;
 import com.sydneyarchive.global.security.handler.CustomAuthenticationEntryPoint;
@@ -43,7 +43,7 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver loginSessionStateAssignmentOAuth2AuthorizationRequestResolver;
-    private final OAuth2AuthorizationRequestRepository oAuth2AuthorizationRequestRepository;
+    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
     @Bean
     public AuthenticationManager authenticationManager(JwtAuthenticationProvider jwtProvider) {
@@ -96,7 +96,7 @@ public class SecurityConfig {
                         .authorizationEndpoint(authorizationEndpoint
                                 -> authorizationEndpoint
                                 .authorizationRequestResolver(loginSessionStateAssignmentOAuth2AuthorizationRequestResolver)
-                                .authorizationRequestRepository(oAuth2AuthorizationRequestRepository)
+                                .authorizationRequestRepository(httpCookieOAuth2AuthorizationRequestRepository)
                         )
                         .userInfoEndpoint(userInfoEndPoint
                                 -> userInfoEndPoint.userService(customOAuth2UserService)
