@@ -21,16 +21,16 @@ public class AccessService {
     private final StringRedisTemplate redisTemplate;
 
     public void recordAccess(AccessEvent accessEvent) {
-        if (webSocketSessionManager.hasSessionBySid(accessEvent.sid())) {
-            webSocketSessionManager.updateTTL(accessEvent.sid());
-            userAccessManager.recordAccess(accessEvent.sid());
+        if (webSocketSessionManager.hasSessionBySid(accessEvent.uid())) {
+            webSocketSessionManager.updateTTL(accessEvent.uid());
+            userAccessManager.recordAccess(accessEvent.uid());
         }
         broadcastUserActivity(accessEvent);
     }
 
     private void broadcastUserActivity(AccessEvent accessEvent) {
         Map<String, String> message = new HashMap<>();
-        message.put(RedisStreamConsumer.SID_FIELD, accessEvent.sid());
+        message.put(RedisStreamConsumer.SID_FIELD, accessEvent.uid());
         redisTemplate.opsForStream().add(RedisKeys.USER_ACTIVITY_STREAM, message);
     }
 }

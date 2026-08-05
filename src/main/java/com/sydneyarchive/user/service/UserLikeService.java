@@ -17,8 +17,8 @@ public class UserLikeService {
 
     private final UserRepository userRepository;
 
-    public List<String> getLikedItemIds(String sid) {
-        User user = userRepository.findBySid(sid)
+    public List<String> getLikedItemIds(String uid) {
+        User user = userRepository.findByUid(uid)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
         List<String> likedItemIds = new ArrayList<>(user.getLikedItemIds());
@@ -26,16 +26,16 @@ public class UserLikeService {
         return likedItemIds;
     }
 
-    public void addLike(String sid, String itemId) {
-        User user = userRepository.findBySid(sid)
+    public void addLike(String uid, String itemId) {
+        User user = userRepository.findByUid(uid)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
         user.addLikedItemId(itemId);
         userRepository.save(user);
     }
 
-    public void deleteLike(String sid, String itemId) {
-        userRepository.findBySid(sid)
+    public void deleteLike(String uid, String itemId) {
+        userRepository.findByUid(uid)
                 .ifPresent(user -> {
                     user.deleteLikeItemId(itemId);
                     userRepository.save(user);

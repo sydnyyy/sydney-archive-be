@@ -5,14 +5,14 @@ import lombok.Builder;
 
 @Builder
 public record AdminResponse(
-        String sid,
+        String uid,
         String username,
         String email
 
 ) {
     public static AdminResponse of(User user) {
         return AdminResponse.builder()
-                .sid(user.getSid())
+                .uid(user.getUid())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .build();

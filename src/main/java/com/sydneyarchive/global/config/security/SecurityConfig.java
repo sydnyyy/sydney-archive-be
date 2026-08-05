@@ -85,7 +85,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/admin/login/sessions/complete").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/auth/token/issue").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/auth/logout").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/sid").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/uid").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/items").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/chat/messages").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/sse/connect").permitAll()

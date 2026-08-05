@@ -10,8 +10,8 @@ import java.time.Instant;
 public record ChatMessageResponse(
         String id,
         String chatRoomId,
-        String senderSid,
-        String receiverSid,
+        String senderUid,
+        String receiverUid,
         String content,
         Instant createdAt,
         ChatType type
@@ -21,8 +21,8 @@ public record ChatMessageResponse(
         return ChatMessageResponse.builder()
                 .id(chatMessage.getId())
                 .chatRoomId(chatMessage.getChatRoomId())
-                .senderSid(chatMessage.getSenderSid())
-                .receiverSid(chatMessage.getReceiverSid())
+                .senderUid(chatMessage.getSenderUid())
+                .receiverUid(chatMessage.getReceiverUid())
                 .content(chatMessage.getContent())
                 .createdAt(chatMessage.getCreatedAt())
                 .type(chatMessage.getType())
@@ -33,8 +33,8 @@ public record ChatMessageResponse(
         return ChatMessageResponse.builder()
                 .id(chatMessage.getId())
                 .chatRoomId(chatMessage.getChatRoomId())
-                .senderSid("admin")
-                .receiverSid(chatMessage.getReceiverSid())
+                .senderUid("admin")
+                .receiverUid(chatMessage.getReceiverUid())
                 .content(chatMessage.getContent())
                 .createdAt(chatMessage.getCreatedAt())
                 .type(chatMessage.getType())

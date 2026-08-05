@@ -2,7 +2,7 @@ package com.sydneyarchive.user.service;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.sydneyarchive.auth.dto.internal.CustomOAuth2User;
-import com.sydneyarchive.auth.dto.request.UserSidRequest;
+import com.sydneyarchive.user.dto.request.UidRequest;
 import com.sydneyarchive.global.config.auth.AdminProperties;
 import com.sydneyarchive.global.exception.ErrorCode;
 import com.sydneyarchive.global.exception.UserException;
@@ -36,23 +36,23 @@ public class UserService {
             maxAttempts = 3,
             backoff = @Backoff(delay = 100)
     )
-    public String saveUser(UserSidRequest userSidRequest) {
-        if (userSidRequest != null) {
-            Optional<User> userOptional = userRepository.findBySid(userSidRequest.sid());
+    public String saveUser(UidRequest uidRequest) {
+        if (uidRequest != null) {
+            Optional<User> userOptional = userRepository.findByUid(uidRequest.uid());
             if (userOptional.isPresent() && !userOptional.get().getRole().equals(Role.ADMIN)) {
-                return userSidRequest.sid();
+                return uidRequest.uid();
             }
         }
 
-        String sid = NanoIdUtils.randomNanoId();
-        User guest = User.createGuest(sid);
+        String uid = NanoIdUtils.randomNanoId();
+        User guest = User.createGuest(uid);
         userRepository.save(guest);
-        return sid;
+        return uid;
     }
 
     @Recover
-    public String recover(Throwable t, UserSidRequest userSidRequest) {
-        log.error("[UserService] Duplicate key collision during GUEST SID generation. message={}", t.getMessage());
+    public String recover(Throwable t, UidRequest uidRequest) {
+        log.error("[UserService] Duplicate key collision during GUEST UID generation. message={}", t.getMessage());
         throw new UserException(ErrorCode.DUPLICATE_USER_SID);
     }
 
@@ -68,8 +68,8 @@ public class UserService {
             return UserAuthContext.of(userOptional.get(), false);
         }
 
-        String sid = NanoIdUtils.randomNanoId();
-        User user = User.createAdmin(customOAuth2User, sid, adminProperties.username());
+        String uid = NanoIdUtils.randomNanoId();
+        User user = User.createAdmin(customOAuth2User, uid, adminProperties.username());
         userRepository.save(user);
 
         return UserAuthContext.of(user, true);
@@ -77,12 +77,12 @@ public class UserService {
 
     @Recover
     public UserAuthContext recover(Throwable t, CustomOAuth2User customOAuth2User) {
-        log.error("[UserService] Duplicate key collision during ADMIN SID generation. message={}", t.getMessage());
+        log.error("[UserService] Duplicate key collision during ADMIN UID generation. message={}", t.getMessage());
         throw new UserException(ErrorCode.DUPLICATE_USER_SID);
     }
 
-    public void updateLastMessageAt(String sid, Instant sendAt) {
-        userRepository.findBySid(sid).ifPresent(
+    public void updateLastMessageAt(String uid, Instant sendAt) {
+        userRepository.findByUid(uid).ifPresent(
                 user -> {
                     user.updateLastMessageAt(sendAt);
                     userRepository.save(user);
@@ -110,8 +110,8 @@ public class UserService {
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }
 
-    public UserAuthContext getUserContextBySid(String sid) {
-        return userRepository.findBySid(sid)
+    public UserAuthContext getUserContextByUid(String uid) {
+        return userRepository.findByUid(uid)
                 .map(u -> UserAuthContext.of(u, false))
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }

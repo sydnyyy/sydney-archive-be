@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface UserRepository extends MongoRepository<User, String> {
 
-    Optional<User> findBySid(String sid);
+    Optional<User> findByUid(String uid);
     List<User> findAllByLastMessageAtIsNotNullOrderByLastMessageAtDesc();
     Optional<User> findByProviderAndProviderId(String provider, String providerId);
 }

@@ -18,10 +18,10 @@ public class ChatController {
 
     @GetMapping("/messages")
     public ResponseEntity<?> getChatMessages(
-            @RequestParam String sid,
+            @RequestParam String uid,
             @RequestParam(required = false) String cursorId
     ) {
-        List<ChatMessageResponse> response = chatService.getChatMessages(sid, cursorId);
+        List<ChatMessageResponse> response = chatService.getChatMessages(uid, cursorId);
         return ResponseEntity.ok(response);
     }
 

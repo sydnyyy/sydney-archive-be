@@ -8,13 +8,13 @@ import java.time.Instant;
 @Builder
 public record UserContext(
 
-        String userSid,
+        String uid,
         Instant lastMessageAt
 ) {
 
     public static UserContext of(User user) {
         return UserContext.builder()
-                .userSid(user.getSid())
+                .uid(user.getUid())
                 .lastMessageAt(user.getLastMessageAt())
                 .build();
     }
