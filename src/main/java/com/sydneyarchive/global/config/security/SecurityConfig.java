@@ -9,7 +9,7 @@ import com.sydneyarchive.global.security.handler.CustomAuthenticationEntryPoint;
 import com.sydneyarchive.global.security.oauth2.handler.OAuth2AuthenticationFailureHandler;
 import com.sydneyarchive.global.security.oauth2.handler.OAuth2AuthenticationSuccessHandler;
 import com.sydneyarchive.global.security.provider.JwtAuthenticationProvider;
-import com.sydneyarchive.global.security.jwt.JwtUtil;
+import com.sydneyarchive.global.security.jwt.JwtProvider;
 import com.sydneyarchive.global.security.oauth2.resolver.LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -54,10 +54,10 @@ public class SecurityConfig {
     public JwtAuthenticationFilter jwtAuthenticationFilter(
             AuthenticationManager authenticationManager,
             CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
-            JwtUtil jwtUtil
+            JwtProvider jwtProvider
     ) {
         return new JwtAuthenticationFilter(
-                authenticationManager, customAuthenticationEntryPoint, jwtUtil
+                authenticationManager, customAuthenticationEntryPoint, jwtProvider
         );
     }
 

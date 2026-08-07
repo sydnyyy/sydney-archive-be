@@ -21,7 +21,7 @@ import java.util.Date;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class JwtUtil {
+public class JwtProvider {
 
     private static final long ACCESS_TOKEN_EXPIRATION_SEC = 60 * 15;
     public static final long REFRESH_TOKEN_EXPIRATION_SEC = 60 * 60 * 24 * 14;

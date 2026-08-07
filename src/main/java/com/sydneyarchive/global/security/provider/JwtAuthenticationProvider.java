@@ -3,7 +3,7 @@ package com.sydneyarchive.global.security.provider;
 import com.sydneyarchive.auth.security.UserPrincipal;
 import com.sydneyarchive.global.exception.CustomAuthenticationException;
 import com.sydneyarchive.global.exception.ErrorCode;
-import com.sydneyarchive.global.security.jwt.JwtUtil;
+import com.sydneyarchive.global.security.jwt.JwtProvider;
 import com.sydneyarchive.global.security.jwt.JwtAuthenticationToken;
 import com.sydneyarchive.user.enums.Role;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class JwtAuthenticationProvider implements AuthenticationProvider {
 
-    private final JwtUtil jwtUtil;
+    private final JwtProvider jwtProvider;
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -31,8 +31,8 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         }
 
         try {
-            String userId = jwtUtil.getClaimUserId(accessToken);
-            Role role = jwtUtil.getClaimRole(accessToken);
+            String userId = jwtProvider.getClaimUserId(accessToken);
+            Role role = jwtProvider.getClaimRole(accessToken);
 
             UserPrincipal userPrincipal = UserPrincipal.builder()
                     .userId(userId)

@@ -2,7 +2,7 @@ package com.sydneyarchive.auth.service;
 
 import com.sydneyarchive.global.cookie.CookieUtils;
 import com.sydneyarchive.global.exception.JwtAuthException;
-import com.sydneyarchive.global.security.jwt.JwtUtil;
+import com.sydneyarchive.global.security.jwt.JwtProvider;
 import com.sydneyarchive.user.enums.Role;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,12 +22,12 @@ public class TokenService {
 
     private static final String REFRESH_TOKEN_REDIS_KEY_PREFIX = "RT:";
 
-    private final JwtUtil jwtUtil;
+    private final JwtProvider jwtProvider;
     private final StringRedisTemplate redisTemplate;
     private final CookieUtils cookieUtils;
 
     public void issueRefreshTokenToCookie(String userId, Role role, HttpServletResponse response) {
-        String refreshToken = jwtUtil.generateRefreshToken(userId, role);
+        String refreshToken = jwtProvider.generateRefreshToken(userId, role);
         saveRefreshTokenToRedis(userId, refreshToken);
         cookieUtils.setCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, response);
     }
@@ -37,7 +37,7 @@ public class TokenService {
         redisTemplate.opsForValue().set(
                 key,
                 refreshToken,
-                JwtUtil.REFRESH_TOKEN_EXPIRATION_SEC,
+                JwtProvider.REFRESH_TOKEN_EXPIRATION_SEC,
                 TimeUnit.SECONDS
         );
     }
@@ -49,10 +49,10 @@ public class TokenService {
         String refreshToken = null;
         try {
             refreshToken = cookieUtils.getCookie(REFRESH_TOKEN_COOKIE_NAME, request);
-            String userId = jwtUtil.getClaimUserId(refreshToken);
-            Role role = jwtUtil.getClaimRole(refreshToken);
+            String userId = jwtProvider.getClaimUserId(refreshToken);
+            Role role = jwtProvider.getClaimRole(refreshToken);
 
-            return jwtUtil.generateAccessToken(userId, role);
+            return jwtProvider.generateAccessToken(userId, role);
         } catch (JwtAuthException e) {
             if (refreshToken != null) {
                 deleteRefreshTokenFromRedis(refreshToken);
@@ -76,7 +76,7 @@ public class TokenService {
 
     private void deleteRefreshTokenFromRedis(String refreshToken) {
         try {
-            String userId = jwtUtil.getClaimUserId(refreshToken);
+            String userId = jwtProvider.getClaimUserId(refreshToken);
             String key = REFRESH_TOKEN_REDIS_KEY_PREFIX + userId;
             redisTemplate.delete(key);
         } catch (JwtAuthException e) {

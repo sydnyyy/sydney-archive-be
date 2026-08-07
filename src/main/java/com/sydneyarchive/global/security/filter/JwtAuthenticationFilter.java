@@ -2,7 +2,7 @@ package com.sydneyarchive.global.security.filter;
 
 import com.sydneyarchive.global.security.jwt.JwtAuthenticationToken;
 import com.sydneyarchive.global.security.handler.CustomAuthenticationEntryPoint;
-import com.sydneyarchive.global.security.jwt.JwtUtil;
+import com.sydneyarchive.global.security.jwt.JwtProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final AuthenticationManager authenticationManager;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
-    private final JwtUtil jwtUtil;
+    private final JwtProvider jwtProvider;
 
     private final SecurityContextHolderStrategy securityContextHolderStrategy
             = SecurityContextHolder.getContextHolderStrategy();
@@ -35,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String accessToken = jwtUtil.getAccessToken(request);
+        String accessToken = jwtProvider.getAccessToken(request);
         if (accessToken == null || accessToken.isBlank()) {
             filterChain.doFilter(request, response);
             return;
