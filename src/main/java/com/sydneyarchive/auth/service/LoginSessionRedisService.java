@@ -238,14 +238,6 @@ public class LoginSessionRedisService {
         return result;
     }
 
-    private String getLoginSessionKey(String sid) {
-        return LOGIN_SESSION_KEY_PREFIX + sid;
-    }
-
-    private String getLoginStateKey(String state) {
-        return LOGIN_STATE_KEY_PREFIX + state;
-    }
-
     public void deleteLoingSession(String sid) {
         String sessionKey = getLoginSessionKey(sid);
 
@@ -269,5 +261,13 @@ public class LoginSessionRedisService {
                 LOGIN_SESSION_STATE_FIELD_NAME,
                 LOGIN_STATE_KEY_PREFIX
         );
+    }
+
+    private String getLoginSessionKey(String sid) {
+        return LOGIN_SESSION_KEY_PREFIX + sid;
+    }
+
+    private String getLoginStateKey(String state) {
+        return LOGIN_STATE_KEY_PREFIX + state;
     }
 }
