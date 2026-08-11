@@ -25,7 +25,7 @@ public class User {
     private Role role;
 
     @Indexed(unique = true)
-    private String sid;
+    private String uid;
 
     private String realName;
 
@@ -51,18 +51,18 @@ public class User {
     @Builder.Default
     private Set<String> likedItemIds = new LinkedHashSet<>();
 
-    public static User createGuest(String sid) {
+    public static User createGuest(String uid) {
         return User.builder()
                 .role(Role.GUEST)
-                .sid(sid)
-                .email(sid)
+                .uid(uid)
+                .email(uid)
                 .build();
     }
 
-    public static User createAdmin(CustomOAuth2User oauth2UserCustom, String sid, String username) {
+    public static User createAdmin(CustomOAuth2User oauth2UserCustom, String uid, String username) {
         return User.builder()
                 .role(oauth2UserCustom.getRole())
-                .sid(sid)
+                .uid(uid)
                 .realName(oauth2UserCustom.getRealName())
                 .username(username)
                 .provider(oauth2UserCustom.getProvider())

@@ -1,4 +1,4 @@
-package com.sydneyarchive.global.security.resolver;
+package com.sydneyarchive.global.security.oauth2.resolver;
 
 import com.sydneyarchive.auth.enums.Platform;
 import com.sydneyarchive.auth.service.LoginSessionService;

@@ -29,7 +29,7 @@ public class ChatService {
         sendMessageToAdmin(payload);
 
         if (payload.type() == ChatType.USER) {
-            userService.updateLastMessageAt(payload.senderSid(), payload.createdAt());
+            userService.updateLastMessageAt(payload.senderUid(), payload.createdAt());
         }
     }
 
@@ -54,16 +54,9 @@ public class ChatService {
 
     private void sendMessageToUser(ChatMessageResponse payload) {
         String user = (payload.type() == ChatType.USER)
-                ? payload.senderSid() : payload.receiverSid();
+                ? payload.senderUid() : payload.receiverUid();
 
         messagingTemplate.convertAndSendToUser(user, "/queue/chat.messages", payload);
-    }
-
-    public void deleteChatRoom(String chatRoomId) {
-        chatMessageRepository.deleteByChatRoomId(chatRoomId);
-
-        String userSid = chatRoomId;
-        userService.updateLastMessageAt(userSid, null);
     }
 
     public List<ChatRoomResponse> findAllChatRooms() {
@@ -73,12 +66,17 @@ public class ChatService {
                 .toList();
     }
 
-    public List<ChatMessageResponse> getChatMessages(String sid, String cursorId) {
+    public List<ChatMessageResponse> getChatMessages(String uid, String cursorId) {
         int limit = 15;
         return chatMessageRepositoryImpl
-                .findByChatRoomIdAndBeforeCursor(sid, cursorId, limit)
+                .findByChatRoomIdAndBeforeCursor(uid, cursorId, limit)
                 .stream()
                 .map(ChatMessageResponse::of)
                 .toList();
+    }
+
+    public void deleteChatRoom(String chatRoomId) {
+        chatMessageRepository.deleteByChatRoomId(chatRoomId);
+        userService.updateLastMessageAt(chatRoomId, null);
     }
 }

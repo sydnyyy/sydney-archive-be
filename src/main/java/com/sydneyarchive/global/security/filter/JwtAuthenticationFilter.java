@@ -1,31 +1,29 @@
 package com.sydneyarchive.global.security.filter;
 
-import com.sydneyarchive.global.exception.CustomAuthenticationException;
-import com.sydneyarchive.global.exception.JwtAuthException;
-import com.sydneyarchive.global.security.handler.OAuth2AuthenticationEntryPoint;
-import com.sydneyarchive.global.security.jwt.JwtAuthenticationConverter;
-import com.sydneyarchive.global.security.jwt.JwtUtil;
+import com.sydneyarchive.global.security.jwt.JwtAuthenticationToken;
+import com.sydneyarchive.global.security.handler.CustomAuthenticationEntryPoint;
+import com.sydneyarchive.global.security.jwt.JwtProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Component
 @RequiredArgsConstructor
-public class TokenAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
-    private final JwtAuthenticationConverter jwtAuthenticationConverter;
-    private final OAuth2AuthenticationEntryPoint oAuth2AuthenticationEntryPoint;
+    private final AuthenticationManager authenticationManager;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final JwtProvider jwtProvider;
 
     private final SecurityContextHolderStrategy securityContextHolderStrategy
             = SecurityContextHolder.getContextHolderStrategy();
@@ -37,26 +35,25 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String accessToken = jwtUtil.getAccessToken(request);
-
+        String accessToken = jwtProvider.getAccessToken(request);
         if (accessToken == null || accessToken.isBlank()) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            Authentication authentication = jwtAuthenticationConverter.getAuthentication(accessToken);
+            Authentication authenticationRequest = new JwtAuthenticationToken(accessToken);
+            Authentication authenticationResult = authenticationManager.authenticate(authenticationRequest);
 
             SecurityContext securityContext = securityContextHolderStrategy.createEmptyContext();
-            securityContext.setAuthentication(authentication);
+            securityContext.setAuthentication(authenticationResult);
             securityContextHolderStrategy.setContext(securityContext);
 
-            filterChain.doFilter(request, response);
-        } catch (JwtAuthException e) {
-            oAuth2AuthenticationEntryPoint.commence(
-                    request, response,
-                    new CustomAuthenticationException(e.getErrorCode())
-            );
-        }
+        } catch (AuthenticationException e) {
+            authenticationEntryPoint.commence(request, response, e);
+            return;
+        } catch (Exception ignored) {}
+
+        filterChain.doFilter(request, response);
     }
 }

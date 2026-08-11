@@ -14,21 +14,27 @@ public class UserLikesController {
 
     private final UserLikeService userLikeService;
 
-    @GetMapping("/{sid}")
-    public ResponseEntity<?> getUserLikes(@PathVariable String sid) {
-        List<String> likedItemIds = userLikeService.getLikedItemIds(sid);
+    @GetMapping("/{uid}")
+    public ResponseEntity<?> getUserLikes(@PathVariable String uid) {
+        List<String> likedItemIds = userLikeService.getLikedItemIds(uid);
         return ResponseEntity.ok(likedItemIds);
     }
 
-    @PostMapping("/{sid}/{itemId}")
-    public ResponseEntity<?> addLike(@PathVariable String sid, @PathVariable String itemId) {
-        userLikeService.addLike(sid, itemId);
+    @PostMapping("/{uid}/{itemId}")
+    public ResponseEntity<?> addLike(
+            @PathVariable String uid,
+            @PathVariable String itemId
+    ) {
+        userLikeService.addLike(uid, itemId);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{sid}/{itemId}")
-    public ResponseEntity<?> deleteLike(@PathVariable String sid, @PathVariable String itemId) {
-        userLikeService.deleteLike(sid, itemId);
+    @DeleteMapping("/{uid}/{itemId}")
+    public ResponseEntity<?> deleteLike(
+            @PathVariable String uid,
+            @PathVariable String itemId
+    ) {
+        userLikeService.deleteLike(uid, itemId);
         return ResponseEntity.ok().build();
     }
 }

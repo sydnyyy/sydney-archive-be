@@ -1,4 +1,4 @@
-package com.sydneyarchive.global.security.handler;
+package com.sydneyarchive.global.security.oauth2.handler;
 
 import com.sydneyarchive.auth.dto.internal.CustomOAuth2User;
 import com.sydneyarchive.auth.dto.internal.LoginSessionContext;
@@ -81,9 +81,10 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
         if (loginSessionContext.platform() == Platform.WEB) {
             tokenService.issueRefreshTokenToCookie(
-                    userAuthContext.userId(), userAuthContext.role(), response);
+                    userAuthContext.userId(), userAuthContext.role(), response
+            );
 
-            String redirectUrl = frontendBaseUrl + "/login/success?platform=" + loginSessionContext.platform().toString().toLowerCase();
+            String redirectUrl = frontendBaseUrl + "/login/success?platform=web";
             response.sendRedirect(redirectUrl);
             return;
         }

@@ -13,7 +13,7 @@ public record ChatRoomResponse(
 
     public static ChatRoomResponse of(UserContext userContext) {
         return ChatRoomResponse.builder()
-                .chatRoomId(userContext.userSid())
+                .chatRoomId(userContext.uid())
                 .lastMessageAt(userContext.lastMessageAt())
                 .build();
     }

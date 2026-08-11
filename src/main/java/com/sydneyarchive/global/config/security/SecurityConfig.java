@@ -1,16 +1,22 @@
 package com.sydneyarchive.global.config.security;
 
-import com.sydneyarchive.auth.service.CustomOAuth2UserService;
+import com.sydneyarchive.global.security.oauth2.service.CustomOAuth2UserService;
 import com.sydneyarchive.global.config.web.CorsProperties;
-import com.sydneyarchive.global.security.filter.TokenAuthenticationFilter;
-import com.sydneyarchive.global.security.handler.OAuth2AuthenticationEntryPoint;
-import com.sydneyarchive.global.security.handler.OAuth2AuthenticationFailureHandler;
-import com.sydneyarchive.global.security.handler.OAuth2AuthenticationSuccessHandler;
-import com.sydneyarchive.global.security.resolver.LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver;
+import com.sydneyarchive.global.security.oauth2.repository.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.sydneyarchive.global.security.filter.JwtAuthenticationFilter;
+import com.sydneyarchive.global.security.handler.CustomAccessDeniedHandler;
+import com.sydneyarchive.global.security.handler.CustomAuthenticationEntryPoint;
+import com.sydneyarchive.global.security.oauth2.handler.OAuth2AuthenticationFailureHandler;
+import com.sydneyarchive.global.security.oauth2.handler.OAuth2AuthenticationSuccessHandler;
+import com.sydneyarchive.global.security.provider.JwtAuthenticationProvider;
+import com.sydneyarchive.global.security.jwt.JwtProvider;
+import com.sydneyarchive.global.security.oauth2.resolver.LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,7 +24,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -33,43 +39,75 @@ public class SecurityConfig {
     private final CorsProperties corsProperties;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
-    private final OAuth2AuthenticationEntryPoint oAuth2AuthenticationEntryPoint;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final TokenAuthenticationFilter tokenAuthenticationFilter;
     private final LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver loginSessionStateAssignmentOAuth2AuthorizationRequestResolver;
+    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public AuthenticationManager authenticationManager(JwtAuthenticationProvider jwtProvider) {
+        return new ProviderManager(jwtProvider);
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(
+            AuthenticationManager authenticationManager,
+            CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+            JwtProvider jwtProvider
+    ) {
+        return new JwtAuthenticationFilter(
+                authenticationManager, customAuthenticationEntryPoint, jwtProvider
+        );
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthenticationFilter
+    ) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement(management
+                        -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .addFilterBefore(jwtAuthenticationFilter, AnonymousAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/api/chat/rooms").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/chat/rooms/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/items").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/items/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/items/**").hasRole("ADMIN")
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/sid").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/items").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/login/sessions").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/admin/login/sessions/status").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/login/sessions/complete").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/auth/token/issue").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/uid").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/items").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/chat/messages").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/sse/connect").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/access").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth -> oauth
-                        .authorizationEndpoint(authorizationEndpointConfig
-                                -> authorizationEndpointConfig.authorizationRequestResolver(loginSessionStateAssignmentOAuth2AuthorizationRequestResolver))
-                        .userInfoEndpoint(userInfo ->
-                                userInfo.userService(customOAuth2UserService)
+                        .authorizationEndpoint(authorizationEndpoint
+                                -> authorizationEndpoint
+                                .authorizationRequestResolver(loginSessionStateAssignmentOAuth2AuthorizationRequestResolver)
+                                .authorizationRequestRepository(httpCookieOAuth2AuthorizationRequestRepository)
+                        )
+                        .userInfoEndpoint(userInfoEndPoint
+                                -> userInfoEndPoint.userService(customOAuth2UserService)
                         )
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         .failureHandler(oAuth2AuthenticationFailureHandler)
                 )
-                .exceptionHandling(e -> e
-                        .authenticationEntryPoint(oAuth2AuthenticationEntryPoint)
+                .exceptionHandling(ex
+                        -> ex
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .build();
     }
@@ -96,7 +134,7 @@ public class SecurityConfig {
             "/",
             "/oauth2/**",
             "/api/public/**",
-            "/api/chat/**",
-            "/ws/**"
+            "/ws/**",
+            "/error"
     };
 }

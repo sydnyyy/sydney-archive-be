@@ -1,4 +1,4 @@
-package com.sydneyarchive.global.security.handler;
+package com.sydneyarchive.global.security.oauth2.handler;
 
 import com.sydneyarchive.global.exception.ErrorCode;
 import jakarta.servlet.ServletException;

@@ -39,9 +39,9 @@ public enum ErrorCode {
     SID_MISSING("AS005", HttpStatus.INTERNAL_SERVER_ERROR, "sid 필드가 비어있습니다"),
 
     // User
-    USER_NOT_FOUND("UR001", HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다"),
-    SID_CREATION_FAILED("UR002", HttpStatus.INTERNAL_SERVER_ERROR, "SID 생성 중 오류가 발생했습니다."),
-    INVALID_ROLE_VALUE("UR003", HttpStatus.BAD_REQUEST, "정의되지 않은 권한 유형입니다."),
+    USER_NOT_FOUND("US001", HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다"),
+    INVALID_ROLE_VALUE("US002", HttpStatus.BAD_REQUEST, "정의되지 않은 권한 유형입니다."),
+    DUPLICATE_USER_SID("US003", HttpStatus.INTERNAL_SERVER_ERROR, "사용자 SID 생성 중 중복이 발생했습니다"),
 
     // Item
     ITEM_NOT_FOUND("IT001", HttpStatus.NOT_FOUND, "존재하지 않는 아이템입니다"),
