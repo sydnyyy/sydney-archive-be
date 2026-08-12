@@ -1,5 +1,6 @@
 package com.sydneyarchive.auth.service;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -7,6 +8,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.sydneyarchive.auth.dto.internal.LoginSessionContext;
 import com.sydneyarchive.auth.dto.request.LoginSessionCompleteRequest;
+import com.sydneyarchive.auth.dto.response.LoginSessionResponse;
 import com.sydneyarchive.auth.enums.Platform;
 import com.sydneyarchive.common.applicationevent.dto.internal.LoginSessionTask;
 import com.sydneyarchive.common.applicationevent.enums.EventType;
@@ -27,7 +29,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -43,10 +44,9 @@ public class LoginSessionService {
     private final TokenService tokenService;
     private final ApplicationEventProducer applicationEventProducer;
 
-    public LoginSessionContext generateLoginSession() {
-        String sid = UUID.randomUUID().toString();
-        String authCode = UUID.randomUUID().toString();
-        loginSessionRedisService.saveLoginSession(sid, authCode);
+    public LoginSessionResponse generateLoginSession(String secret) {
+        String sid = NanoIdUtils.randomNanoId();
+        loginSessionRedisService.saveLoginSession(sid, secret);
 
         String qrCodeBase64 = generateQrCodeBase64(sid);
 
@@ -54,7 +54,7 @@ public class LoginSessionService {
                 .plusSeconds(loginSessionProperties.getLoginSessionTimeoutSec())
                 .toEpochMilli();
 
-        return LoginSessionContext.of(qrCodeBase64, sid, authCode, expiredAt);
+        return LoginSessionResponse.of(qrCodeBase64, sid, expiredAt);
     }
 
     private String generateQrCodeBase64(String sid) {
@@ -99,11 +99,13 @@ public class LoginSessionService {
 
     public void verifyLoginSessionAndIssueRefreshToken(
             LoginSessionCompleteRequest loginSessionCompleteRequest,
-            String authCode,
             HttpServletResponse httpServletResponse
     ) {
         String userId = loginSessionRedisService.verifySessionAndGetUserId(
-                loginSessionCompleteRequest.sid(), loginSessionCompleteRequest.version(), authCode);
+                loginSessionCompleteRequest.sid(),
+                loginSessionCompleteRequest.version(),
+                loginSessionCompleteRequest.secret()
+        );
 
         try {
             UserAuthContext userAuthContext = userService.getUserContextById(userId);

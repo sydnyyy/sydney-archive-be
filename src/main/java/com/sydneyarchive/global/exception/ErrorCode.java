@@ -34,7 +34,7 @@ public enum ErrorCode {
     // LoginSession
     LOGIN_SESSION_EXPIRED("AS001", HttpStatus.UNAUTHORIZED, "로그인 세션이 만료되었습니다."),
     LOGIN_VERSION_MISMATCH("AS002", HttpStatus.BAD_REQUEST, "로그인 세션 버전이 일치하지 않습니다"),
-    AUTH_CODE_MISMATCH("AS003", HttpStatus.BAD_REQUEST, "인증 코드가 일치하지 않습니다"),
+    SECRET_MISMATCH("AS003", HttpStatus.BAD_REQUEST, "login session secret 값이 일치하지 않습니다"),
     USER_ID_MISSING("AS004", HttpStatus.INTERNAL_SERVER_ERROR, "user-id 필드가 비어있습니다"),
     SID_MISSING("AS005", HttpStatus.INTERNAL_SERVER_ERROR, "sid 필드가 비어있습니다"),
 

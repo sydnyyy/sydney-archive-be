@@ -21,7 +21,7 @@ public class LoginSessionRedisService {
     private static final String LOGIN_SESSION_KEY_PREFIX = "login:session:";
     private static final String LOGIN_STATE_KEY_PREFIX = "login:state:";
 
-    public static final String LOGIN_SESSION_AUTH_CODE_FIELD_NAME = "authCode";
+    public static final String LOGIN_SESSION_SECRET_FIELD_NAME = "secret";
     public static final String LOGIN_SESSION_VERSION_FIELD_NAME = "version";
     private static final Integer LOGIN_SESSION_VERSION_DEFAULT = 0;
     public static final String LOGIN_SESSION_STATE_FIELD_NAME = "state";
@@ -32,10 +32,10 @@ public class LoginSessionRedisService {
     private final LoginSessionProperties loginSessionProperties;
     private final SystemProperties systemProperties;
 
-    public void saveLoginSession(String sid, String authCode) {
+    public void saveLoginSession(String sid, String secret) {
         String key = getLoginSessionKey(sid);
         Map<String, String> map = Map.of(
-                LOGIN_SESSION_AUTH_CODE_FIELD_NAME, authCode,
+                LOGIN_SESSION_SECRET_FIELD_NAME, secret,
                 LOGIN_SESSION_VERSION_FIELD_NAME, LOGIN_SESSION_VERSION_DEFAULT.toString()
         );
 
@@ -135,23 +135,23 @@ public class LoginSessionRedisService {
         return result == 1L;
     }
 
-    public String verifySessionAndGetUserId(String sid, int version, String authCode) {
+    public String verifySessionAndGetUserId(String sid, int version, String secret) {
         String sessionKey = getLoginSessionKey(sid);
 
         String script = """
-            local current_version = redis.call('HGET', KEYS[1], ARGV[1]);
-            local current_authcode = redis.call('HGET', KEYS[1], ARGV[3]);
+            local current_secret = redis.call('HGET', KEYS[1], ARGV[1]);
+            local current_version = redis.call('HGET', KEYS[1], ARGV[3]);
         
-            if not current_version or not current_authcode then
+            if not current_secret or not current_version then
                 return "SESSION_NOT_FOUND"
             end
-
-            if tonumber(current_version) ~= tonumber(ARGV[2]) then
-                return "VERSION_MISMATCH"
+            
+            if current_secret ~= ARGV[2] then
+                return "SECRET_MISMATCH"
             end
-        
-            if current_authcode ~= ARGV[4] then
-                return "AUTH_CODE_MISMATCH"
+
+            if tonumber(current_version) ~= tonumber(ARGV[4]) then
+                return "VERSION_MISMATCH"
             end
         
             local user_id = redis.call('HGET', KEYS[1], ARGV[5])
@@ -160,24 +160,24 @@ public class LoginSessionRedisService {
                 return "USER_ID_NOT_FOUND"
             end
         
-            redis.call('hincrby', KEYS[1], ARGV[1], 1)
+            redis.call('hincrby', KEYS[1], ARGV[3], 1)
             return user_id
             """;
 
         String result = redisTemplate.execute(
                 new DefaultRedisScript<>(script, String.class),
                 Collections.singletonList(sessionKey),
+                LOGIN_SESSION_SECRET_FIELD_NAME,
+                secret,
                 LOGIN_SESSION_VERSION_FIELD_NAME,
                 String.valueOf(version),
-                LOGIN_SESSION_AUTH_CODE_FIELD_NAME,
-                authCode,
                 LOGIN_SESSION_USER_ID_FIELD_NAME
         );
 
         switch (result) {
             case "SESSION_NOT_FOUND" -> throw new LoginSessionException(ErrorCode.LOGIN_SESSION_EXPIRED);
+            case "SECRET_MISMATCH" -> throw new LoginSessionException(ErrorCode.SECRET_MISMATCH);
             case "VERSION_MISMATCH" -> throw new LoginSessionException(ErrorCode.LOGIN_VERSION_MISMATCH);
-            case "AUTH_CODE_MISMATCH" -> throw new LoginSessionException(ErrorCode.AUTH_CODE_MISMATCH);
             case "USER_ID_NOT_FOUND" -> throw new LoginSessionException(ErrorCode.USER_ID_MISSING);
         }
 

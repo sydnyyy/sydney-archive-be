@@ -1,6 +1,5 @@
 package com.sydneyarchive.auth.dto.response;
 
-import com.sydneyarchive.auth.dto.internal.LoginSessionContext;
 import lombok.Builder;
 
 @Builder
@@ -9,11 +8,11 @@ public record LoginSessionResponse(
         String sid,
         long expiredAt
 ) {
-    public static LoginSessionResponse of(LoginSessionContext loginSessionContext) {
+    public static LoginSessionResponse of(String qrCodeBase64, String sid, long expiredAt) {
         return LoginSessionResponse.builder()
-                .qrCodeBase64(loginSessionContext.qrCodeBase64())
-                .sid(loginSessionContext.sid())
-                .expiredAt(loginSessionContext.expiredAt())
+                .qrCodeBase64(qrCodeBase64)
+                .sid(sid)
+                .expiredAt(expiredAt)
                 .build();
     }
 }
