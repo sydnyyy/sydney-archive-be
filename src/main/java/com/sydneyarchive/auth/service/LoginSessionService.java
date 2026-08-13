@@ -13,7 +13,9 @@ import com.sydneyarchive.auth.enums.Platform;
 import com.sydneyarchive.common.applicationevent.dto.internal.LoginSessionTask;
 import com.sydneyarchive.common.applicationevent.enums.EventType;
 import com.sydneyarchive.common.applicationevent.service.ApplicationEventProducer;
+import com.sydneyarchive.common.util.HashUtils;
 import com.sydneyarchive.global.config.auth.LoginSessionProperties;
+import com.sydneyarchive.global.exception.ErrorCode;
 import com.sydneyarchive.global.exception.LoginSessionException;
 import com.sydneyarchive.global.exception.UserException;
 import com.sydneyarchive.user.dto.internal.UserAuthContext;
@@ -30,6 +32,8 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
 
+import static com.sydneyarchive.auth.service.LoginSessionRedisService.LOGIN_SESSION_SECRET_HASH_FIELD_NAME;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -43,10 +47,11 @@ public class LoginSessionService {
     private final UserService userService;
     private final TokenService tokenService;
     private final ApplicationEventProducer applicationEventProducer;
+    private final HashUtils hashUtils;
 
-    public LoginSessionResponse generateLoginSession(String secret) {
+    public LoginSessionResponse generateLoginSession(String secretHash) {
         String sid = NanoIdUtils.randomNanoId();
-        loginSessionRedisService.saveLoginSession(sid, secret);
+        loginSessionRedisService.saveLoginSession(sid, secretHash);
 
         String qrCodeBase64 = generateQrCodeBase64(sid);
 
@@ -101,10 +106,17 @@ public class LoginSessionService {
             LoginSessionCompleteRequest loginSessionCompleteRequest,
             HttpServletResponse httpServletResponse
     ) {
+        String storedSecretHash = loginSessionRedisService.getLoginSessionField(
+                loginSessionCompleteRequest.sid(), LOGIN_SESSION_SECRET_HASH_FIELD_NAME
+        );
+
+        if (!hashUtils.verify(loginSessionCompleteRequest.secret(), storedSecretHash)) {
+            throw new LoginSessionException(ErrorCode.LOGIN_SESSION_SECRET_MISMATCH);
+        }
+
         String userId = loginSessionRedisService.verifySessionAndGetUserId(
                 loginSessionCompleteRequest.sid(),
-                loginSessionCompleteRequest.version(),
-                loginSessionCompleteRequest.secret()
+                loginSessionCompleteRequest.version()
         );
 
         try {

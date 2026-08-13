@@ -25,7 +25,7 @@ public class AdminLoginController {
         }
 
         LoginSessionResponse response
-                = loginSessionService.generateLoginSession(loginSessionRequest.secret());
+                = loginSessionService.generateLoginSession(loginSessionRequest.secretHash());
         return ResponseEntity.ok(response);
     }
 

@@ -14,7 +14,7 @@ import static com.sydneyarchive.auth.service.LoginSessionRedisService.*;
 public record LoginSessionContext(
         String qrCodeBase64,
         String sid,
-        String secret,
+        String secretHash,
         Integer version,
         String state,
         String userId,
@@ -28,7 +28,7 @@ public record LoginSessionContext(
 
         return LoginSessionContext.builder()
                 .sid(sid)
-                .secret(string(entries, LOGIN_SESSION_SECRET_FIELD_NAME))
+                .secretHash(string(entries, LOGIN_SESSION_SECRET_HASH_FIELD_NAME))
                 .version(integer(entries, LOGIN_SESSION_VERSION_FIELD_NAME))
                 .state(string(entries, LOGIN_SESSION_STATE_FIELD_NAME))
                 .userId(string(entries, LOGIN_SESSION_USER_ID_FIELD_NAME))

@@ -32,16 +32,16 @@ public enum ErrorCode {
     ACCESS_DENIED("AU006", HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
     // LoginSession
-    LOGIN_SESSION_EXPIRED("AS001", HttpStatus.UNAUTHORIZED, "로그인 세션이 만료되었습니다."),
-    LOGIN_VERSION_MISMATCH("AS002", HttpStatus.BAD_REQUEST, "로그인 세션 버전이 일치하지 않습니다"),
-    SECRET_MISMATCH("AS003", HttpStatus.BAD_REQUEST, "login session secret 값이 일치하지 않습니다"),
-    USER_ID_MISSING("AS004", HttpStatus.INTERNAL_SERVER_ERROR, "user-id 필드가 비어있습니다"),
-    SID_MISSING("AS005", HttpStatus.INTERNAL_SERVER_ERROR, "sid 필드가 비어있습니다"),
+    LOGIN_SESSION_EXPIRED("LS001", HttpStatus.UNAUTHORIZED, "로그인 세션이 만료되었습니다."),
+    LOGIN_VERSION_MISMATCH("LS002", HttpStatus.BAD_REQUEST, "로그인 세션 버전이 일치하지 않습니다"),
+    LOGIN_SESSION_SECRET_MISMATCH("LS003", HttpStatus.BAD_REQUEST, "로그인 세션 secret 값이 일치하지 않습니다"),
+    USER_ID_MISSING("LS004", HttpStatus.INTERNAL_SERVER_ERROR, "user-id 필드가 비어있습니다"),
+    SID_MISSING("LS005", HttpStatus.INTERNAL_SERVER_ERROR, "sid 필드가 비어있습니다"),
 
     // User
-    USER_NOT_FOUND("US001", HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다"),
-    INVALID_ROLE_VALUE("US002", HttpStatus.BAD_REQUEST, "정의되지 않은 권한 유형입니다."),
-    DUPLICATE_USER_SID("US003", HttpStatus.INTERNAL_SERVER_ERROR, "사용자 SID 생성 중 중복이 발생했습니다"),
+    USER_NOT_FOUND("UR001", HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다"),
+    INVALID_ROLE_VALUE("UR002", HttpStatus.BAD_REQUEST, "정의되지 않은 권한 유형입니다."),
+    DUPLICATE_USER_SID("UR003", HttpStatus.INTERNAL_SERVER_ERROR, "사용자 SID 생성 중 중복이 발생했습니다"),
 
     // Item
     ITEM_NOT_FOUND("IT001", HttpStatus.NOT_FOUND, "존재하지 않는 아이템입니다"),

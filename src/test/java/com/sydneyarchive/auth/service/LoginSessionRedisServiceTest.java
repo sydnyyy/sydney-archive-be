@@ -47,22 +47,9 @@ class LoginSessionRedisServiceTest extends IntegrationTestSupport {
         // version default 설정: 0
         int wrongVersion = 3;
 
-        assertThatThrownBy(() -> loginSessionRedisService.verifySessionAndGetUserId(sid, wrongVersion, secret))
+        assertThatThrownBy(() -> loginSessionRedisService.verifySessionAndGetUserId(sid, wrongVersion))
                 .isInstanceOf(LoginSessionException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.LOGIN_VERSION_MISMATCH);
-    }
-
-    @Test
-    @DisplayName("세션 검증 시, 인증 코드가 일치하지 않으면 SECRET_MISMATCH 예외 발생")
-    void should_throwException_when_authCodeMismatches() {
-        String sid = UUID.randomUUID().toString();
-        String secret = UUID.randomUUID().toString();
-        loginSessionRedisService.saveLoginSession(sid, secret);
-
-        String wrongAuthCode = secret + "_invalid";
-        assertThatThrownBy(() -> loginSessionRedisService.verifySessionAndGetUserId(sid, 0, wrongAuthCode))
-                .isInstanceOf(LoginSessionException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SECRET_MISMATCH);
     }
 
     @Test
@@ -72,7 +59,7 @@ class LoginSessionRedisServiceTest extends IntegrationTestSupport {
         String secret = UUID.randomUUID().toString();
         loginSessionRedisService.saveLoginSession(sid, secret);  // userId 할당하지 않은 상태
 
-        assertThatThrownBy(() -> loginSessionRedisService.verifySessionAndGetUserId(sid, 0, secret))
+        assertThatThrownBy(() -> loginSessionRedisService.verifySessionAndGetUserId(sid, 0))
                 .isInstanceOf(LoginSessionException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_ID_MISSING);
     }
