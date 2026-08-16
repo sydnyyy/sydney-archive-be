@@ -18,9 +18,9 @@ public class ChatMessage {
     @Id
     private String id;
 
-    private String chatRoomId;  // GUEST UID 기준
-    private String senderUid;
-    private String receiverUid;
+    private String chatRoomId;  // GUEST UserId 기준
+    private String senderUserId;
+    private String receiverUserId;
     private String content;
 
     @CreatedDate
@@ -31,9 +31,10 @@ public class ChatMessage {
     public static ChatMessage of(ChatMessageRequest chatMessageRequest) {
         return ChatMessage.builder()
                 .chatRoomId(chatMessageRequest.type().equals(ChatType.USER)
-                        ? chatMessageRequest.senderUid() : chatMessageRequest.receiverUid())
-                .senderUid(chatMessageRequest.senderUid())
-                .receiverUid(chatMessageRequest.receiverUid())
+                        ? chatMessageRequest.senderUserId() : chatMessageRequest.receiverUserId()
+                )
+                .senderUserId(chatMessageRequest.senderUserId())
+                .receiverUserId(chatMessageRequest.receiverUserId())
                 .content(chatMessageRequest.content())
                 .type(chatMessageRequest.type())
                 .build();

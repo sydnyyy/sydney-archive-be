@@ -29,7 +29,7 @@ public class ChatService {
         sendMessageToAdmin(payload);
 
         if (payload.type() == ChatType.USER) {
-            userService.updateLastMessageAt(payload.senderUid(), payload.createdAt());
+            userService.updateLastMessageAt(payload.senderUserId(), payload.createdAt());
         }
     }
 
@@ -54,7 +54,7 @@ public class ChatService {
 
     private void sendMessageToUser(ChatMessageResponse payload) {
         String user = (payload.type() == ChatType.USER)
-                ? payload.senderUid() : payload.receiverUid();
+                ? payload.senderUserId() : payload.receiverUserId();
 
         messagingTemplate.convertAndSendToUser(user, "/queue/chat.messages", payload);
     }
@@ -66,10 +66,10 @@ public class ChatService {
                 .toList();
     }
 
-    public List<ChatMessageResponse> getChatMessages(String uid, String cursorId) {
+    public List<ChatMessageResponse> getChatMessages(String userId, String cursorId) {
         int limit = 15;
         return chatMessageRepositoryImpl
-                .findByChatRoomIdAndBeforeCursor(uid, cursorId, limit)
+                .findByChatRoomIdAndBeforeCursor(userId, cursorId, limit)
                 .stream()
                 .map(ChatMessageResponse::of)
                 .toList();

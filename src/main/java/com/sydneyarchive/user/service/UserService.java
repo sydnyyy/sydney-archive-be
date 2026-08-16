@@ -1,16 +1,13 @@
 package com.sydneyarchive.user.service;
 
-import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.sydneyarchive.auth.dto.internal.CustomOAuth2User;
-import com.sydneyarchive.user.dto.request.UidRequest;
 import com.sydneyarchive.global.config.auth.AdminProperties;
 import com.sydneyarchive.global.exception.ErrorCode;
 import com.sydneyarchive.global.exception.UserException;
 import com.sydneyarchive.user.dto.internal.UserAuthContext;
 import com.sydneyarchive.user.dto.internal.UserContext;
-import com.sydneyarchive.user.dto.response.AdminResponse;
+import com.sydneyarchive.user.dto.response.UserResponse;
 import com.sydneyarchive.user.entity.User;
-import com.sydneyarchive.user.enums.Role;
 import com.sydneyarchive.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,23 +33,14 @@ public class UserService {
             maxAttempts = 3,
             backoff = @Backoff(delay = 100)
     )
-    public String saveUser(UidRequest uidRequest) {
-        if (uidRequest != null) {
-            Optional<User> userOptional = userRepository.findByUid(uidRequest.uid());
-            if (userOptional.isPresent() && !userOptional.get().getRole().equals(Role.ADMIN)) {
-                return uidRequest.uid();
-            }
-        }
-
-        String uid = NanoIdUtils.randomNanoId();
-        User guest = User.createGuest(uid);
-        userRepository.save(guest);
-        return uid;
+    public UserAuthContext saveGuest() {
+        User user = userRepository.save(User.createGuest());
+        return UserAuthContext.of(user, true);
     }
 
     @Recover
-    public String recover(Throwable t, UidRequest uidRequest) {
-        log.error("[UserService] Duplicate key collision during GUEST UID generation. message={}", t.getMessage());
+    public String recover(Throwable t) {
+        log.error("[UserService] Duplicate key collision during GUEST generation. message={}", t.getMessage());
         throw new UserException(ErrorCode.DUPLICATE_USER_SID);
     }
 
@@ -68,8 +56,7 @@ public class UserService {
             return UserAuthContext.of(userOptional.get(), false);
         }
 
-        String uid = NanoIdUtils.randomNanoId();
-        User user = User.createAdmin(customOAuth2User, uid, adminProperties.username());
+        User user = User.createAdmin(customOAuth2User, adminProperties.username());
         userRepository.save(user);
 
         return UserAuthContext.of(user, true);
@@ -77,12 +64,12 @@ public class UserService {
 
     @Recover
     public UserAuthContext recover(Throwable t, CustomOAuth2User customOAuth2User) {
-        log.error("[UserService] Duplicate key collision during ADMIN UID generation. message={}", t.getMessage());
+        log.error("[UserService] Duplicate key collision during ADMIN generation. message={}", t.getMessage());
         throw new UserException(ErrorCode.DUPLICATE_USER_SID);
     }
 
-    public void updateLastMessageAt(String uid, Instant sendAt) {
-        userRepository.findByUid(uid).ifPresent(
+    public void updateLastMessageAt(String userId, Instant sendAt) {
+        userRepository.findById(userId).ifPresent(
                 user -> {
                     user.updateLastMessageAt(sendAt);
                     userRepository.save(user);
@@ -97,21 +84,14 @@ public class UserService {
                 .toList();
     }
 
-    public AdminResponse getAdmin(String userId) {
+    public UserResponse getUserInfo(String userId) {
         return userRepository.findById(userId)
-                .map(AdminResponse::of)
+                .map(UserResponse::of)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }
 
-    // only admin
-    public UserAuthContext getUserContextById(String userId) {
+    public UserAuthContext getUserContext(String userId) {
         return userRepository.findById(userId)
-                .map(u -> UserAuthContext.of(u, false))
-                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    public UserAuthContext getUserContextByUid(String uid) {
-        return userRepository.findByUid(uid)
                 .map(u -> UserAuthContext.of(u, false))
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }

@@ -42,7 +42,7 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
         }
 
         try {
-            UserAuthContext userAuthContext = userService.getUserContextByUid(sid);
+            UserAuthContext userAuthContext = userService.getUserContext(sid);
             attributes.put(WS_ATTRIBUTE_SID_KEY, sid);
             attributes.put(WS_ATTRIBUTE_ROLE_KEY, userAuthContext.role().toString());
             return true;
