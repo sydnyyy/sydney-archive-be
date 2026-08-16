@@ -7,6 +7,7 @@ import com.sydneyarchive.auth.service.LoginSessionService;
 import com.sydneyarchive.auth.service.TokenService;
 import com.sydneyarchive.common.sse.enums.SseEventType;
 import com.sydneyarchive.common.sse.service.SseService;
+import com.sydneyarchive.global.cookie.CookieUtils;
 import com.sydneyarchive.global.exception.ErrorCode;
 import com.sydneyarchive.global.exception.LoginSessionException;
 import com.sydneyarchive.global.exception.UserException;
@@ -37,6 +38,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final LoginSessionService loginSessionService;
     private final TokenService tokenService;
     private final SseService sseService;
+    private final CookieUtils cookieUtils;
 
     @Override
     public void onAuthenticationSuccess(
@@ -80,9 +82,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         }
 
         if (loginSessionContext.platform() == Platform.WEB) {
-            tokenService.issueRefreshTokenToCookie(
-                    userAuthContext.userId(), userAuthContext.role(), response
-            );
+            String refreshToken = tokenService.issueAndSaveRefreshToken(userAuthContext.userId(), userAuthContext.role());
+            cookieUtils.setCookie(CookieUtils.REFRESH_TOKEN_COOKIE_NAME, refreshToken, response);
 
             String redirectUrl = frontendBaseUrl + "/login/success?platform=web";
             response.sendRedirect(redirectUrl);

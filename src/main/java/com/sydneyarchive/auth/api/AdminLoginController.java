@@ -4,6 +4,7 @@ import com.sydneyarchive.auth.dto.request.LoginSessionCompleteRequest;
 import com.sydneyarchive.auth.dto.request.LoginSessionRequest;
 import com.sydneyarchive.auth.dto.response.LoginSessionResponse;
 import com.sydneyarchive.auth.service.LoginSessionService;
+import com.sydneyarchive.global.cookie.CookieUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,11 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/login/sessions")
+@RequestMapping("/api/a/login/sessions")
 @RequiredArgsConstructor
 public class AdminLoginController {
 
     private final LoginSessionService loginSessionService;
+    private final CookieUtils cookieUtils;
 
     @PostMapping
     public ResponseEntity<?> getLoginSession(@RequestBody LoginSessionRequest loginSessionRequest) {
@@ -40,10 +42,9 @@ public class AdminLoginController {
             @RequestBody LoginSessionCompleteRequest loginSessionCompleteRequest,
             HttpServletResponse httpServletResponse
     ) {
-        loginSessionService.verifyLoginSessionAndIssueRefreshToken(
-                loginSessionCompleteRequest, httpServletResponse
-        );
-
+        String refreshToken
+                = loginSessionService.verifyLoginSessionAndIssueRefreshToken(loginSessionCompleteRequest);
+        cookieUtils.setCookie(CookieUtils.REFRESH_TOKEN_COOKIE_NAME, refreshToken, httpServletResponse);
         return ResponseEntity.ok().build();
     }
 }

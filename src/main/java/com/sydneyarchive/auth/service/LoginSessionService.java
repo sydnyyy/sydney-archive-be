@@ -20,7 +20,6 @@ import com.sydneyarchive.global.exception.LoginSessionException;
 import com.sydneyarchive.global.exception.UserException;
 import com.sydneyarchive.user.dto.internal.UserAuthContext;
 import com.sydneyarchive.user.service.UserService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -102,10 +101,7 @@ public class LoginSessionService {
         return isAssigned;
     }
 
-    public void verifyLoginSessionAndIssueRefreshToken(
-            LoginSessionCompleteRequest loginSessionCompleteRequest,
-            HttpServletResponse httpServletResponse
-    ) {
+    public String verifyLoginSessionAndIssueRefreshToken(LoginSessionCompleteRequest loginSessionCompleteRequest) {
         String storedSecretHash = loginSessionRedisService.getLoginSessionField(
                 loginSessionCompleteRequest.sid(), LOGIN_SESSION_SECRET_HASH_FIELD_NAME
         );
@@ -120,8 +116,8 @@ public class LoginSessionService {
         );
 
         try {
-            UserAuthContext userAuthContext = userService.getUserContextById(userId);
-            tokenService.issueRefreshTokenToCookie(userAuthContext.userId(), userAuthContext.role(), httpServletResponse);
+            UserAuthContext userAuthContext = userService.getUserContext(userId);
+            return tokenService.issueAndSaveRefreshToken(userAuthContext.userId(), userAuthContext.role());
         } catch (UserException e) {
             log.error("[Data Consistency Error] Redis session exists but User not found in DB (userId={})", userId);
             throw new LoginSessionException(e.getErrorCode());
