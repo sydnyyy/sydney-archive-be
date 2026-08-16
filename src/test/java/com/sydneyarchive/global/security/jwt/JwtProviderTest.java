@@ -29,7 +29,7 @@ public class JwtProviderTest extends IntegrationTestSupport {
     @Test
     @DisplayName("토큰 생성 시 role이 null이면 JwtAuthException(ROLE_REQUIRED) 예외 발생")
     public void shouldThrowException_WhenRoleIsNullOnGenerateToken() {
-        assertThatThrownBy(() -> jwtProvider.generateRefreshToken(NanoIdUtils.randomNanoId(), null))
+        assertThatThrownBy(() -> jwtProvider.generateRefreshToken(NanoIdUtils.randomNanoId(), null, null))
                 .isInstanceOf(JwtAuthException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ROLE_REQUIRED);
     }
@@ -42,7 +42,7 @@ public class JwtProviderTest extends IntegrationTestSupport {
 
         String accessToken = jwtProvider.generateAccessToken(userId, role);
 
-        assertThat(jwtProvider.getClaimUserId(accessToken)).isEqualTo(userId);
+        assertThat(jwtProvider.getSubject(accessToken)).isEqualTo(userId);
         assertThat(jwtProvider.getClaimRole(accessToken)).isEqualTo(role);
     }
 

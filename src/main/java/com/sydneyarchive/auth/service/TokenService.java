@@ -1,35 +1,91 @@
 package com.sydneyarchive.auth.service;
 
-import com.sydneyarchive.global.cookie.CookieUtils;
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+import com.sydneyarchive.auth.dto.internal.JwtContext;
+import com.sydneyarchive.auth.enums.GuestTokenFamilyStatus;
+import com.sydneyarchive.global.exception.ErrorCode;
 import com.sydneyarchive.global.exception.JwtAuthException;
 import com.sydneyarchive.global.security.jwt.JwtProvider;
+import com.sydneyarchive.user.dto.internal.UserAuthContext;
 import com.sydneyarchive.user.enums.Role;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.sydneyarchive.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-
-import static com.sydneyarchive.global.cookie.CookieUtils.REFRESH_TOKEN_COOKIE_NAME;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class TokenService {
 
-    private static final String REFRESH_TOKEN_REDIS_KEY_PREFIX = "RT:";
+    private static final String REFRESH_TOKEN_REDIS_KEY_PREFIX = "rt:";
+    private static final String FAMILY_STATUS_KEY_PREFIX = "rt:family-status:";
 
     private final JwtProvider jwtProvider;
     private final StringRedisTemplate redisTemplate;
-    private final CookieUtils cookieUtils;
+    private final UserService userService;
 
-    public void issueRefreshTokenToCookie(String userId, Role role, HttpServletResponse response) {
-        String refreshToken = jwtProvider.generateRefreshToken(userId, role);
+    public JwtContext issueAccessTokenAndRefreshTokenForGuest() {
+        UserAuthContext userAuthContext = userService.saveGuest();
+
+        String familyId = generateAndSaveFamilyId();
+        String accessToken = jwtProvider.generateAccessToken(userAuthContext.userId(), Role.GUEST);
+        String refreshToken = jwtProvider.generateRefreshToken(userAuthContext.userId(), Role.GUEST, familyId);
+        saveRefreshTokenToRedis(userAuthContext.userId(), refreshToken);
+        return JwtContext.of(accessToken, refreshToken);
+    }
+
+    public String issueAndSaveRefreshToken(String userId, Role role) {
+        String familyId = generateAndSaveFamilyId();
+        String refreshToken = jwtProvider.generateRefreshToken(userId, role, familyId);
         saveRefreshTokenToRedis(userId, refreshToken);
-        cookieUtils.setCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, response);
+        return refreshToken;
+    }
+
+    public JwtContext issueAccessToken(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new JwtAuthException(ErrorCode.REFRESH_TOKEN_MISSING);
+        }
+
+        try {
+            String userId = jwtProvider.getSubject(refreshToken);
+            Role role = jwtProvider.getClaimRole(refreshToken);
+            String familyId = jwtProvider.getClaimFamilyId(refreshToken);
+
+            GuestTokenFamilyStatus familyStatus
+                    = GuestTokenFamilyStatus.fromValue(redisTemplate.opsForValue().get(FAMILY_STATUS_KEY_PREFIX + familyId));
+
+            if (familyStatus == GuestTokenFamilyStatus.REVOKED) {
+                throw new JwtAuthException(ErrorCode.TOKEN_FAMILY_REVOKED);
+            }
+
+            if (familyStatus == GuestTokenFamilyStatus.UNKNOWN) {
+                throw new JwtAuthException(ErrorCode.TOKEN_FAMILY_INVALID);
+            }
+
+            String newAccessToken = jwtProvider.generateAccessToken(userId, role);
+            String newRefreshToken = jwtProvider.generateRefreshToken(userId, role, familyId);
+            saveRefreshTokenToRedis(userId, newRefreshToken);
+            return JwtContext.of(newAccessToken, newRefreshToken);
+
+        } catch (JwtAuthException e) {
+            deleteRefreshTokenFromRedis(refreshToken);
+            throw e;
+        }
+    }
+
+    private String generateAndSaveFamilyId() {
+        String familyId = NanoIdUtils.randomNanoId();
+        redisTemplate.opsForValue().set(
+                FAMILY_STATUS_KEY_PREFIX + familyId,
+                GuestTokenFamilyStatus.ACTIVE.name()
+        );
+
+        return familyId;
     }
 
     private void saveRefreshTokenToRedis(String userId, String refreshToken) {
@@ -42,41 +98,23 @@ public class TokenService {
         );
     }
 
-    public String issueAccessToken(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) {
-        String refreshToken = null;
-        try {
-            refreshToken = cookieUtils.getCookie(REFRESH_TOKEN_COOKIE_NAME, request);
-            String userId = jwtProvider.getClaimUserId(refreshToken);
-            Role role = jwtProvider.getClaimRole(refreshToken);
-
-            return jwtProvider.generateAccessToken(userId, role);
-        } catch (JwtAuthException e) {
-            if (refreshToken != null) {
-                deleteRefreshTokenFromRedis(refreshToken);
-            }
-            cookieUtils.removeCookie(REFRESH_TOKEN_COOKIE_NAME, response);
-            throw e;
-        }
+    public void revokeFamily(String familyId) {
+        redisTemplate
+                .opsForValue()
+                .set(
+                        FAMILY_STATUS_KEY_PREFIX + familyId,
+                        GuestTokenFamilyStatus.REVOKED.name(),
+                        Duration.ofHours(1)
+                );
     }
 
-    public void logout(HttpServletRequest request, HttpServletResponse response) {
-        try {
-            String refreshToken = cookieUtils.getCookie(REFRESH_TOKEN_COOKIE_NAME, request);
-            deleteRefreshTokenFromRedis(refreshToken);
-        } catch (JwtAuthException e) {
-            log.info("Logout requested for invalid or missing token: {}", e.getMessage());
-        } finally {
-            cookieUtils.removeCookie(REFRESH_TOKEN_COOKIE_NAME, response);
-        }
-
+    public void logout(String refreshToken) {
+        deleteRefreshTokenFromRedis(refreshToken);
     }
 
     private void deleteRefreshTokenFromRedis(String refreshToken) {
         try {
-            String userId = jwtProvider.getClaimUserId(refreshToken);
+            String userId = jwtProvider.getSubject(refreshToken);
             String key = REFRESH_TOKEN_REDIS_KEY_PREFIX + userId;
             redisTemplate.delete(key);
         } catch (JwtAuthException e) {
