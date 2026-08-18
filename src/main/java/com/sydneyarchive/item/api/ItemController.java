@@ -13,12 +13,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/items")
+@RequestMapping("/api")
 public class ItemController {
 
     private final ItemService itemService;
 
-    @GetMapping
+    @GetMapping("/c/items")
     public ResponseEntity<?> findAllItems(Authentication authentication) {
         boolean isAdmin = authentication != null
                 && authentication.getAuthorities()
@@ -29,13 +29,13 @@ public class ItemController {
         return ResponseEntity.ok(responses);
     }
 
-    @PostMapping
+    @PostMapping("/a/items")
     public ResponseEntity<?> createItem(@RequestBody ItemCreateRequest request) {
         ItemResponse response = itemService.createItem(request);
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{itemId}")
+    @PutMapping("/a/items/{itemId}")
     public ResponseEntity<?> updateItem(
             @PathVariable String itemId,
             @RequestBody ItemUpdateRequest request
@@ -44,7 +44,7 @@ public class ItemController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{itemId}")
+    @DeleteMapping("/a/items/{itemId}")
     public ResponseEntity<?> deleteItem(@PathVariable String itemId) {
         itemService.deleteItem(itemId);
         return ResponseEntity.ok().build();

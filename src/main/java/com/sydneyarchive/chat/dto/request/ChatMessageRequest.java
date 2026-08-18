@@ -3,8 +3,8 @@ package com.sydneyarchive.chat.dto.request;
 import com.sydneyarchive.chat.enums.ChatType;
 
 public record ChatMessageRequest(
-        String senderUid,
-        String receiverUid,
+        String senderUserId,
+        String receiverUserId,
         String content,
         ChatType type
 ) {

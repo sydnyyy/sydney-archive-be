@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
-@RequestMapping("/api/sse")
+@RequestMapping("/api/p/sse")
 @RequiredArgsConstructor
 public class SseController {
 

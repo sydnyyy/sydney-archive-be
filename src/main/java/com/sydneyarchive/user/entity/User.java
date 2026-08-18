@@ -1,5 +1,6 @@
 package com.sydneyarchive.user.entity;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.sydneyarchive.auth.dto.internal.CustomOAuth2User;
 import com.sydneyarchive.user.enums.Role;
 import lombok.Builder;
@@ -23,9 +24,6 @@ public class User {
     private String id;
 
     private Role role;
-
-    @Indexed(unique = true)
-    private String uid;
 
     private String realName;
 
@@ -51,18 +49,16 @@ public class User {
     @Builder.Default
     private Set<String> likedItemIds = new LinkedHashSet<>();
 
-    public static User createGuest(String uid) {
+    public static User createGuest() {
         return User.builder()
                 .role(Role.GUEST)
-                .uid(uid)
-                .email(uid)
+                .email(NanoIdUtils.randomNanoId())
                 .build();
     }
 
-    public static User createAdmin(CustomOAuth2User oauth2UserCustom, String uid, String username) {
+    public static User createAdmin(CustomOAuth2User oauth2UserCustom, String username) {
         return User.builder()
                 .role(oauth2UserCustom.getRole())
-                .uid(uid)
                 .realName(oauth2UserCustom.getRealName())
                 .username(username)
                 .provider(oauth2UserCustom.getProvider())

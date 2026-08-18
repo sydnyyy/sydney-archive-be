@@ -14,14 +14,19 @@ public enum ErrorCode {
     DUPLICATE_READING_SESSION("RS001", HttpStatus.CONFLICT, "이미 존재하는 독서 세션입니다 (title + author 중복)"),
 
     // JWT
-    ACCESS_TOKEN_MISSING("JT001", HttpStatus.UNAUTHORIZED, "액세스 토큰이 존재하지 않습니다."),
+    ACCESS_TOKEN_MISSING("JT001", HttpStatus.UNAUTHORIZED, "Access token is missing."),
     ACCESS_TOKEN_EXPIRED("JT002", HttpStatus.UNAUTHORIZED, "액세스 토큰이 만료되었습니다."),
-    REFRESH_TOKEN_MISSING("JT003", HttpStatus.UNAUTHORIZED, "리프레시 토큰이 존재하지 않습니다."),
-    JWT_CLAIM_MISSING("JT004", HttpStatus.BAD_REQUEST, "토큰 필수 정보가 누락되었습니다."),
+    REFRESH_TOKEN_MISSING("JT003", HttpStatus.UNAUTHORIZED, "Refresh token is missing."),
+    CLAIM_ROLE_MISSING("JT005", HttpStatus.UNAUTHORIZED, "The role claim is missing."),
+    CLAIM_FAMILY_ID_MISSING("JT006", HttpStatus.UNAUTHORIZED, "The familyId claim is missing."),
     INVALID_TOKEN("JT005", HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
     TOKEN_EXPIRED("JT006", HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
     USER_ID_REQUIRED("JT007", HttpStatus.UNAUTHORIZED, "JWT 생성 과정에서 userId 값은 필수입니다."),
     ROLE_REQUIRED("JT008", HttpStatus.UNAUTHORIZED, "JWT 생성 과정에서 ROLE 값은 필수입니다."),
+    FAMILY_ID_REQUIRED("JT009", HttpStatus.UNAUTHORIZED, "JWT 생성 과정에서 familyId 값은 필수입니다."),
+    PATTERN_MISMATCH("JT010", HttpStatus.UNAUTHORIZED, "The requested pattern does not match."),
+    TOKEN_FAMILY_REVOKED("JT011", HttpStatus.UNAUTHORIZED, "The token family has been revoked."),
+    TOKEN_FAMILY_INVALID("JT012", HttpStatus.UNAUTHORIZED, "The token family is invalid."),
 
     // Auth
     UNSUPPORTED_PROVIDER("AU001", HttpStatus.BAD_REQUEST, "지원하지 않는 소셜 로그인 공급자입니다."),

@@ -29,20 +29,24 @@ public class JwtProvider {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String BEARER_TOKEN_PREFIX = "Bearer ";
 
-    public static final String CLAIM_USER_ID = "userId";
-    public static final String CLAIM_ROLE = "role";
+    private static final String CLAIM_ROLE = "role";
+    private static final String CLAIM_FAMILY_ID = "familyId";
 
     private final JwtProperties jwtProperties;
 
     public String generateAccessToken(String userId, Role role) {
-        return generateToken(userId, role, ACCESS_TOKEN_EXPIRATION_SEC);
+        return generateToken(userId, role, ACCESS_TOKEN_EXPIRATION_SEC, null);
     }
 
-    public String generateRefreshToken(String userId, Role role) {
-        return generateToken(userId, role, REFRESH_TOKEN_EXPIRATION_SEC);
+    public String generateRefreshToken(String userId, Role role, String familyId) {
+        if (familyId == null || familyId.isBlank()) {
+            throw new JwtAuthException(ErrorCode.FAMILY_ID_REQUIRED);
+        }
+
+        return generateToken(userId, role, REFRESH_TOKEN_EXPIRATION_SEC, familyId);
     }
 
-    private String generateToken(String userId, Role role, long validityInSeconds) {
+    private String generateToken(String userId, Role role, long validityInSeconds, String familyId) {
         if (userId == null || userId.isBlank()) {
             throw new JwtAuthException(ErrorCode.USER_ID_REQUIRED);
         }
@@ -59,28 +63,36 @@ public class JwtProvider {
                 .issuedAt(now)
                 .expiration(expiry)
                 .subject(userId)
-                .claim(CLAIM_USER_ID, userId)
                 .claim(CLAIM_ROLE, role.name())
+                .claim(CLAIM_FAMILY_ID, familyId)
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    public String getClaimUserId(String token) {
-        Claims claims = getClaims(token);
-        String userId = claims.get(CLAIM_USER_ID, String.class);
-        if (userId == null || userId.isBlank()) {
-            throw new JwtAuthException(ErrorCode.JWT_CLAIM_MISSING);
-        }
-        return userId;
+    public String getSubject(String token) {
+        return getClaims(token).getSubject();
     }
 
     public Role getClaimRole(String token) {
         try {
             Claims claims = getClaims(token);
+            String role = claims.get(CLAIM_ROLE, String.class);
+            if (role == null || role.isBlank()) {
+                throw new JwtAuthException(ErrorCode.CLAIM_ROLE_MISSING);
+            }
             return Role.valueOf(claims.get(CLAIM_ROLE, String.class));
         } catch (IllegalArgumentException e) {
             throw new JwtAuthException(ErrorCode.INVALID_ROLE_VALUE);
         }
+    }
+
+    public String getClaimFamilyId(String token) {
+        Claims claims = getClaims(token);
+        String familyId = claims.get(CLAIM_FAMILY_ID, String.class);
+        if (familyId == null || familyId.isBlank()) {
+            throw new JwtAuthException(ErrorCode.CLAIM_FAMILY_ID_MISSING);
+        }
+        return familyId;
     }
 
     private Claims getClaims(String token) {

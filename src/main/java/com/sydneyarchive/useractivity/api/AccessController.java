@@ -1,24 +1,25 @@
 package com.sydneyarchive.useractivity.api;
 
-import com.sydneyarchive.useractivity.entity.AccessEvent;
+import com.sydneyarchive.auth.security.UserPrincipal;
 import com.sydneyarchive.useractivity.service.AccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/access")
+@RequestMapping("/api/g/access")
 @RequiredArgsConstructor
 public class AccessController {
 
     private final AccessService accessService;
 
-    @PostMapping
-    public ResponseEntity<Void> recordAccess(@RequestBody AccessEvent accessEvent) {
-        accessService.recordAccess(accessEvent);
+    @PostMapping("/{itemId}")
+    public ResponseEntity<Void> recordAccess(
+            @PathVariable String itemId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        accessService.recordAccess(userPrincipal.getUserId(), itemId);
         return ResponseEntity.ok().build();
     }
 }

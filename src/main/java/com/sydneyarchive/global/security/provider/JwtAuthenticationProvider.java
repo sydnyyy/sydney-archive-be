@@ -26,12 +26,12 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String accessToken = (String) authentication.getCredentials();
 
-        if (accessToken == null || accessToken.isEmpty()) {
+        if (accessToken == null || accessToken.isBlank()) {
             throw new CustomAuthenticationException(ErrorCode.ACCESS_TOKEN_MISSING);
         }
 
         try {
-            String userId = jwtProvider.getClaimUserId(accessToken);
+            String userId = jwtProvider.getSubject(accessToken);
             Role role = jwtProvider.getClaimRole(accessToken);
 
             UserPrincipal userPrincipal = UserPrincipal.builder()

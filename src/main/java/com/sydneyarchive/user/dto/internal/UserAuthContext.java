@@ -7,7 +7,6 @@ import lombok.Builder;
 @Builder
 public record UserAuthContext(
         String userId,
-        String uid,
         Role role,
         boolean created
 ) {
@@ -15,7 +14,6 @@ public record UserAuthContext(
     public static UserAuthContext of(User user, boolean created) {
         return UserAuthContext.builder()
                 .userId(user.getId())
-                .uid(user.getUid())
                 .role(user.getRole())
                 .created(created)
                 .build();
