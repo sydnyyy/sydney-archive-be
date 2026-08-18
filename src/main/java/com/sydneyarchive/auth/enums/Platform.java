@@ -11,7 +11,7 @@ public enum Platform {
         if (value == null) return NONE;
 
         try {
-            return Platform.valueOf(value.toUpperCase());
+            return valueOf(value.toUpperCase());
         } catch (IllegalArgumentException e) {
             return NONE;
         }
