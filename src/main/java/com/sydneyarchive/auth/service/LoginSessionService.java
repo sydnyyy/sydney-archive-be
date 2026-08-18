@@ -1,5 +1,6 @@
 package com.sydneyarchive.auth.service;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -7,11 +8,14 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.sydneyarchive.auth.dto.internal.LoginSessionContext;
 import com.sydneyarchive.auth.dto.request.LoginSessionCompleteRequest;
+import com.sydneyarchive.auth.dto.response.LoginSessionResponse;
 import com.sydneyarchive.auth.enums.Platform;
 import com.sydneyarchive.common.applicationevent.dto.internal.LoginSessionTask;
 import com.sydneyarchive.common.applicationevent.enums.EventType;
 import com.sydneyarchive.common.applicationevent.service.ApplicationEventProducer;
+import com.sydneyarchive.common.util.HashUtils;
 import com.sydneyarchive.global.config.auth.LoginSessionProperties;
+import com.sydneyarchive.global.exception.ErrorCode;
 import com.sydneyarchive.global.exception.LoginSessionException;
 import com.sydneyarchive.global.exception.UserException;
 import com.sydneyarchive.user.dto.internal.UserAuthContext;
@@ -27,7 +31,8 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
-import java.util.UUID;
+
+import static com.sydneyarchive.auth.service.LoginSessionRedisService.LOGIN_SESSION_SECRET_HASH_FIELD_NAME;
 
 @Service
 @RequiredArgsConstructor
@@ -42,11 +47,11 @@ public class LoginSessionService {
     private final UserService userService;
     private final TokenService tokenService;
     private final ApplicationEventProducer applicationEventProducer;
+    private final HashUtils hashUtils;
 
-    public LoginSessionContext generateLoginSession() {
-        String sid = UUID.randomUUID().toString();
-        String authCode = UUID.randomUUID().toString();
-        loginSessionRedisService.saveLoginSession(sid, authCode);
+    public LoginSessionResponse generateLoginSession(String secretHash) {
+        String sid = NanoIdUtils.randomNanoId();
+        loginSessionRedisService.saveLoginSession(sid, secretHash);
 
         String qrCodeBase64 = generateQrCodeBase64(sid);
 
@@ -54,7 +59,7 @@ public class LoginSessionService {
                 .plusSeconds(loginSessionProperties.getLoginSessionTimeoutSec())
                 .toEpochMilli();
 
-        return LoginSessionContext.of(qrCodeBase64, sid, authCode, expiredAt);
+        return LoginSessionResponse.of(qrCodeBase64, sid, expiredAt);
     }
 
     private String generateQrCodeBase64(String sid) {
@@ -99,11 +104,20 @@ public class LoginSessionService {
 
     public void verifyLoginSessionAndIssueRefreshToken(
             LoginSessionCompleteRequest loginSessionCompleteRequest,
-            String authCode,
             HttpServletResponse httpServletResponse
     ) {
+        String storedSecretHash = loginSessionRedisService.getLoginSessionField(
+                loginSessionCompleteRequest.sid(), LOGIN_SESSION_SECRET_HASH_FIELD_NAME
+        );
+
+        if (!hashUtils.verify(loginSessionCompleteRequest.secret(), storedSecretHash)) {
+            throw new LoginSessionException(ErrorCode.LOGIN_SESSION_SECRET_MISMATCH);
+        }
+
         String userId = loginSessionRedisService.verifySessionAndGetUserId(
-                loginSessionCompleteRequest.sid(), loginSessionCompleteRequest.version(), authCode);
+                loginSessionCompleteRequest.sid(),
+                loginSessionCompleteRequest.version()
+        );
 
         try {
             UserAuthContext userAuthContext = userService.getUserContextById(userId);

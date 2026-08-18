@@ -18,7 +18,6 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class CookieUtils {
 
-    public static final String AUTH_CODE_COOKIE_NAME = "SAAC";
     public static final String REFRESH_TOKEN_COOKIE_NAME = "SART";
     public static final String OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "OAR";
 

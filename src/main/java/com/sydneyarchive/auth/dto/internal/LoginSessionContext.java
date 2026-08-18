@@ -14,7 +14,7 @@ import static com.sydneyarchive.auth.service.LoginSessionRedisService.*;
 public record LoginSessionContext(
         String qrCodeBase64,
         String sid,
-        String authCode,
+        String secretHash,
         Integer version,
         String state,
         String userId,
@@ -22,22 +22,13 @@ public record LoginSessionContext(
         long expiredAt
 ) {
 
-    public static LoginSessionContext of(String qrCodeBase64, String sid, String authCode, long expiredAt) {
-        return LoginSessionContext.builder()
-                .qrCodeBase64(qrCodeBase64)
-                .sid(sid)
-                .authCode(authCode)
-                .expiredAt(expiredAt)
-                .build();
-    }
-
     public static LoginSessionContext of(Map<String, Object> entries) {
         String sid = entries.get("sid").toString();
         if (sid == null) throw new LoginSessionException(ErrorCode.SID_MISSING);
 
         return LoginSessionContext.builder()
                 .sid(sid)
-                .authCode(string(entries, LOGIN_SESSION_AUTH_CODE_FIELD_NAME))
+                .secretHash(string(entries, LOGIN_SESSION_SECRET_HASH_FIELD_NAME))
                 .version(integer(entries, LOGIN_SESSION_VERSION_FIELD_NAME))
                 .state(string(entries, LOGIN_SESSION_STATE_FIELD_NAME))
                 .userId(string(entries, LOGIN_SESSION_USER_ID_FIELD_NAME))
