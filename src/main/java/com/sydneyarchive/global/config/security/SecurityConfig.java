@@ -12,8 +12,10 @@ import com.sydneyarchive.global.security.provider.JwtAuthenticationProvider;
 import com.sydneyarchive.global.security.jwt.JwtProvider;
 import com.sydneyarchive.global.security.oauth2.resolver.LoginSessionStateAssignmentOAuth2AuthorizationRequestResolver;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -46,27 +48,78 @@ public class SecurityConfig {
     private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
     @Bean
-    public AuthenticationManager authenticationManager(JwtAuthenticationProvider jwtProvider) {
-        return new ProviderManager(jwtProvider);
+    public AuthenticationManager jwtAuthenticationManager(JwtAuthenticationProvider jwtAuthenticationProvider) {
+        return new ProviderManager(jwtAuthenticationProvider);
     }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(
-            AuthenticationManager authenticationManager,
+            @Qualifier("jwtAuthenticationManager") AuthenticationManager authenticationManager,
             CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
             JwtProvider jwtProvider
     ) {
-        return new JwtAuthenticationFilter(
-                authenticationManager, customAuthenticationEntryPoint, jwtProvider
-        );
+        return new JwtAuthenticationFilter(authenticationManager, customAuthenticationEntryPoint, jwtProvider);
     }
 
+    /**
+     * Admin API
+     *
+     * /api/a/**
+     */
     @Bean
-    public SecurityFilterChain securityFilterChain(
+    @Order(1)
+    public SecurityFilterChain adminSecurityFilterChain(
             HttpSecurity http,
             JwtAuthenticationFilter jwtAuthenticationFilter
     ) throws Exception {
         return http
+                .securityMatcher("/api/a/**", "/oauth2/**", "/login/oauth2/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(management -> management
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .addFilterBefore(jwtAuthenticationFilter, AnonymousAuthenticationFilter.class)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/a/login/**").permitAll()
+                         .requestMatchers(HttpMethod.POST, "/api/a/auth/token/issue").permitAll()
+                         .requestMatchers(HttpMethod.POST, "/api/a/auth/logout").permitAll()
+                         .requestMatchers("/api/a/**").hasRole("ADMIN")
+                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth -> oauth
+                        .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
+                                .authorizationRequestResolver(loginSessionStateAssignmentOAuth2AuthorizationRequestResolver)
+                                .authorizationRequestRepository(httpCookieOAuth2AuthorizationRequestRepository)
+                        )
+                        .userInfoEndpoint(userInfoEndPoint -> userInfoEndPoint
+                                .userService(customOAuth2UserService)
+                        )
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .failureHandler(oAuth2AuthenticationFailureHandler)
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
+                .build();
+    }
+
+    /**
+     * Guest API
+     *
+     * /api/g/**
+     */
+    @Bean
+    @Order(2)
+    public SecurityFilterChain guestSecurityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthenticationFilter
+    ) throws Exception {
+
+        return http
+                .securityMatcher("/api/g/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(management
@@ -74,40 +127,85 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtAuthenticationFilter, AnonymousAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/chat/rooms").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/chat/rooms/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/items").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/items/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/items/**").hasRole("ADMIN")
-                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/admin/login/sessions").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/admin/login/sessions/status").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/admin/login/sessions/complete").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/admin/auth/token/issue").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/admin/auth/logout").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users/uid").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/items").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/chat/messages").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/sse/connect").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/access").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/g/auth/token/issue").permitAll()
+                        .requestMatchers("/api/g/**").hasRole("GUEST")
                         .anyRequest().authenticated()
                 )
-                .oauth2Login(oauth -> oauth
-                        .authorizationEndpoint(authorizationEndpoint
-                                -> authorizationEndpoint
-                                .authorizationRequestResolver(loginSessionStateAssignmentOAuth2AuthorizationRequestResolver)
-                                .authorizationRequestRepository(httpCookieOAuth2AuthorizationRequestRepository)
-                        )
-                        .userInfoEndpoint(userInfoEndPoint
-                                -> userInfoEndPoint.userService(customOAuth2UserService)
-                        )
-                        .successHandler(oAuth2AuthenticationSuccessHandler)
-                        .failureHandler(oAuth2AuthenticationFailureHandler)
-                )
-                .exceptionHandling(ex
-                        -> ex
+                .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)
+                )
+                .build();
+    }
+
+    /**
+     * Common API
+     *
+     * /api/c/**
+     */
+    @Bean
+    @Order(3)
+    public SecurityFilterChain commonSecurityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthenticationFilter
+    ) throws Exception {
+        return http
+                .securityMatcher("/api/c/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(management -> management
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .addFilterBefore(jwtAuthenticationFilter, AnonymousAuthenticationFilter.class)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/api/c/items").permitAll()
+                        .requestMatchers("/api/c/**").authenticated()
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
+                .build();
+    }
+
+    /**
+     * Public API
+     *
+     * /api/p/**
+     * -> 인증 없음
+     */
+    @Bean
+    @Order(4)
+    public SecurityFilterChain publicSecurityFilterChain(
+            HttpSecurity http
+    ) throws Exception {
+
+        return http
+                .securityMatcher("/api/p/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(management -> management
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/p/**").permitAll()
+                        .anyRequest().permitAll()
+                )
+                .build();
+    }
+
+    @Bean
+    @Order(5)
+    public SecurityFilterChain defaultSecurityFilterChain(
+            HttpSecurity http
+    ) throws Exception {
+
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
                 )
                 .build();
     }

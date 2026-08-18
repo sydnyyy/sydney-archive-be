@@ -1,40 +1,44 @@
 package com.sydneyarchive.user.api;
 
+import com.sydneyarchive.auth.security.UserPrincipal;
 import com.sydneyarchive.user.service.UserLikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users/likes")
+@RequestMapping("/api/g/likes")
 @RequiredArgsConstructor
 public class UserLikesController {
 
     private final UserLikeService userLikeService;
 
-    @GetMapping("/{uid}")
-    public ResponseEntity<?> getUserLikes(@PathVariable String uid) {
-        List<String> likedItemIds = userLikeService.getLikedItemIds(uid);
+    @GetMapping
+    public ResponseEntity<?> getUserLikes(
+            @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        List<String> likedItemIds = userLikeService.getLikedItemIds(userPrincipal.getUserId());
         return ResponseEntity.ok(likedItemIds);
     }
 
-    @PostMapping("/{uid}/{itemId}")
+    @PostMapping("/{itemId}")
     public ResponseEntity<?> addLike(
-            @PathVariable String uid,
-            @PathVariable String itemId
+            @PathVariable String itemId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {
-        userLikeService.addLike(uid, itemId);
+        userLikeService.addLike(userPrincipal.getUserId(), itemId);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{uid}/{itemId}")
+    @DeleteMapping("/{itemId}")
     public ResponseEntity<?> deleteLike(
-            @PathVariable String uid,
-            @PathVariable String itemId
+            @PathVariable String itemId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {
-        userLikeService.deleteLike(uid, itemId);
+        userLikeService.deleteLike(userPrincipal.getUserId(), itemId);
         return ResponseEntity.ok().build();
     }
 }
