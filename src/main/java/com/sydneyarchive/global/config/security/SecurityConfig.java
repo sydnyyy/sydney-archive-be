@@ -1,5 +1,10 @@
 package com.sydneyarchive.global.config.security;
 
+import com.sydneyarchive.auth.service.AuthPatternService;
+import com.sydneyarchive.auth.service.TokenService;
+import com.sydneyarchive.global.cookie.CookieUtils;
+import com.sydneyarchive.global.security.filter.PatternValidationFilter;
+import com.sydneyarchive.global.security.matcher.PatternValidationApiMatcher;
 import com.sydneyarchive.global.security.oauth2.service.CustomOAuth2UserService;
 import com.sydneyarchive.global.config.web.CorsProperties;
 import com.sydneyarchive.global.security.oauth2.repository.HttpCookieOAuth2AuthorizationRequestRepository;
@@ -61,6 +66,26 @@ public class SecurityConfig {
         return new JwtAuthenticationFilter(authenticationManager, customAuthenticationEntryPoint, jwtProvider);
     }
 
+    @Bean
+    public PatternValidationFilter patternValidationFilter(
+            PatternValidationApiMatcher patternValidationApiMatcher,
+            CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+            AuthPatternService authPatternService,
+            CookieUtils cookieUtils,
+            JwtProvider jwtProvider,
+            TokenService tokenService
+    ) {
+        return new PatternValidationFilter(
+                patternValidationApiMatcher,
+                customAuthenticationEntryPoint,
+                authPatternService,
+                cookieUtils,
+                jwtProvider,
+                tokenService
+        );
+    }
+
+
     /**
      * Admin API
      *
@@ -70,6 +95,7 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain adminSecurityFilterChain(
             HttpSecurity http,
+            PatternValidationFilter patternValidationFilter,
             JwtAuthenticationFilter jwtAuthenticationFilter
     ) throws Exception {
         return http
@@ -79,14 +105,15 @@ public class SecurityConfig {
                 .sessionManagement(management -> management
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterBefore(jwtAuthenticationFilter, AnonymousAuthenticationFilter.class)
+                .addFilterBefore(patternValidationFilter, AnonymousAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthenticationFilter, PatternValidationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/a/login/**").permitAll()
-                         .requestMatchers(HttpMethod.POST, "/api/a/auth/token/issue").permitAll()
-                         .requestMatchers(HttpMethod.POST, "/api/a/auth/logout").permitAll()
-                         .requestMatchers("/api/a/**").hasRole("ADMIN")
-                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                         .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/a/auth/token/issue").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/a/auth/logout").permitAll()
+                        .requestMatchers("/api/a/**").hasRole("ADMIN")
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
                         .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
@@ -115,6 +142,7 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain guestSecurityFilterChain(
             HttpSecurity http,
+            PatternValidationFilter patternValidationFilter,
             JwtAuthenticationFilter jwtAuthenticationFilter
     ) throws Exception {
 
@@ -125,7 +153,8 @@ public class SecurityConfig {
                 .sessionManagement(management
                         -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterBefore(jwtAuthenticationFilter, AnonymousAuthenticationFilter.class)
+                .addFilterBefore(patternValidationFilter, AnonymousAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthenticationFilter, PatternValidationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/g/auth/token/issue").permitAll()
                         .requestMatchers("/api/g/**").hasRole("GUEST")
@@ -147,6 +176,7 @@ public class SecurityConfig {
     @Order(3)
     public SecurityFilterChain commonSecurityFilterChain(
             HttpSecurity http,
+            PatternValidationFilter patternValidationFilter,
             JwtAuthenticationFilter jwtAuthenticationFilter
     ) throws Exception {
         return http
@@ -156,7 +186,8 @@ public class SecurityConfig {
                 .sessionManagement(management -> management
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterBefore(jwtAuthenticationFilter, AnonymousAuthenticationFilter.class)
+                .addFilterBefore(patternValidationFilter, AnonymousAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthenticationFilter, PatternValidationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/api/c/items").permitAll()
                         .requestMatchers("/api/c/**").authenticated()
