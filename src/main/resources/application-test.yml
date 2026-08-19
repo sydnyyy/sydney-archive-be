@@ -56,3 +56,8 @@ jwt:
 admin:
   username: ${ADMIN_NAME}
   email: ${ADMIN_EMAIL}
+
+pattern:
+  unit: 10
+  multiple: 1
+  switch_threshold: 0.8

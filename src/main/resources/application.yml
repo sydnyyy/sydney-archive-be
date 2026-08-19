@@ -59,6 +59,11 @@ admin:
   username: ${ADMIN_NAME}
   email: ${ADMIN_EMAIL}
 
+pattern:
+  unit: ${PATTERN_UNIT}
+  multiple: ${PATTERN_MULTIPLE}
+  switch_threshold: ${PATTERN_SWITCH_THRESHOLD}
+
 logging:
   level:
     org.springframework.security: TRACE
