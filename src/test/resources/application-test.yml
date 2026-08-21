@@ -16,11 +16,11 @@ spring:
       client:
         registration:
           naver:
-            client-id: ${NAVER_CLIENT_ID}
-            client-secret: ${NAVER_CLIENT_SECRET}
+            client-id: test-client-id
+            client-secret: test-client-secret
             client-name: Naver
             authorization-grant-type: authorization_code
-            redirect-uri: "${BE_URL}/login/oauth2/code/naver"
+            redirect-uri: http://localhost:8080//login/oauth2/code/naver
             scope:
               - name
               - email
@@ -33,13 +33,15 @@ spring:
             user-name-attribute: response
 
 app:
+  crypto:
+    aes-key: 12345678901234567890123456789012
   cors:
-    allowed-origins: ${ALLOWED_ORIGINS}
-  frontend-base-url: ${FE_URL}
+    allowed-origins: http://localhost:3000
+  frontend-base-url: http://localhost:3000
   cookie:
-    secure: ${COOKIE_SECURE}
-    same-site: ${COOKIE_SAME_SITE}
-    path: ${COOKIE_PATH}
+    secure: false
+    same-site: Lax
+    path: /
   login-session:
     login-session-timeout-sec: 300
   system:
@@ -50,12 +52,12 @@ app:
     sse-heartbeat-initial-delay-sec: 15
 
 jwt:
-  issuer: ${JWT_ISSUER}
-  secret_key: ${JWT_SECRET_KEY}
+  issuer: test
+  secret_key: 12345678901234567890123456789012
 
 admin:
-  username: ${ADMIN_NAME}
-  email: ${ADMIN_EMAIL}
+  username: test-admin
+  email: testadmin@test.com
 
 pattern:
   unit: 10
