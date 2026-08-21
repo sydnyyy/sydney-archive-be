@@ -29,9 +29,17 @@ public class JwtProviderTest extends IntegrationTestSupport {
     @Test
     @DisplayName("토큰 생성 시 role이 null이면 JwtAuthException(ROLE_REQUIRED) 예외 발생")
     public void shouldThrowException_WhenRoleIsNullOnGenerateToken() {
-        assertThatThrownBy(() -> jwtProvider.generateRefreshToken(NanoIdUtils.randomNanoId(), null, null))
+        assertThatThrownBy(() -> jwtProvider.generateRefreshToken(NanoIdUtils.randomNanoId(), null, NanoIdUtils.randomNanoId()))
                 .isInstanceOf(JwtAuthException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ROLE_REQUIRED);
+    }
+
+    @Test
+    @DisplayName("리프레시 토큰 생성 시 familyId이 null이면 JwtAuthException(FAMILY_ID_REQUIRED) 예외 발생")
+    public void shouldThrowException_WhenFamilyIdIsNullOnGenerateRefreshToken() {
+        assertThatThrownBy(() -> jwtProvider.generateRefreshToken(NanoIdUtils.randomNanoId(), Role.ADMIN, null))
+                .isInstanceOf(JwtAuthException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.FAMILY_ID_REQUIRED);
     }
 
     @Test
